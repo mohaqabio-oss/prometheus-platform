@@ -61,23 +61,36 @@ function parseCSV(content: string): Array<Record<string, string>> {
   return rows;
 }
 
-function mapRoleType(roleStr?: string): RoleType {
-  if (!roleStr) return RoleType.MEMBER;
-  const normalized = roleStr.trim().toUpperCase();
-  switch (normalized) {
-    case "ADMIN":
-      return RoleType.ADMIN;
-    case "HR_EDITOR":
-    case "HR":
-      return RoleType.HR_EDITOR;
-    case "POST_EDITOR":
-    case "EDITOR":
-      return RoleType.POST_EDITOR;
-    case "AUTHOR":
-      return RoleType.AUTHOR;
-    default:
-      return RoleType.MEMBER;
+function mapRoleType(roleStr?: string | null, titleStr?: string | null): RoleType {
+  if (roleStr) {
+    const normalized = roleStr.trim().toUpperCase();
+    switch (normalized) {
+      case "ADMIN":
+        return RoleType.ADMIN;
+      case "HR_EDITOR":
+      case "HR":
+        return RoleType.HR_EDITOR;
+      case "POST_EDITOR":
+      case "EDITOR":
+        return RoleType.POST_EDITOR;
+      case "AUTHOR":
+        return RoleType.AUTHOR;
+      case "MEMBER":
+        return RoleType.MEMBER;
+    }
   }
+
+  if (titleStr) {
+    const normTitle = titleStr.trim().toLowerCase();
+    if (normTitle.includes("founder") || normTitle.includes("leader") || normTitle.includes("director")) {
+      return RoleType.ADMIN;
+    }
+    if (normTitle.includes("head of department") || normTitle.includes("hr")) {
+      return RoleType.HR_EDITOR;
+    }
+  }
+
+  return RoleType.MEMBER;
 }
 
 async function main() {
@@ -107,13 +120,16 @@ async function main() {
   const defaultPasswordHash = await bcrypt.hash(defaultPassword, 10);
 
   for (const [index, row] of records.entries()) {
-    const fullName = row.fullName?.trim();
-    const email = row.email?.trim().toLowerCase();
-    const deptName = row.department?.trim();
-    const title = row.title?.trim() || null;
-    const systemRoleStr = row.systemRole?.trim();
-    const rawVolunteerHours = row.volunteerHours?.trim();
-    const rawPhotoUrl = row.photoUrl?.trim();
+    const fullName =
+      row["fullName - Arabic"]?.trim() ||
+      row["fullName"]?.trim() ||
+      row["fullname - English"]?.trim();
+    const email = row["email"]?.trim().toLowerCase();
+    const deptName = row["department"]?.trim();
+    const title = row["title"]?.trim() || null;
+    const systemRoleStr = row["systemRole"]?.trim();
+    const rawVolunteerHours = row["volunteerHours"]?.trim();
+    const rawPhotoUrl = row["photoUrl"]?.trim();
 
     if (!email || !fullName) {
       console.log(`⚠️ Row ${index + 1}: Missing fullName or email. Skipping.`);
@@ -121,9 +137,10 @@ async function main() {
       continue;
     }
 
-    const volunteerHours = rawVolunteerHours ? parseInt(rawVolunteerHours, 10) || 0 : 0;
+    const cleanHoursStr = rawVolunteerHours ? rawVolunteerHours.replace(/[^0-9]/g, "") : "";
+    const volunteerHours = cleanHoursStr ? parseInt(cleanHoursStr, 10) || 0 : 0;
     const photoUrl = rawPhotoUrl && rawPhotoUrl !== "" && rawPhotoUrl !== "null" ? rawPhotoUrl : null;
-    const roleType = mapRoleType(systemRoleStr);
+    const roleType = mapRoleType(systemRoleStr, title);
 
     // 1. Resolve or Create Role
     let roleRecord = await prisma.role.findUnique({ where: { name: roleType } });
