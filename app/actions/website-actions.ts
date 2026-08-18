@@ -13,7 +13,7 @@ export interface PartnerRecord {
 }
 
 // Default Site Settings Fallback Map
-export const DEFAULT_SITE_SETTINGS: Record<string, string> = {
+const DEFAULT_SITE_SETTINGS: Record<string, string> = {
   "hero.title": "فريق بروميثيوس التطوعي",
   "hero.subtitle": "منظمة مؤسسية تطوعية تهدف لنشر المعرفة الأكاديمية، بناء المنصات البرمجية، وإعادة تعريف العمل التطوعي الأكاديمي لدى الشباب.",
   "about.title": "إشعال المعرفة وتمكين العقول الشبابية",
