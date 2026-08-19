@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
 
@@ -8,6 +8,14 @@ const tajawal = Tajawal({
   variable: "--font-tajawal",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#1A2B4A",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
   title: {
     default: "فريق بروميثيوس التطوعي | المنصة المؤسسية والأكاديمية",
@@ -15,6 +23,14 @@ export const metadata: Metadata = {
   },
   description:
     "فريق بروميثيوس التطوعي هو مؤسسة تطوعية تهدف لنشر المعرفة التقنية، البحث العلمي، والمحتوى الأكاديمي الرقمي المفتوح.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Prometheus",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   keywords: [
     "فريق بروميثيوس التطوعي",
     "منشورات بروميثيوس",
