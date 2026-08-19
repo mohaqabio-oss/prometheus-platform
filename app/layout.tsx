@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Tajawal } from "next/font/google";
-import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const tajawal = Tajawal({
@@ -53,11 +52,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar" dir="rtl" className={`${tajawal.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-background text-foreground font-sans selection:bg-brand-orange selection:text-white transition-colors duration-200">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          {children}
-        </ThemeProvider>
+    <html lang="ar" dir="rtl" className={`${tajawal.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-[#1A2B4A] text-white font-sans selection:bg-[#E84A0C] selection:text-white">
+        {children}
       </body>
     </html>
   );

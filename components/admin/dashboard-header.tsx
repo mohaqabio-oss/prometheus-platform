@@ -3,7 +3,6 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { logoutAction } from "@/app/actions/auth-actions";
 import { RoleType } from "@prisma/client";
 import { LogOut, User, Shield } from "lucide-react";
@@ -33,21 +32,19 @@ export function DashboardHeader({ fullName, email, roles }: DashboardHeaderProps
   };
 
   return (
-    <header className="h-16 border-b border-brand-dark-800 bg-brand-dark-900/60 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
+    <header className="h-16 border-b border-[#6B7280]/20 bg-[#1A2B4A]/95 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
       
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-brand-dark-850 border border-brand-dark-700 flex items-center justify-center text-brand-orange">
+        <div className="w-8 h-8 rounded-full bg-[#0D0D0D] border border-[#6B7280]/20 flex items-center justify-center text-[#E84A0C]">
           <User className="w-4 h-4" />
         </div>
         <div>
           <p className="text-sm font-semibold text-white leading-none">{fullName}</p>
-          <p className="text-[11px] font-mono text-brand-gray-500 mt-0.5">{email}</p>
+          <p className="text-[11px] font-mono text-[#6B7280] mt-0.5">{email}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-3 sm:gap-4">
-        <ThemeToggle />
-
         <Badge variant="orange" className="font-mono text-[10px] gap-1 shadow-sm">
           <Shield className="w-3 h-3" />
           <span>{getRoleLabel(primaryRole)}</span>
@@ -58,7 +55,7 @@ export function DashboardHeader({ fullName, email, roles }: DashboardHeaderProps
             type="submit"
             variant="ghost"
             size="sm"
-            className="gap-1.5 text-xs text-brand-gray-400 hover:text-red-400 hover:bg-red-500/10"
+            className="gap-1.5 text-xs text-[#6B7280] hover:text-red-400 hover:bg-red-500/10"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">تسجيل الخروج</span>

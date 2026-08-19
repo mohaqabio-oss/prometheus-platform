@@ -29,77 +29,9 @@ export interface LocalMemberRecord {
   createdAt: string;
 }
 
-let MOCK_HR_MEMBERS: LocalMemberRecord[] = [
-  {
-    id: "mem-1",
-    fullName: "Karrar Al-Mansoor",
-    email: "admin@prometheus.local",
-    title: "Technical Lead & Software Architect",
-    departmentName: "Technology",
-    volunteerHours: 140,
-    status: "ACTIVE",
-    certificateCode: "PRM-2026-DEV-001",
-    createdAt: "2026-01-15T00:00:00.000Z",
-  },
-  {
-    id: "mem-2",
-    fullName: "Sarah Al-Hassani",
-    email: "author@prometheus.local",
-    title: "Research Director & Computational Biologist",
-    departmentName: "Research",
-    volunteerHours: 125,
-    status: "ACTIVE",
-    certificateCode: "PRM-2026-RES-002",
-    createdAt: "2026-02-10T00:00:00.000Z",
-  },
-  {
-    id: "mem-3",
-    fullName: "Mustafa Tariq",
-    email: "editor@prometheus.local",
-    title: "Post Editor-in-Chief",
-    departmentName: "Education",
-    volunteerHours: 95,
-    status: "ACTIVE",
-    certificateCode: "PRM-2026-ED-003",
-    createdAt: "2026-03-01T00:00:00.000Z",
-  },
-  {
-    id: "mem-4",
-    fullName: "Omar Al-Farooq",
-    email: "hr@prometheus.local",
-    title: "HR & Recruitment Coordinator",
-    departmentName: "HR & Operations",
-    volunteerHours: 85,
-    status: "ACTIVE",
-    certificateCode: "PRM-2026-HR-005",
-    createdAt: "2026-04-12T00:00:00.000Z",
-  },
-];
+let MOCK_HR_MEMBERS: LocalMemberRecord[] = [];
 
-let MOCK_HR_CERTIFICATES: LocalCertificateRecord[] = [
-  {
-    id: "cert-1",
-    certificateCode: "PRM-2026-DEV-001",
-    title: "Verified Certificate of Voluntary Contribution & Technical Leadership",
-    description: "Awarded for completing 140 hours of software engineering and platform architecture development.",
-    issuedAt: "2026-08-15T00:00:00.000Z",
-    memberName: "Karrar Al-Mansoor",
-    memberDepartment: "Technology",
-    memberRole: "Technical Lead & Software Architect",
-    volunteerHours: 140,
-  },
-  {
-    id: "cert-2",
-    certificateCode: "PRM-2026-RES-002",
-    title: "Verified Certificate of Voluntary Research & Scientific Synthesis",
-    description: "Awarded for 125 hours of computational biology research and literature synthesis.",
-    issuedAt: "2026-08-10T00:00:00.000Z",
-    memberName: "Sarah Al-Hassani",
-    memberDepartment: "Research",
-    memberRole: "Research Director",
-    volunteerHours: 125,
-  },
-];
+let MOCK_HR_CERTIFICATES: LocalCertificateRecord[] = [];
 
 // Helper: Enforce HR_EDITOR or ADMIN permission
 async function requireHRPermission() {
@@ -342,3 +274,39 @@ export async function verifyCertificateCode(code: string): Promise<LocalCertific
   );
   return match || null;
 }
+
+// Get Public Active Members for Public Members Directory Page
+export async function getPublicMembersAction() {
+  try {
+    const dbMembers = await prisma.member.findMany({
+      where: { status: "ACTIVE" },
+      include: {
+        department: true,
+      },
+      orderBy: { volunteerHours: "desc" },
+    });
+
+    if (dbMembers.length > 0) {
+      return dbMembers.map((m) => ({
+        id: m.id,
+        name: m.fullName,
+        role: m.title || "عضو متطوع",
+        department: m.department?.name || "عام",
+        avatarUrl: m.avatarUrl,
+        photoUrl: m.avatarUrl,
+        volunteerHours: m.volunteerHours,
+      }));
+    }
+  } catch (e) {}
+
+  return MOCK_HR_MEMBERS.map((m) => ({
+    id: m.id,
+    name: m.fullName,
+    role: m.title,
+    department: m.departmentName,
+    avatarUrl: null,
+    photoUrl: null,
+    volunteerHours: m.volunteerHours,
+  }));
+}
+

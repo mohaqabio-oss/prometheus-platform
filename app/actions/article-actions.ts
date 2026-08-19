@@ -23,45 +23,7 @@ export interface LocalArticleRecord {
   createdAt: string;
 }
 
-let MOCK_DB_ARTICLES: LocalArticleRecord[] = [
-  {
-    id: "art-1",
-    title: "The Architecture of Modern Decentralized Systems and Knowledge Graphs",
-    slug: "architecture-decentralized-knowledge-graphs",
-    excerpt: "An in-depth analysis of graph database modeling and consensus algorithms.",
-    content: "Full technical article content regarding decentralized systems.",
-    categoryName: "Technology",
-    status: "PUBLISHED",
-    authorId: "seed-admin@prometheus.local",
-    authorName: "Karrar Al-Mansoor",
-    publishedAt: "2026-08-14T10:00:00.000Z",
-    createdAt: "2026-08-14T10:00:00.000Z",
-  },
-  {
-    id: "art-2",
-    title: "Systematic Review: Machine Learning Approaches in Genomic Variant Analysis",
-    slug: "systematic-review-ml-genomics",
-    excerpt: "Evaluating deep neural network models and variant effect predictors.",
-    content: "Full scientific article content evaluating deep learning in genomics.",
-    categoryName: "Research",
-    status: "SUBMITTED",
-    authorId: "seed-author@prometheus.local",
-    authorName: "Sarah Al-Hassani",
-    createdAt: "2026-08-10T14:30:00.000Z",
-  },
-  {
-    id: "art-3",
-    title: "The Art of Technical Writing and Knowledge Dissemination for Youth",
-    slug: "art-of-technical-writing-youth",
-    excerpt: "Why clear documentation is the greatest leverage for voluntary teams.",
-    content: "Drafting technical writing guidelines for voluntary staff members.",
-    categoryName: "Education",
-    status: "DRAFT",
-    authorId: "seed-editor@prometheus.local",
-    authorName: "Mustafa Tariq",
-    createdAt: "2026-08-05T09:15:00.000Z",
-  },
-];
+let MOCK_DB_ARTICLES: LocalArticleRecord[] = [];
 
 // Helper: Ensure authenticated session with role check
 async function requireAuth(allowedRoles: RoleType[]) {
@@ -296,3 +258,37 @@ export async function getAdminArticlesList() {
 
   return filtered;
 }
+
+// Get Public Published Articles for Public Articles Page
+export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
+  try {
+    const dbArticles = await prisma.article.findMany({
+      where: { status: ArticleStatus.PUBLISHED },
+      include: {
+        author: true,
+        category: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (dbArticles.length > 0) {
+      return dbArticles.map((a) => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        excerpt: a.excerpt || "",
+        content: a.content,
+        categoryName: a.category?.name || "عام",
+        status: a.status,
+        editorNotes: a.editorNotes || undefined,
+        authorId: a.author.userId || a.authorId,
+        authorName: a.author.fullName,
+        publishedAt: a.publishedAt?.toISOString(),
+        createdAt: a.createdAt.toISOString(),
+      }));
+    }
+  } catch (e) {}
+
+  return MOCK_DB_ARTICLES;
+}
+

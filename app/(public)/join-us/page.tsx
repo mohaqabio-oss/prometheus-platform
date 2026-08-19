@@ -39,25 +39,25 @@ export default function JoinUsPage() {
 
       {/* Success State View */}
       {submitted ? (
-        <Card className="p-8 sm:p-12 bg-card border-emerald-500/30 text-center space-y-6 shadow-md rounded-2xl transition-all duration-300">
+        <Card className="p-8 sm:p-12 bg-[#0D0D0D] border border-emerald-500/30 text-center space-y-6 shadow-md rounded-2xl transition-all duration-300">
           <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-10 h-10" />
           </div>
 
           <div className="space-y-2">
-            <Badge variant="dark" className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 font-mono text-xs">
+            <Badge variant="dark" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 font-mono text-xs">
               APPLICATION SUBMITTED SUCCESSFULLY
             </Badge>
-            <h2 className="font-display text-2xl font-bold text-secondary dark:text-white">
+            <h2 className="font-display text-2xl font-bold text-white">
               Thank You for Applying
             </h2>
-            <p className="text-sm text-neutral dark:text-neutral-300 max-w-lg mx-auto leading-relaxed">
+            <p className="text-sm text-[#6B7280] max-w-lg mx-auto leading-relaxed">
               Your voluntary application has been registered in the Prometheus HR review queue. Our HR & Operations team will review your application and contact you via email regarding the next interview steps.
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-xs font-mono text-neutral dark:text-neutral-300 max-w-md mx-auto space-y-1">
-            <p className="text-secondary dark:text-white font-bold">What Happens Next?</p>
+          <div className="p-4 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 text-xs font-mono text-[#6B7280] max-w-md mx-auto space-y-1">
+            <p className="text-white font-bold">What Happens Next?</p>
             <p>1. Preliminary HR Review (24–48 hours)</p>
             <p>2. Departmental Interview & Skill Assessment</p>
             <p>3. Onboarding & Official Member Registration</p>
@@ -65,13 +65,13 @@ export default function JoinUsPage() {
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/members">
-              <Button variant="outline" size="sm" className="gap-2 text-xs rounded-xl border-neutral-300 dark:border-neutral-700">
+              <Button variant="outline" size="sm" className="gap-2 text-xs rounded-xl border-[#6B7280]/30 text-white">
                 <span>Browse Current Members Directory</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             </Link>
             <Link href="/articles">
-              <Button size="sm" className="gap-2 text-xs bg-accent hover:bg-accent-hover text-white rounded-xl shadow-accent">
+              <Button size="sm" className="gap-2 text-xs bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md">
                 <span>Read Prometheus Post Publications</span>
               </Button>
             </Link>
@@ -79,18 +79,18 @@ export default function JoinUsPage() {
         </Card>
       ) : (
         /* Application Form */
-        <Card className="p-6 sm:p-10 bg-card border-neutral-200 dark:border-neutral-800 space-y-8 shadow-md rounded-2xl transition-all duration-300">
+        <Card className="p-6 sm:p-10 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-8 shadow-md rounded-2xl transition-all duration-300">
           
-          <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-4">
+          <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-4">
             <div>
-              <h2 className="font-display text-xl font-bold text-secondary dark:text-white">
+              <h2 className="font-display text-xl font-bold text-white">
                 Candidate Application Form
               </h2>
-              <p className="text-xs text-neutral mt-0.5">
+              <p className="text-xs text-[#6B7280] mt-0.5">
                 All fields marked with an asterisk (*) are required.
               </p>
             </div>
-            <div className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-accent bg-accent/10 px-3 py-1.5 rounded-xl border border-accent/20">
+            <div className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-[#E84A0C] bg-[#E84A0C]/10 px-3 py-1.5 rounded-xl border border-[#E84A0C]/20">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Verified HR Pipeline</span>
             </div>
@@ -109,7 +109,7 @@ export default function JoinUsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+                <label className="text-xs font-mono font-medium text-[#6B7280] block">
                   Full Name *
                 </label>
                 <input
@@ -117,12 +117,12 @@ export default function JoinUsPage() {
                   name="fullName"
                   required
                   placeholder="e.g. Layla Hassan"
-                  className="w-full h-11 px-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent font-sans shadow-sm transition-all duration-300"
+                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans shadow-sm transition-all duration-300"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+                <label className="text-xs font-mono font-medium text-[#6B7280] block">
                   Email Address *
                 </label>
                 <input
@@ -130,7 +130,7 @@ export default function JoinUsPage() {
                   name="email"
                   required
                   placeholder="layla.hassan@example.com"
-                  className="w-full h-11 px-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent font-mono shadow-sm transition-all duration-300"
+                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-mono shadow-sm transition-all duration-300"
                 />
               </div>
 
@@ -140,37 +140,37 @@ export default function JoinUsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+                <label className="text-xs font-mono font-medium text-[#6B7280] block">
                   Phone Number
                 </label>
                 <input
                   type="tel"
                   name="phone"
                   placeholder="+964 770 000 0000"
-                  className="w-full h-11 px-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent font-mono shadow-sm transition-all duration-300"
+                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-mono shadow-sm transition-all duration-300"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+                <label className="text-xs font-mono font-medium text-[#6B7280] block">
                   Age
                 </label>
                 <input
                   type="text"
                   name="age"
                   placeholder="e.g. 23"
-                  className="w-full h-11 px-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent font-mono shadow-sm transition-all duration-300"
+                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-mono shadow-sm transition-all duration-300"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+                <label className="text-xs font-mono font-medium text-[#6B7280] block">
                   Target Department *
                 </label>
                 <select
                   name="departmentName"
                   required
-                  className="w-full h-11 px-3 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-xs font-mono text-foreground focus:outline-none focus:border-accent shadow-sm transition-all duration-300"
+                  className="w-full h-11 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
                 >
                   <option value="Technology">Technology</option>
                   <option value="Research">Research</option>
@@ -185,26 +185,26 @@ export default function JoinUsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+                <label className="text-xs font-mono font-medium text-[#6B7280] block">
                   Academic Background / Major
                 </label>
                 <input
                   type="text"
                   name="education"
                   placeholder="e.g. B.Sc. Computer Engineering (Final Year)"
-                  className="w-full h-11 px-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent font-sans shadow-sm transition-all duration-300"
+                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans shadow-sm transition-all duration-300"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+                <label className="text-xs font-mono font-medium text-[#6B7280] block">
                   Skills & Core Expertise
                 </label>
                 <input
                   type="text"
                   name="skills"
                   placeholder="e.g. React, Next.js, Python, Scientific Writing"
-                  className="w-full h-11 px-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent font-sans shadow-sm transition-all duration-300"
+                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans shadow-sm transition-all duration-300"
                 />
               </div>
 
@@ -212,20 +212,20 @@ export default function JoinUsPage() {
 
             {/* Portfolio / Resume URL */}
             <div className="space-y-1.5">
-              <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+              <label className="text-xs font-mono font-medium text-[#6B7280] block">
                 Portfolio / GitHub / LinkedIn URL (Optional)
               </label>
               <input
                 type="url"
                 name="portfolioUrl"
                 placeholder="https://github.com/your-username"
-                className="w-full h-11 px-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-xs font-mono text-foreground placeholder:text-neutral focus:outline-none focus:border-accent shadow-sm transition-all duration-300"
+                className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs font-mono text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
               />
             </div>
 
             {/* Motivation Textarea */}
             <div className="space-y-1.5">
-              <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+              <label className="text-xs font-mono font-medium text-[#6B7280] block">
                 Why do you want to join Prometheus Voluntary Team? *
               </label>
               <textarea
@@ -233,20 +233,20 @@ export default function JoinUsPage() {
                 required
                 rows={5}
                 placeholder="Tell us about your drive, voluntary goals, and how you want to contribute..."
-                className="w-full p-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent font-sans leading-relaxed shadow-sm transition-all duration-300"
+                className="w-full p-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans leading-relaxed shadow-sm transition-all duration-300"
               />
             </div>
 
             {/* Submit Action */}
-            <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between">
-              <span className="text-[11px] font-mono text-neutral hidden sm:inline">
+            <div className="pt-4 border-t border-[#6B7280]/20 flex items-center justify-between">
+              <span className="text-[11px] font-mono text-[#6B7280] hidden sm:inline">
                 Prometheus HR Recruitment Policy
               </span>
 
               <Button
                 type="submit"
                 disabled={isPending}
-                className="gap-2 px-8 bg-accent hover:bg-accent-hover text-white rounded-xl shadow-accent transition-all duration-300"
+                className="gap-2 px-8 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md transition-all duration-300"
               >
                 {isPending ? (
                   <>

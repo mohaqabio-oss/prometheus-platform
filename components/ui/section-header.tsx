@@ -36,14 +36,14 @@ export function SectionHeader({
             {badgeText}
           </Badge>
         )}
-        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground dark:text-white">
+        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
           {title}{" "}
           {highlightedTitle && (
-            <span className="text-brand-orange">{highlightedTitle}</span>
+            <span className="text-[#E84A0C]">{highlightedTitle}</span>
           )}
         </h2>
         {description && (
-          <p className="text-brand-gray-400 text-sm sm:text-base leading-relaxed">
+          <p className="text-[#6B7280] text-sm sm:text-base leading-relaxed">
             {description}
           </p>
         )}

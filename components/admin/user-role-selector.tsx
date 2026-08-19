@@ -46,7 +46,7 @@ export function UserRoleSelector({ userId, currentRole }: UserRoleSelectorProps)
           value={role}
           onChange={handleRoleChange}
           disabled={loading}
-          className="h-8 px-2 bg-brand-dark-950 border border-brand-dark-800 rounded text-[11px] font-mono text-foreground dark:text-white focus:outline-none focus:border-brand-orange/60"
+          className="h-8 px-2 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-[11px] font-mono text-white focus:outline-none focus:border-[#E84A0C]"
         >
           <option value="ADMIN">ADMIN</option>
           <option value="HR_EDITOR">HR_EDITOR</option>
@@ -55,7 +55,7 @@ export function UserRoleSelector({ userId, currentRole }: UserRoleSelectorProps)
           <option value="MEMBER">MEMBER</option>
         </select>
         {loading && (
-          <Loader2 className="w-3 h-3 animate-spin absolute end-2 top-1/2 -translate-y-1/2 text-brand-orange" />
+          <Loader2 className="w-3 h-3 animate-spin absolute end-2 top-1/2 -translate-y-1/2 text-[#E84A0C]" />
         )}
       </div>
 
@@ -63,7 +63,7 @@ export function UserRoleSelector({ userId, currentRole }: UserRoleSelectorProps)
         onClick={handleDelete}
         disabled={loading}
         title="حذف الحساب"
-        className="p-1.5 rounded hover:bg-rose-500/20 text-brand-gray-500 hover:text-rose-400 transition-colors"
+        className="p-1.5 rounded-xl hover:bg-rose-500/20 text-[#6B7280] hover:text-rose-400 transition-colors"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>

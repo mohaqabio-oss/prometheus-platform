@@ -17,24 +17,24 @@ export default function LoginPage() {
         {/* Back Link */}
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-mono text-neutral hover:text-accent transition-all duration-300"
+          className="inline-flex items-center gap-2 text-xs font-mono text-[#6B7280] hover:text-[#E84A0C] transition-all duration-300"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Return to Prometheus Home</span>
         </Link>
 
         {/* Login Box */}
-        <Card className="p-8 bg-card border-neutral-200 dark:border-neutral-800 shadow-md rounded-2xl backdrop-blur-md transition-all duration-300">
+        <Card className="p-8 bg-[#0D0D0D] border border-[#6B7280]/20 shadow-md rounded-2xl backdrop-blur-md transition-all duration-300">
           
           {/* Brand Logo Header */}
           <div className="text-center space-y-3 mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-secondary/10 border border-secondary/20 text-accent shadow-sm mb-1">
-              <KeyRound className="w-6 h-6 text-accent" />
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-[#1A2B4A] border border-[#6B7280]/20 text-[#E84A0C] shadow-sm mb-1">
+              <KeyRound className="w-6 h-6 text-[#E84A0C]" />
             </div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-secondary dark:text-white">
-              STAFF & MEMBER <span className="text-accent">LOGIN</span>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-white">
+              STAFF & MEMBER <span className="text-[#E84A0C]">LOGIN</span>
             </h1>
-            <p className="text-xs text-neutral font-sans">
+            <p className="text-xs text-[#6B7280] font-sans">
               Enter your official credentials to access the Prometheus administrative dashboard.
             </p>
           </div>
@@ -50,35 +50,35 @@ export default function LoginPage() {
           {/* Form */}
           <form action={formAction} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+              <label className="text-xs font-mono font-medium text-[#6B7280] block">
                 Official Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral" />
+                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
                 <input
                   type="email"
                   name="email"
                   required
-                  placeholder="admin@prometheus.local"
-                  className="w-full h-11 pl-10 pr-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent transition-all duration-300 font-mono"
+                  placeholder="admin@mywebsite.com"
+                  className="w-full h-11 pl-10 pr-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] transition-all duration-300 font-mono"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-mono font-medium text-secondary dark:text-neutral-300 block">
+                <label className="text-xs font-mono font-medium text-[#6B7280] block">
                   Security Password
                 </label>
               </div>
               <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral" />
+                <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
                 <input
                   type="password"
                   name="password"
                   required
                   placeholder="••••••••••••"
-                  className="w-full h-11 pl-10 pr-4 bg-background border border-neutral-300 dark:border-neutral-700 rounded-xl text-sm text-foreground placeholder:text-neutral focus:outline-none focus:border-accent transition-all duration-300 font-mono"
+                  className="w-full h-11 pl-10 pr-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] transition-all duration-300 font-mono"
                 />
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isPending}
-              className="w-full h-11 text-sm font-semibold tracking-wider uppercase mt-2 gap-2 bg-accent hover:bg-accent-hover text-white rounded-xl shadow-accent transition-all duration-300"
+              className="w-full h-11 text-sm font-semibold tracking-wider uppercase mt-2 gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md transition-all duration-300"
             >
               {isPending ? (
                 <>

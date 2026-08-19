@@ -18,7 +18,6 @@ import {
   Menu,
   X,
   ArrowRight,
-  ShieldCheck,
   Award,
 } from "lucide-react";
 
@@ -125,35 +124,26 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full justify-between p-4 bg-background dark:bg-brand-dark-900 border-l border-border transition-colors duration-200">
+    <div className="flex flex-col h-full justify-between p-4 bg-[#0D0D0D] border-l border-[#6B7280]/20 transition-all duration-300">
       
       {/* Top Brand Block */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2 pt-2">
           <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-md bg-card dark:bg-brand-dark-850 border border-border flex items-center justify-center p-1">
-              {/* Light Mode Logo */}
-              <Image
-                src="/logo-light.PNG"
-                alt="Prometheus Admin"
-                width={24}
-                height={24}
-                className="w-6 h-6 object-contain block dark:hidden"
-              />
-              {/* Dark Mode Logo */}
+            <div className="w-8 h-8 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 flex items-center justify-center p-1">
               <Image
                 src="/logo-dark.PNG"
                 alt="Prometheus Admin"
                 width={24}
                 height={24}
-                className="w-6 h-6 object-contain hidden dark:block"
+                className="w-6 h-6 object-contain"
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-sm font-bold tracking-widest text-foreground dark:text-white leading-none">
+              <span className="font-display text-sm font-bold tracking-widest text-white leading-none">
                 بروميثيوس
               </span>
-              <span className="text-[9px] font-mono tracking-wider text-brand-orange uppercase mt-0.5">
+              <span className="text-[9px] font-mono tracking-wider text-[#E84A0C] uppercase mt-0.5">
                 لوحة الإدارة
               </span>
             </div>
@@ -161,7 +151,7 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
 
           <button
             onClick={() => setMobileOpen(false)}
-            className="md:hidden text-brand-gray-400 hover:text-white"
+            className="md:hidden text-[#6B7280] hover:text-white"
           >
             <X className="w-5 h-5" />
           </button>
@@ -178,7 +168,7 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
 
             return (
               <div key={group.groupLabel} className="space-y-1.5">
-                <p className="px-3 text-[10px] font-mono uppercase tracking-widest text-brand-gray-500 font-semibold">
+                <p className="px-3 text-[10px] font-mono uppercase tracking-widest text-[#6B7280] font-semibold">
                   {group.groupLabel}
                 </p>
                 <div className="space-y-0.5">
@@ -190,13 +180,13 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
                         href={item.href}
                         onClick={() => setMobileOpen(false)}
                         className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150",
+                          "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150",
                           isActive
-                            ? "bg-brand-dark-850 text-white border border-brand-dark-700 shadow-sm"
-                            : "text-brand-gray-400 hover:text-white hover:bg-brand-dark-850/60"
+                            ? "bg-[#1A2B4A] text-white border border-[#6B7280]/30 shadow-sm"
+                            : "text-[#6B7280] hover:text-white hover:bg-[#1A2B4A]/40"
                         )}
                       >
-                        <span className={cn(isActive ? "text-brand-orange" : "text-brand-gray-500")}>
+                        <span className={cn(isActive ? "text-[#E84A0C]" : "text-[#6B7280]")}>
                           {item.icon}
                         </span>
                         <span>{item.title}</span>
@@ -211,12 +201,12 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
       </div>
 
       {/* Bottom Footer Actions */}
-      <div className="pt-4 border-t border-brand-dark-800 space-y-2">
+      <div className="pt-4 border-t border-[#6B7280]/20 space-y-2">
         <Link
           href="/"
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-brand-gray-400 hover:text-white hover:bg-brand-dark-850 transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs text-[#6B7280] hover:text-white hover:bg-[#1A2B4A]/40 transition-colors"
         >
-          <ArrowRight className="w-3.5 h-3.5 text-brand-orange" />
+          <ArrowRight className="w-3.5 h-3.5 text-[#E84A0C]" />
           <span>العودة للموقع العام</span>
         </Link>
       </div>
@@ -235,7 +225,7 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
       <div className="md:hidden">
         <button
           onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-lg bg-brand-dark-900 border border-brand-dark-800 text-brand-gray-300 hover:text-white"
+          className="p-2 rounded-xl bg-[#0D0D0D] border border-[#6B7280]/20 text-[#6B7280] hover:text-white"
           aria-label="فتح القائمة الجانبية"
         >
           <Menu className="w-5 h-5" />
@@ -247,7 +237,7 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
               className="fixed inset-0 bg-black/70 backdrop-blur-sm"
               onClick={() => setMobileOpen(false)}
             />
-            <div className="relative z-10 w-72 h-full bg-brand-dark-900">
+            <div className="relative z-10 w-72 h-full bg-[#0D0D0D]">
               {sidebarContent}
             </div>
           </div>

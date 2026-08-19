@@ -1,14 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SectionHeader } from "@/components/ui/section-header";
 import { MemberCard } from "@/components/members/member-card";
-import { MOCK_MEMBERS } from "@/lib/data/mock-members";
-import { Search } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Search, Users } from "lucide-react";
+import { getPublicMembersAction } from "@/app/actions/hr-actions";
 
 export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDept, setSelectedDept] = useState<string>("الكل");
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadMembers() {
+      try {
+        const data = await getPublicMembersAction();
+        setMembers(data || []);
+      } catch (e) {
+        setMembers([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadMembers();
+  }, []);
 
   const departments = [
     "الكل",
@@ -18,12 +35,12 @@ export default function MembersPage() {
     "الموارد البشرية والعمليات",
   ];
 
-  const filteredMembers = MOCK_MEMBERS.filter((member) => {
+  const filteredMembers = members.filter((member) => {
     const matchesDept =
-      selectedDept === "الكل" || member.department === selectedDept;
+      selectedDept === "الكل" || member.department === selectedDept || member.departmentName === selectedDept;
     const matchesSearch =
-      member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.role.toLowerCase().includes(searchQuery.toLowerCase());
+      (member.name || member.fullName || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (member.role || member.title || "").toLowerCase().includes(searchQuery.toLowerCase());
     return matchesDept && matchesSearch;
   });
 
@@ -43,17 +60,17 @@ export default function MembersPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute start-3.5 top-1/2 -translate-y-1/2 text-brand-gray-500" />
+            <Search className="w-4 h-4 absolute start-3.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
             <input
               type="text"
               placeholder="ابحث باسم العضو أو المسمى الوظيفي..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 ps-10 pe-4 bg-brand-dark-900 border border-brand-dark-800 rounded-xl text-sm text-white placeholder:text-brand-gray-500 focus:outline-none focus:border-brand-orange/60 font-sans"
+              className="w-full h-11 ps-10 pe-4 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans transition-all duration-300"
             />
           </div>
 
-          <div className="text-xs font-mono text-brand-gray-400">
+          <div className="text-xs font-mono text-[#6B7280]">
             عدد الأعضاء المعروضين: <strong className="text-white">{filteredMembers.length} أعضاء</strong>
           </div>
 
@@ -67,8 +84,8 @@ export default function MembersPage() {
               onClick={() => setSelectedDept(dept)}
               className={`px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap cursor-pointer ${
                 selectedDept === dept
-                  ? "bg-brand-orange text-white font-bold shadow-md"
-                  : "bg-brand-dark-900 text-brand-gray-400 hover:text-white border border-brand-dark-800"
+                  ? "bg-[#E84A0C] text-white font-bold shadow-md"
+                  : "bg-[#0D0D0D] text-[#6B7280] hover:text-white border border-[#6B7280]/30"
               }`}
             >
               {dept}
@@ -77,12 +94,39 @@ export default function MembersPage() {
         </div>
       </div>
 
-      {/* Member Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {filteredMembers.map((member) => (
-          <MemberCard key={member.id} member={member} />
-        ))}
-      </div>
+      {/* Member Cards Grid or Clean Empty State */}
+      {loading ? (
+        <div className="text-center py-16 text-xs font-mono text-[#6B7280]">
+          جاري تحميل دليل الأعضاء...
+        </div>
+      ) : filteredMembers.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {filteredMembers.map((member) => (
+            <MemberCard
+              key={member.id}
+              member={{
+                id: member.id,
+                name: member.name || member.fullName,
+                role: member.role || member.title || "عضو متطوع",
+                department: member.department || member.departmentName || "عام",
+                avatarUrl: member.avatarUrl || member.photoUrl,
+                photoUrl: member.photoUrl || member.avatarUrl,
+                volunteerHours: member.volunteerHours || 0,
+              }}
+            />
+          ))}
+        </div>
+      ) : (
+        <Card className="p-12 text-center border border-dashed border-[#6B7280]/30 bg-[#0D0D0D] space-y-3">
+          <Users className="w-10 h-10 text-[#6B7280] mx-auto" />
+          <h3 className="font-display text-base font-bold text-white">
+            لا يوجد أعضاء حالياً
+          </h3>
+          <p className="text-xs text-[#6B7280] max-w-md mx-auto">
+            سيتم عرض دليل أعضاء الفريق الكادر فور اعتماد وتسجيل بيانات الأعضاء في القاعدة.
+          </p>
+        </Card>
+      )}
 
     </div>
   );

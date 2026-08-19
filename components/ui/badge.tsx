@@ -15,15 +15,15 @@ export function Badge({
       className={cn(
         "inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold uppercase tracking-wider transition-all duration-300 rounded-xl font-mono",
         {
-          "bg-accent/10 text-accent border border-accent/30":
+          "bg-[#E84A0C]/15 text-[#E84A0C] border border-[#E84A0C]/30":
             variant === "accent" || variant === "orange" || variant === "default",
-          "bg-highlight/15 text-amber-700 dark:text-highlight border border-highlight/30":
+          "bg-[#F5A623]/15 text-[#F5A623] border border-[#F5A623]/30":
             variant === "highlight",
-          "bg-secondary/10 text-secondary dark:text-white border border-secondary/30":
+          "bg-[#1A2B4A] text-white border border-[#6B7280]/30":
             variant === "secondary",
-          "border border-neutral-300 dark:border-neutral-700 bg-transparent text-neutral dark:text-neutral-300":
+          "border border-[#6B7280]/30 bg-transparent text-[#6B7280]":
             variant === "outline",
-          "bg-neutral-800 text-white border border-neutral-700":
+          "bg-[#0D0D0D] text-white border border-[#6B7280]/30":
             variant === "dark",
         },
         className

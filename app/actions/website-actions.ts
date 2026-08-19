@@ -18,9 +18,9 @@ const DEFAULT_SITE_SETTINGS: Record<string, string> = {
   "hero.subtitle": "منظمة مؤسسية تطوعية تهدف لنشر المعرفة الأكاديمية، بناء المنصات البرمجية، وإعادة تعريف العمل التطوعي الأكاديمي لدى الشباب.",
   "about.title": "إشعال المعرفة وتمكين العقول الشبابية",
   "about.description": "استلهاماً من رمزية بروميثيوس في إيصال المعرفة للنفع العام، يعمل فريقنا التطوعي برؤية هندسية وأكاديمية صارمة لبناء منصات تقنية وبحوث مفتوحة المصدر تخدم المجتمع.",
-  "stat.hours": "+600",
-  "stat.articles": "+45",
-  "stat.members": "+30",
+  "stat.hours": "0",
+  "stat.articles": "0",
+  "stat.members": "0",
   "stat.departments": "4",
   "partners.title": "شركاؤنا الداعمون والمؤسسات الراعية",
   "partners.subtitle": "نفخر بالتعاون مع المؤسسات التكنولوجية والمنابر الأكاديمية لدعم منصاتنا التطوعية المفتوحة.",
@@ -28,29 +28,7 @@ const DEFAULT_SITE_SETTINGS: Record<string, string> = {
 
 let MOCK_SITE_SETTINGS: Record<string, string> = { ...DEFAULT_SITE_SETTINGS };
 
-let MOCK_PARTNERS: PartnerRecord[] = [
-  {
-    id: "part-1",
-    name: "مؤسسة العراق التقنية",
-    logoUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80",
-    websiteUrl: "https://example.org",
-    order: 1,
-  },
-  {
-    id: "part-2",
-    name: "مبادرة البرمجيات المفتوحة",
-    logoUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80",
-    websiteUrl: "https://example.org",
-    order: 2,
-  },
-  {
-    id: "part-3",
-    name: "شبكة الباحثين الشباب",
-    logoUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=300&q=80",
-    websiteUrl: "https://example.org",
-    order: 3,
-  },
-];
+let MOCK_PARTNERS: PartnerRecord[] = [];
 
 // Helper: Require ADMIN Role for CMS mutations
 async function requireAdminRole() {
@@ -186,9 +164,9 @@ export async function getPublicWebsiteData() {
   const settings = await getSiteSettings();
   const partners = await getPartners();
 
-  let hoursCount = 600;
-  let articlesCount = 45;
-  let membersCount = 30;
+  let hoursCount = 0;
+  let articlesCount = 0;
+  let membersCount = 0;
 
   try {
     const totalHoursAgg = await prisma.member.aggregate({
@@ -200,15 +178,12 @@ export async function getPublicWebsiteData() {
     const countArticles = await prisma.article.count({
       where: { status: "PUBLISHED" },
     });
-    if (countArticles > 0) {
-      articlesCount = countArticles;
-    }
+    articlesCount = countArticles;
+
     const countMembers = await prisma.member.count({
       where: { status: "ACTIVE" },
     });
-    if (countMembers > 0) {
-      membersCount = countMembers;
-    }
+    membersCount = countMembers;
   } catch (e) {}
 
   const dynamicStats = [
@@ -257,4 +232,3 @@ export async function getPublicWebsiteData() {
     partners,
   };
 }
-
