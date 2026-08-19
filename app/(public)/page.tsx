@@ -70,11 +70,11 @@ export default async function HomePage() {
             <span>منصة مؤسسية وأكاديمية تطوعية</span>
           </div>
 
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
+          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold text-foreground dark:text-white tracking-tight leading-[1.1]">
             {heroTitle}
           </h1>
 
-          <p className="max-w-2xl mx-auto text-base sm:text-xl text-brand-gray-300 leading-relaxed font-sans font-normal">
+          <p className="max-w-2xl mx-auto text-base sm:text-xl text-foreground/80 dark:text-brand-gray-300 leading-relaxed font-sans font-normal">
             {heroSubtitle}
           </p>
 
@@ -90,7 +90,7 @@ export default async function HomePage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto text-sm font-medium border-brand-dark-700 text-brand-gray-300 hover:text-white"
+                className="w-full sm:w-auto text-sm font-medium border-border text-foreground dark:text-brand-gray-300 hover:text-foreground dark:hover:text-white"
               >
                 <span>تقديم طلب انضمام</span>
               </Button>
@@ -126,11 +126,11 @@ export default async function HomePage() {
           {/* Dynamic Stats Metric Cards Grid */}
           <div className="lg:col-span-6 grid grid-cols-2 gap-4">
             {dynamicStats.map((stat, i) => (
-              <Card key={i} className="p-6 bg-brand-dark-900/80 border-brand-dark-800 space-y-2">
+              <Card key={i} className="p-6 bg-card dark:bg-brand-dark-900/80 border-border dark:border-brand-dark-800 space-y-2">
                 <p className="font-display font-bold text-3xl sm:text-4xl text-brand-orange font-mono">
                   {stat.value}
                 </p>
-                <p className="text-xs sm:text-sm font-medium text-brand-gray-300 font-sans">
+                <p className="text-xs sm:text-sm font-medium text-foreground/80 dark:text-brand-gray-300 font-sans">
                   {stat.label}
                 </p>
               </Card>
@@ -154,15 +154,15 @@ export default async function HomePage() {
           {pillars.map((pillar) => (
             <Card
               key={pillar.id}
-              className="p-6 bg-brand-dark-900/70 border-brand-dark-800 card-hover-border space-y-4"
+              className="p-6 bg-card dark:bg-brand-dark-900/70 border-border dark:border-brand-dark-800 card-hover-border space-y-4"
             >
-              <div className="w-12 h-12 rounded-xl bg-brand-dark-850 border border-brand-dark-800 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-muted dark:bg-brand-dark-850 border border-border dark:border-brand-dark-800 flex items-center justify-center">
                 {getPillarIcon(pillar.icon)}
               </div>
-              <h3 className="font-display text-lg font-bold text-white">
+              <h3 className="font-display text-lg font-bold text-foreground dark:text-white">
                 {pillar.title}
               </h3>
-              <p className="text-xs sm:text-sm text-brand-gray-400 leading-relaxed">
+              <p className="text-xs sm:text-sm text-foreground/70 dark:text-brand-gray-400 leading-relaxed">
                 {pillar.description}
               </p>
             </Card>
@@ -174,19 +174,19 @@ export default async function HomePage() {
       {/* 4. BRAND IDENTITY & ETHOS */}
       {/* ========================================================================= */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl">
-        <Card className="p-8 sm:p-12 bg-brand-dark-900/90 border-brand-dark-800 space-y-8 relative overflow-hidden">
+        <Card className="p-8 sm:p-12 bg-card dark:bg-brand-dark-900/90 border-border dark:border-brand-dark-800 space-y-8 relative overflow-hidden">
           <div className="max-w-3xl space-y-6">
             <Badge variant="orange">{identity.badge}</Badge>
-            <h2 className="font-display text-2xl sm:text-4xl font-bold text-white leading-tight">
+            <h2 className="font-display text-2xl sm:text-4xl font-bold text-foreground dark:text-white leading-tight">
               {identity.title}
             </h2>
-            <blockquote className="text-brand-gray-300 italic text-base sm:text-lg border-r-2 border-brand-orange pr-4 font-sans leading-relaxed">
+            <blockquote className="text-foreground/80 dark:text-brand-gray-300 italic text-base sm:text-lg border-r-2 border-brand-orange pr-4 font-sans leading-relaxed">
               "{identity.quote}"
             </blockquote>
 
             <div className="pt-2 space-y-3">
               {identity.points.map((pt, index) => (
-                <div key={index} className="flex items-center gap-3 text-xs sm:text-sm text-brand-gray-300">
+                <div key={index} className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80 dark:text-brand-gray-300">
                   <CheckCircle2 className="w-4 h-4 text-brand-orange shrink-0" />
                   <span>{pt}</span>
                 </div>
@@ -216,25 +216,25 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {featuredArticles.map((article) => (
-            <Card key={article.id} className="p-6 bg-brand-dark-900/80 border-brand-dark-800 card-hover-border flex flex-col justify-between space-y-4">
+            <Card key={article.id} className="p-6 bg-card dark:bg-brand-dark-900/80 border-border dark:border-brand-dark-800 card-hover-border flex flex-col justify-between space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Badge variant="orange">{article.category}</Badge>
-                  <span className="text-[11px] font-mono text-brand-gray-500">{article.publishedAt}</span>
+                  <span className="text-[11px] font-mono text-muted-foreground">{article.publishedAt}</span>
                 </div>
 
-                <h3 className="font-display text-lg font-bold text-white hover:text-brand-orange transition-colors">
+                <h3 className="font-display text-lg font-bold text-foreground dark:text-white hover:text-brand-orange transition-colors">
                   <Link href={`/articles/${article.slug}`}>
                     {article.title}
                   </Link>
                 </h3>
 
-                <p className="text-xs text-brand-gray-400 line-clamp-3 leading-relaxed">
+                <p className="text-xs text-foreground/70 dark:text-brand-gray-400 line-clamp-3 leading-relaxed">
                   {article.excerpt}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-brand-dark-800 flex items-center justify-between text-xs font-mono text-brand-gray-500">
+              <div className="pt-4 border-t border-border dark:border-brand-dark-800 flex items-center justify-between text-xs font-mono text-muted-foreground">
                 <span>{article.author.name}</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
@@ -261,9 +261,9 @@ export default async function HomePage() {
             {partners.map((partner) => (
               <Card
                 key={partner.id}
-                className="p-6 bg-brand-dark-900/80 border-brand-dark-800 flex flex-col items-center justify-center space-y-3 hover:border-brand-orange/40 transition-colors group text-center"
+                className="p-6 bg-card dark:bg-brand-dark-900/80 border-border dark:border-brand-dark-800 flex flex-col items-center justify-center space-y-3 hover:border-brand-orange/40 transition-colors group text-center"
               >
-                <div className="w-16 h-16 rounded-xl bg-brand-dark-850 border border-brand-dark-700 p-2 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-16 h-16 rounded-xl bg-muted dark:bg-brand-dark-850 border border-border dark:border-brand-dark-700 p-2 flex items-center justify-center group-hover:scale-105 transition-transform">
                   <img
                     src={partner.logoUrl}
                     alt={partner.name}
@@ -271,7 +271,7 @@ export default async function HomePage() {
                   />
                 </div>
 
-                <p className="font-bold text-white text-xs sm:text-sm font-sans">{partner.name}</p>
+                <p className="font-bold text-foreground dark:text-white text-xs sm:text-sm font-sans">{partner.name}</p>
 
                 {partner.websiteUrl && (
                   <a
@@ -294,9 +294,9 @@ export default async function HomePage() {
       {/* 7. CALL TO ACTION / JOIN US */}
       {/* ========================================================================= */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-4xl text-center space-y-6">
-        <div className="p-10 rounded-2xl border border-brand-dark-800 bg-brand-dark-900/90 space-y-6 shadow-2xl">
+        <div className="p-10 rounded-2xl border border-border dark:border-brand-dark-800 bg-card dark:bg-brand-dark-900/90 space-y-6 shadow-2xl">
           <Badge variant="orange" className="mx-auto">انضم إلينا اليوم</Badge>
-          <h2 className="font-display text-2xl sm:text-4xl font-bold text-white">
+          <h2 className="font-display text-2xl sm:text-4xl font-bold text-foreground dark:text-white">
             هل ترغب في المساهمة بجهدك التطوعي؟
           </h2>
           <p className="text-xs sm:text-sm text-brand-gray-300 max-w-xl mx-auto leading-relaxed">

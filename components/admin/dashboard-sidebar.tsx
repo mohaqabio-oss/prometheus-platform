@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { RoleType } from "@prisma/client";
@@ -124,17 +125,32 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
   ];
 
   const sidebarContent = (
-    <div className="flex flex-col h-full justify-between p-4 bg-brand-dark-900 border-l border-brand-dark-800">
+    <div className="flex flex-col h-full justify-between p-4 bg-background dark:bg-brand-dark-900 border-l border-border transition-colors duration-200">
       
       {/* Top Brand Block */}
       <div className="space-y-6">
         <div className="flex items-center justify-between px-2 pt-2">
           <Link href="/admin/dashboard" className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-md bg-brand-dark-850 border border-brand-dark-700 flex items-center justify-center">
-              <span className="w-2 h-2 bg-brand-orange rounded-sm rotate-45" />
+            <div className="w-8 h-8 rounded-md bg-card dark:bg-brand-dark-850 border border-border flex items-center justify-center p-1">
+              {/* Light Mode Logo */}
+              <Image
+                src="/logo-light.PNG"
+                alt="Prometheus Admin"
+                width={24}
+                height={24}
+                className="w-6 h-6 object-contain block dark:hidden"
+              />
+              {/* Dark Mode Logo */}
+              <Image
+                src="/logo-dark.PNG"
+                alt="Prometheus Admin"
+                width={24}
+                height={24}
+                className="w-6 h-6 object-contain hidden dark:block"
+              />
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-sm font-bold tracking-widest text-white leading-none">
+              <span className="font-display text-sm font-bold tracking-widest text-foreground dark:text-white leading-none">
                 بروميثيوس
               </span>
               <span className="text-[9px] font-mono tracking-wider text-brand-orange uppercase mt-0.5">

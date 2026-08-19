@@ -22,18 +22,28 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-brand-dark-800 bg-background/90 dark:bg-brand-dark-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/90 dark:bg-brand-dark-950/80 backdrop-blur-md transition-colors duration-200">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 md:px-8">
         
-        {/* Brand Logo */}
+        {/* Brand Logo - Dual Theme Logos */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex items-center justify-center p-1 rounded-lg bg-brand-dark-900 border border-brand-dark-700 group-hover:border-brand-orange/60 transition-colors">
+          <div className="relative flex items-center justify-center p-1 rounded-lg bg-transparent border border-border group-hover:border-brand-orange/60 transition-colors">
+            {/* Light Mode Logo */}
             <Image
-              src="/logo.svg"
+              src="/logo-light.PNG"
               alt="فريق بروميثيوس التطوعي"
               width={32}
               height={32}
-              className="w-8 h-8 object-contain group-hover:scale-105 transition-transform"
+              className="w-8 h-8 object-contain block dark:hidden group-hover:scale-105 transition-transform"
+              priority
+            />
+            {/* Dark Mode Logo */}
+            <Image
+              src="/logo-dark.PNG"
+              alt="فريق بروميثيوس التطوعي"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain hidden dark:block group-hover:scale-105 transition-transform"
               priority
             />
           </div>
@@ -56,8 +66,10 @@ export function Navbar() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "transition-colors hover:text-white font-sans",
-                  isActive ? "text-brand-orange font-semibold" : "text-brand-gray-300"
+                  "transition-colors hover:text-brand-orange font-sans",
+                  isActive
+                    ? "text-brand-orange font-semibold"
+                    : "text-foreground/80 dark:text-brand-gray-300"
                 )}
               >
                 {link.name}
@@ -74,7 +86,7 @@ export function Navbar() {
             <Button
               variant="outline"
               size="sm"
-              className="gap-2 border-brand-dark-700 text-brand-gray-300 hover:text-white hover:border-brand-orange/40 text-xs"
+              className="gap-2 border-border text-foreground dark:text-brand-gray-300 hover:text-foreground dark:hover:text-white hover:border-brand-orange/40 text-xs"
             >
               <Shield className="w-3.5 h-3.5 text-brand-orange" />
               <span>دخول الكادر</span>
@@ -93,7 +105,7 @@ export function Navbar() {
           <ThemeToggle />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-brand-gray-300 hover:text-white"
+            className="p-2 text-foreground dark:text-brand-gray-300 hover:text-brand-orange"
             aria-label="القائمة الرئيسية"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -104,21 +116,21 @@ export function Navbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-brand-dark-800 bg-brand-dark-900/95 backdrop-blur-lg px-4 py-6 space-y-4 animate-fade-in">
+        <div className="md:hidden border-b border-border bg-background/95 dark:bg-brand-dark-900/95 backdrop-blur-lg px-4 py-6 space-y-4 animate-fade-in">
           <div className="flex flex-col space-y-3 text-sm font-medium">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-brand-gray-300 hover:text-brand-orange py-1"
+                className="text-foreground dark:text-brand-gray-300 hover:text-brand-orange py-1"
               >
                 {link.name}
               </Link>
             ))}
           </div>
 
-          <div className="pt-4 border-t border-brand-dark-800 flex flex-col gap-2">
+          <div className="pt-4 border-t border-border flex flex-col gap-2">
             <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="outline" size="sm" className="w-full justify-center gap-2 text-xs">
                 <Shield className="w-3.5 h-3.5 text-brand-orange" />
