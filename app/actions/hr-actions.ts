@@ -55,47 +55,123 @@ export async function createMemberAction(prevState: any, formData: FormData) {
   const title = formData.get("title")?.toString().trim() || "Voluntary Contributor";
   const departmentName = formData.get("departmentName")?.toString() || "Technology";
   const initialHours = parseFloat(formData.get("initialHours")?.toString() || "0");
+  const profileImage = formData.get("profileImage")?.toString() || null;
+  const customSectionsJson = formData.get("customSections")?.toString();
+  let customSections: any = null;
+  if (customSectionsJson) {
+    try {
+      customSections = JSON.parse(customSectionsJson);
+    } catch (e) {}
+  }
 
   if (!fullName || !email) {
     return { error: "Full Name and Email address are required." };
   }
 
   try {
-    // DB insertion attempt
-    try {
-      await prisma.member.create({
-        data: {
-          fullName,
-          title,
-          status: "ACTIVE",
-          volunteerHours: Math.max(0, Math.floor(initialHours)),
-          user: {
-            connectOrCreate: {
-              where: { email },
-              create: { email },
-            },
+    let departmentId: string | undefined = undefined;
+    if (departmentName) {
+      const dept = await prisma.department.findFirst({
+        where: { name: departmentName },
+      });
+      if (dept) departmentId = dept.id;
+    }
+
+    await prisma.member.create({
+      data: {
+        fullName,
+        title,
+        status: "ACTIVE",
+        volunteerHours: Math.max(0, Math.floor(initialHours)),
+        avatarUrl: profileImage || undefined,
+        profileImage: profileImage || undefined,
+        customSections: customSections || undefined,
+        ...(departmentId ? { department: { connect: { id: departmentId } } } : {}),
+        user: {
+          connectOrCreate: {
+            where: { email },
+            create: { email },
           },
         },
-      });
-    } catch (dbErr) {
-      // Local mock fallback
-      const newMember: LocalMemberRecord = {
-        id: `mem-${Date.now()}`,
-        fullName,
-        email,
-        title,
-        departmentName,
-        volunteerHours: initialHours,
-        status: "ACTIVE",
-        createdAt: new Date().toISOString(),
-      };
-      MOCK_HR_MEMBERS.unshift(newMember);
-    }
+      },
+    });
   } catch (err: any) {
     return { error: err.message || "Failed to create member." };
   }
 
   revalidatePath("/admin/members");
+  revalidatePath("/members");
+  return { success: true };
+}
+
+// 1b. Update Member
+export async function updateMemberAction(prevState: any, formData: FormData) {
+  await requireHRPermission();
+
+  const id = formData.get("id")?.toString();
+  const fullName = formData.get("fullName")?.toString().trim();
+  const title = formData.get("title")?.toString().trim();
+  const departmentName = formData.get("departmentName")?.toString();
+  const volunteerHours = parseFloat(formData.get("volunteerHours")?.toString() || "0");
+  const status = (formData.get("status")?.toString() || "ACTIVE") as any;
+  const profileImage = formData.get("profileImage")?.toString() || null;
+  const customSectionsJson = formData.get("customSections")?.toString();
+  let customSections: any = null;
+  if (customSectionsJson) {
+    try {
+      customSections = JSON.parse(customSectionsJson);
+    } catch (e) {}
+  }
+
+  if (!id || !fullName) {
+    return { error: "Member ID and Full Name are required." };
+  }
+
+  try {
+    let departmentId: string | undefined = undefined;
+    if (departmentName) {
+      const dept = await prisma.department.findFirst({
+        where: { name: departmentName },
+      });
+      if (dept) departmentId = dept.id;
+    }
+
+    await prisma.member.update({
+      where: { id },
+      data: {
+        fullName,
+        title,
+        status,
+        volunteerHours: Math.max(0, Math.floor(volunteerHours)),
+        avatarUrl: profileImage || undefined,
+        profileImage: profileImage || undefined,
+        customSections: customSections || undefined,
+        ...(departmentId ? { department: { connect: { id: departmentId } } } : {}),
+      },
+    });
+  } catch (err: any) {
+    return { error: err.message || "Failed to update member." };
+  }
+
+  revalidatePath("/admin/members");
+  revalidatePath("/members");
+  return { success: true };
+}
+
+// 1c. Delete Member
+export async function deleteMemberAction(memberId: string) {
+  await requireHRPermission();
+
+  try {
+    await prisma.member.delete({
+      where: { id: memberId },
+    });
+  } catch (err: any) {
+    return { error: err.message || "Failed to delete member." };
+  }
+
+  revalidatePath("/admin/members");
+  revalidatePath("/members");
   return { success: true };
 }
 

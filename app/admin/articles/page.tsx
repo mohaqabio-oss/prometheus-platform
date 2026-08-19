@@ -6,11 +6,14 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AdminDeleteArticleButton } from "@/components/admin/admin-delete-article-button";
 import { ArticleStatus } from "@prisma/client";
 import {
   PlusCircle,
   Edit,
   AlertTriangle,
+  FileText,
+  Eye,
 } from "lucide-react";
 
 export default async function AdminArticlesPage() {
@@ -25,7 +28,7 @@ export default async function AdminArticlesPage() {
   const getStatusBadge = (status: ArticleStatus) => {
     switch (status) {
       case "DRAFT":
-        return <Badge variant="dark" className="bg-zinc-800 text-zinc-300 border-zinc-700">مسودة</Badge>;
+        return <Badge variant="dark" className="bg-[#1A2B4A] text-[#6B7280] border-[#6B7280]/30">مسودة</Badge>;
       case "SUBMITTED":
         return <Badge variant="dark" className="bg-blue-500/15 text-blue-400 border-blue-500/30">مقدمة للمراجعة</Badge>;
       case "IN_REVIEW":
@@ -45,40 +48,40 @@ export default async function AdminArticlesPage() {
       {/* Header */}
       <SectionHeader
         badgeText="إدارة التحرير والنشر"
-        title="إدارة مقالات"
-        highlightedTitle="منشورات بروميثيوس"
+        title="إدارة مجلة ومقالات"
+        highlightedTitle="بروميثيوس"
         description={
           isAuthorOnly
             ? "إدارة المقالات والمسودات الخاصة بك وتقديمها لهيئة التحرير للمراجعة والنشر."
-            : "مراجعة المقالات المقدمة، طلب التعديلات التحريرية، واعتماد النشر الرسمي."
+            : "لوحة تحكم المجلة العلمية: كتابة المقالات بمحرر غني، التحرير، حذف المقالات، واعتماد النشر الرسمي."
         }
         action={
           <Link href="/admin/articles/new">
-            <Button size="sm" className="gap-1.5 text-xs">
+            <Button size="sm" className="gap-1.5 text-xs bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md">
               <PlusCircle className="w-4 h-4" />
-              <span>كتابة مقالة جديدة</span>
+              <span>كتابة مقالة جديدة (WordPress Editor)</span>
             </Button>
           </Link>
         }
       />
 
       {/* Role Notice Banner */}
-      <div className="p-4 rounded-xl bg-brand-dark-900 border border-brand-dark-800 flex items-center justify-between text-xs font-mono">
-        <span className="text-brand-gray-300">
+      <div className="p-4 rounded-2xl bg-[#0D0D0D] border border-[#6B7280]/20 flex items-center justify-between text-xs font-mono">
+        <span className="text-[#6B7280]">
           مسجل الدخول باسم <strong className="text-white">{session?.fullName}</strong> ({session?.roles.join(", ")})
         </span>
-        <span className="text-brand-orange">
-          {isAuthorOnly ? "عرض الكاتب (مقالاتك الشخصية فقط)" : "عرض هيئة التحرير (جميع المقالات)"}
+        <span className="text-[#E84A0C]">
+          {isAuthorOnly ? "عرض الكاتب (مقالاتك الشخصية)" : "عرض هيئة التحرير (جميع المقالات)"}
         </span>
       </div>
 
       {/* Data Table Container */}
-      <Card className="p-0 bg-brand-dark-900/80 border-brand-dark-800 overflow-hidden">
+      <Card className="p-0 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-right text-xs">
             
             {/* Table Header */}
-            <thead className="bg-brand-dark-850 border-b border-brand-dark-800 text-brand-gray-400 font-mono uppercase tracking-wider">
+            <thead className="bg-[#1A2B4A] border-b border-[#6B7280]/20 text-[#6B7280] font-mono uppercase tracking-wider">
               <tr>
                 <th className="p-4">عنوان المقالة والملخص</th>
                 <th className="p-4">الكاتب</th>
@@ -90,20 +93,20 @@ export default async function AdminArticlesPage() {
             </thead>
 
             {/* Table Body */}
-            <tbody className="divide-y divide-brand-dark-800/60">
+            <tbody className="divide-y divide-[#6B7280]/20">
               {articles.length > 0 ? (
                 articles.map((art) => (
-                  <tr key={art.id} className="hover:bg-brand-dark-850/50 transition-colors">
+                  <tr key={art.id} className="hover:bg-[#1A2B4A]/40 transition-colors">
                     
                     {/* Title */}
                     <td className="p-4 max-w-xs sm:max-w-sm">
-                      <p className="font-display font-bold text-white text-sm hover:text-brand-orange transition-colors">
+                      <p className="font-display font-bold text-white text-sm hover:text-[#E84A0C] transition-colors">
                         <Link href={`/admin/articles/${art.id}/edit`}>
                           {art.title}
                         </Link>
                       </p>
                       {art.excerpt && (
-                        <p className="text-brand-gray-400 text-[11px] line-clamp-1 mt-0.5 font-sans">
+                        <p className="text-[#6B7280] text-[11px] line-clamp-1 mt-0.5 font-sans">
                           {art.excerpt}
                         </p>
                       )}
@@ -116,13 +119,13 @@ export default async function AdminArticlesPage() {
                     </td>
 
                     {/* Author */}
-                    <td className="p-4 font-medium text-brand-gray-300">
+                    <td className="p-4 font-medium text-white">
                       {art.authorName}
                     </td>
 
                     {/* Category */}
                     <td className="p-4">
-                      <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-brand-dark-850 text-brand-gray-400 border border-brand-dark-800">
+                      <span className="px-2.5 py-1 rounded-xl font-mono text-[10px] bg-[#1A2B4A] text-white border border-[#6B7280]/30">
                         {art.categoryName}
                       </span>
                     </td>
@@ -133,26 +136,38 @@ export default async function AdminArticlesPage() {
                     </td>
 
                     {/* Date */}
-                    <td className="p-4 font-mono text-brand-gray-500 text-[11px]">
-                      {new Date(art.createdAt).toLocaleDateString("ar-EG")}
+                    <td className="p-4 font-mono text-[#6B7280] text-[11px]">
+                      {new Date(art.createdAt).toLocaleDateString("ar-SA")}
                     </td>
 
                     {/* Actions */}
                     <td className="p-4 text-left">
-                      <Link href={`/admin/articles/${art.id}/edit`}>
-                        <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs gap-1">
-                          <Edit className="w-3.5 h-3.5" />
-                          <span>المراجعة والتحرير</span>
-                        </Button>
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        {art.status === "PUBLISHED" && (
+                          <Link href={`/articles/${art.slug}`} target="_blank">
+                            <Button variant="outline" size="sm" className="h-8 px-2 text-xs rounded-xl border-[#6B7280]/30 text-white">
+                              <Eye className="w-3.5 h-3.5" />
+                            </Button>
+                          </Link>
+                        )}
+                        <Link href={`/admin/articles/${art.id}/edit`}>
+                          <Button variant="outline" size="sm" className="h-8 px-2.5 text-xs gap-1 rounded-xl border-[#6B7280]/30 text-white hover:text-[#E84A0C]">
+                            <Edit className="w-3.5 h-3.5" />
+                            <span>تعديل</span>
+                          </Button>
+                        </Link>
+                        <AdminDeleteArticleButton articleId={art.id} articleTitle={art.title} />
+                      </div>
                     </td>
 
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-brand-gray-500 font-mono">
-                    لا توجد مقالات في المسار الحالي.
+                  <td colSpan={6} className="p-12 text-center text-[#6B7280] font-mono space-y-2">
+                    <FileText className="w-8 h-8 text-[#6B7280] mx-auto mb-2" />
+                    <p className="text-white font-bold">لا توجد مقالات في المسار الحالي</p>
+                    <p className="text-xs">اضغط على زر "كتابة مقالة جديدة" لإنشاء أول مقالة بمحرر WordPress.</p>
                   </td>
                 </tr>
               )}

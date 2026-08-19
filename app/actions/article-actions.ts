@@ -292,3 +292,67 @@ export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
   return MOCK_DB_ARTICLES;
 }
 
+// 6. Update Article
+export async function updateArticleAction(prevState: any, formData: FormData) {
+  const session = await requireAuth(["AUTHOR", "POST_EDITOR", "ADMIN"]);
+
+  const id = formData.get("id")?.toString();
+  const title = formData.get("title")?.toString().trim();
+  const excerpt = formData.get("excerpt")?.toString().trim() || "";
+  const content = formData.get("content")?.toString().trim();
+  const categoryName = formData.get("categoryName")?.toString() || "Technology";
+  const coverImage = formData.get("coverImage")?.toString() || "";
+  const status = (formData.get("status")?.toString() || "DRAFT") as ArticleStatus;
+
+  if (!id || !title || !content) {
+    return { error: "Article ID, title, and content are required." };
+  }
+
+  try {
+    let categoryId: string | undefined = undefined;
+    if (categoryName) {
+      const cat = await prisma.category.findFirst({
+        where: { name: categoryName },
+      });
+      if (cat) categoryId = cat.id;
+    }
+
+    await prisma.article.update({
+      where: { id },
+      data: {
+        title,
+        excerpt,
+        content,
+        coverImage,
+        status,
+        ...(status === "PUBLISHED" ? { publishedAt: new Date() } : {}),
+        ...(categoryId ? { categoryId } : {}),
+      },
+    });
+  } catch (err: any) {
+    if (err.message === "NEXT_REDIRECT") throw err;
+    return { error: err.message || "Failed to update article." };
+  }
+
+  revalidatePath("/admin/articles");
+  revalidatePath("/articles");
+  redirect("/admin/articles");
+}
+
+// 7. Delete Article
+export async function deleteArticleAction(articleId: string) {
+  await requireAuth(["POST_EDITOR", "ADMIN"]);
+
+  try {
+    await prisma.article.delete({
+      where: { id: articleId },
+    });
+  } catch (err: any) {
+    return { error: err.message || "Failed to delete article." };
+  }
+
+  revalidatePath("/admin/articles");
+  revalidatePath("/articles");
+  return { success: true };
+}
+

@@ -90,7 +90,7 @@ export default async function AdminDashboardPage() {
             </span>
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            أهلاً بك مجدداً، <span className="text-brand-orange">{firstName}</span>
+            Mohammed Qaher Assi
           </h1>
           <p className="text-xs sm:text-sm text-brand-gray-400 mt-1">
             نظرة عامة على أداء فريق بروميثيوس التطوعي وسجلات الأنشطة المؤسسية

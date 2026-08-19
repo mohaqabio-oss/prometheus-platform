@@ -128,10 +128,12 @@ model Member {
   title          String?
   bio            String?      @db.Text
   avatarUrl      String?
+  profileImage   String?
   phone          String?
   joinDate       DateTime     @default(now())
   status         MemberStatus @default(ACTIVE)
   volunteerHours Int          @default(0)
+  customSections Json?
 
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
