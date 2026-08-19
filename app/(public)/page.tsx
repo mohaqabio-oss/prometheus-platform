@@ -4,83 +4,123 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/ui/section-header";
-import { getSiteSettings, getPartners } from "@/app/actions/website-actions";
-import { MOCK_HOME_DATA } from "@/lib/data/mock-home";
-import { MOCK_ARTICLES } from "@/lib/data/mock-articles";
+import { getPublicWebsiteData } from "@/app/actions/website-actions";
 import {
-  Code,
-  Microscope,
-  BookOpen,
-  Users,
   ArrowLeft,
+  BookOpen,
+  Code2,
+  Users2,
+  GraduationCap,
+  Sparkles,
   CheckCircle2,
   Clock,
-  Sparkles,
-  Building2,
   ExternalLink,
 } from "lucide-react";
 
+export const revalidate = 60;
+
 export default async function HomePage() {
-  const settings = await getSiteSettings();
-  const partners = await getPartners();
+  const { settings, dynamicStats, featuredArticles, partners } =
+    await getPublicWebsiteData();
 
-  const { pillars, identity } = MOCK_HOME_DATA;
-  const featuredArticles = MOCK_ARTICLES.slice(0, 3);
+  const heroTitle =
+    settings["hero.title"] || "فريق بروميثيوس التطوعي";
+  const heroSubtitle =
+    settings["hero.subtitle"] ||
+    "مؤسسة تطوعية أكاديمية تعنى بتطوير المنصات البرمجية، نشر المقالات والبحوث المفتوحة، وتدريب الطاقات الشبابية.";
 
-  const heroTitle = settings["hero.title"] || MOCK_HOME_DATA.hero.title;
-  const heroSubtitle = settings["hero.subtitle"] || MOCK_HOME_DATA.hero.subtitle;
-  const aboutTitle = settings["about.title"] || MOCK_HOME_DATA.about.title;
-  const aboutDescription = settings["about.description"] || MOCK_HOME_DATA.about.description;
+  const aboutTitle =
+    settings["about.title"] ||
+    "منظمة تطوعية تسعى للنهوض بالواقع الأكاديمي والتقني";
+  const aboutDescription =
+    settings["about.description"] ||
+    "تأسس فريق بروميثيوس التطوعي بهدف سد الثغرة بين الدراسة الأكاديمية وسوق العمل التقني، من خلال مشاريع حقيقية وأبحاث رصينة.";
 
-  const dynamicStats = [
-    { label: "ساعات التطوع الموثقة", value: settings["stat.hours"] || "+600" },
-    { label: "الأوراق والمقالات العلمية", value: settings["stat.articles"] || "+45" },
-    { label: "الأعضاء الفاعلون", value: settings["stat.members"] || "+30" },
-    { label: "الأقسام التخصصية", value: settings["stat.departments"] || "4" },
+  const pillars = [
+    {
+      id: "tech",
+      title: "الهندسة البرمجية والتطوير",
+      description:
+        "بناء المنصات الرقمية والتطبيقات مفتوحة المصدر اعتماداً على أحدث التقنيات البرمجية.",
+      icon: "code",
+    },
+    {
+      id: "research",
+      title: "البحث العلمي والتحليل",
+      description:
+        "إعداد الأوراق والبحوث المنهجية وتحليل البيانات لدعم الحصيلة العلمية للمجتمع.",
+      icon: "book",
+    },
+    {
+      id: "edu",
+      title: "التعليم وصناعة المحتوى",
+      description:
+        "تقديم ورش عمل تخصصية وكتابة مقالات تعليمية مبسطة باللغة العربية.",
+      icon: "grad",
+    },
+    {
+      id: "hr",
+      title: "الموارد البشرية والعمليات",
+      description:
+        "إدارة وتنظيم الطاقات التطوعية وتوجيه الكوادر نحو المكان المناسب لإمكانياتهم.",
+      icon: "users",
+    },
   ];
+
+  const identity = {
+    badge: "الهوية والرسالة",
+    title: "شعارنا: المعرفة حق متاح، والتطوع أسلوب حياة",
+    quote:
+      "نسعى لتوفير بيئة تطوعية نضيج تتيح للشاب العربي اكتساب الخبرة البرمجية والبحثية المباشرة مع خدمة المجتمع.",
+    points: [
+      "مشاريع برمجية مفتوحة المصدر 100%",
+      "معايير نشر أكاديمية صارمة للمقالات والبحوث",
+      "شهادات تطوعية رسمية وموثقة إلكترونياً",
+      "بيئة تعاونية تشجع العمل الجماعي والابتكار",
+    ],
+  };
 
   const getPillarIcon = (iconName: string) => {
     switch (iconName) {
-      case "Code":
-        return <Code className="w-6 h-6 text-brand-orange" />;
-      case "Microscope":
-        return <Microscope className="w-6 h-6 text-brand-orange" />;
-      case "BookOpen":
-        return <BookOpen className="w-6 h-6 text-brand-orange" />;
-      case "Users":
-        return <Users className="w-6 h-6 text-brand-orange" />;
+      case "code":
+        return <Code2 className="w-6 h-6 text-accent" />;
+      case "book":
+        return <BookOpen className="w-6 h-6 text-highlight" />;
+      case "grad":
+        return <GraduationCap className="w-6 h-6 text-accent" />;
+      case "users":
+        return <Users2 className="w-6 h-6 text-highlight" />;
       default:
-        return <Sparkles className="w-6 h-6 text-brand-orange" />;
+        return <Sparkles className="w-6 h-6 text-accent" />;
     }
   };
 
   return (
-    <div className="space-y-20 sm:space-y-28 pb-20">
+    <div className="space-y-20 pb-20">
       
       {/* ========================================================================= */}
       {/* 1. HERO SECTION */}
       {/* ========================================================================= */}
-      <section className="relative pt-20 pb-16 md:pt-32 md:pb-24 overflow-hidden bg-grid-pattern border-b border-brand-dark-800">
-        <div className="absolute inset-0 radial-glow-orange pointer-events-none" />
-
+      <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden bg-grid-pattern radial-glow-orange transition-all duration-300">
+        
         <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-5xl relative z-10 text-center space-y-8">
           
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-dark-700 bg-brand-dark-900/90 px-4 py-1.5 text-xs font-mono text-brand-gray-300 backdrop-blur-sm animate-fade-in">
-            <span className="w-2 h-2 rounded-full bg-brand-orange animate-pulse" />
+          <div className="inline-flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-4 py-1.5 text-xs font-mono text-accent backdrop-blur-sm animate-fade-in">
+            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             <span>منصة مؤسسية وأكاديمية تطوعية</span>
           </div>
 
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold text-foreground dark:text-white tracking-tight leading-[1.1]">
+          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold text-secondary dark:text-white tracking-tight leading-[1.1]">
             {heroTitle}
           </h1>
 
-          <p className="max-w-2xl mx-auto text-base sm:text-xl text-foreground/80 dark:text-brand-gray-300 leading-relaxed font-sans font-normal">
+          <p className="max-w-2xl mx-auto text-base sm:text-xl text-neutral dark:text-neutral-300 leading-relaxed font-sans font-normal">
             {heroSubtitle}
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/articles">
-              <Button size="lg" className="w-full sm:w-auto gap-2 text-sm font-medium">
+              <Button size="lg" className="w-full sm:w-auto gap-2 text-sm font-medium bg-accent hover:bg-accent-hover text-white rounded-xl shadow-accent transition-all duration-300">
                 <span>تصفح منشورات بروميثيوس</span>
                 <ArrowLeft className="w-4 h-4" />
               </Button>
@@ -90,7 +130,7 @@ export default async function HomePage() {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full sm:w-auto text-sm font-medium border-border text-foreground dark:text-brand-gray-300 hover:text-foreground dark:hover:text-white"
+                className="w-full sm:w-auto text-sm font-medium border-neutral-300 dark:border-neutral-700 text-secondary dark:text-neutral-300 hover:text-accent hover:border-accent/40 rounded-xl transition-all duration-300"
               >
                 <span>تقديم طلب انضمام</span>
               </Button>
@@ -115,9 +155,9 @@ export default async function HomePage() {
 
             <div className="pt-4">
               <Link href="/join-us">
-                <Button variant="outline" size="md" className="gap-2 text-xs">
+                <Button variant="outline" size="md" className="gap-2 text-xs rounded-xl border-neutral-300 dark:border-neutral-700">
                   <span>تعرّف على آلية الانضمام</span>
-                  <ArrowLeft className="w-4 h-4 text-brand-orange" />
+                  <ArrowLeft className="w-4 h-4 text-accent" />
                 </Button>
               </Link>
             </div>
@@ -126,11 +166,11 @@ export default async function HomePage() {
           {/* Dynamic Stats Metric Cards Grid */}
           <div className="lg:col-span-6 grid grid-cols-2 gap-4">
             {dynamicStats.map((stat, i) => (
-              <Card key={i} className="p-6 bg-card dark:bg-brand-dark-900/80 border-border dark:border-brand-dark-800 space-y-2">
-                <p className="font-display font-bold text-3xl sm:text-4xl text-brand-orange font-mono">
+              <Card key={i} className="p-6 bg-card border-neutral-200 dark:border-neutral-800 space-y-2 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+                <p className="font-display font-bold text-3xl sm:text-4xl text-accent font-mono">
                   {stat.value}
                 </p>
-                <p className="text-xs sm:text-sm font-medium text-foreground/80 dark:text-brand-gray-300 font-sans">
+                <p className="text-xs sm:text-sm font-medium text-neutral dark:text-neutral-300 font-sans">
                   {stat.label}
                 </p>
               </Card>
@@ -154,15 +194,15 @@ export default async function HomePage() {
           {pillars.map((pillar) => (
             <Card
               key={pillar.id}
-              className="p-6 bg-card dark:bg-brand-dark-900/70 border-border dark:border-brand-dark-800 card-hover-border space-y-4"
+              className="p-6 bg-card border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-4 shadow-sm hover:shadow-md transition-all duration-300"
             >
-              <div className="w-12 h-12 rounded-xl bg-muted dark:bg-brand-dark-850 border border-border dark:border-brand-dark-800 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
                 {getPillarIcon(pillar.icon)}
               </div>
-              <h3 className="font-display text-lg font-bold text-foreground dark:text-white">
+              <h3 className="font-display text-lg font-bold text-secondary dark:text-white">
                 {pillar.title}
               </h3>
-              <p className="text-xs sm:text-sm text-foreground/70 dark:text-brand-gray-400 leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral leading-relaxed">
                 {pillar.description}
               </p>
             </Card>
@@ -174,20 +214,20 @@ export default async function HomePage() {
       {/* 4. BRAND IDENTITY & ETHOS */}
       {/* ========================================================================= */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl">
-        <Card className="p-8 sm:p-12 bg-card dark:bg-brand-dark-900/90 border-border dark:border-brand-dark-800 space-y-8 relative overflow-hidden">
+        <Card className="p-8 sm:p-12 bg-card border-neutral-200 dark:border-neutral-800 rounded-2xl space-y-8 relative overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
           <div className="max-w-3xl space-y-6">
-            <Badge variant="orange">{identity.badge}</Badge>
-            <h2 className="font-display text-2xl sm:text-4xl font-bold text-foreground dark:text-white leading-tight">
+            <Badge variant="accent">{identity.badge}</Badge>
+            <h2 className="font-display text-2xl sm:text-4xl font-bold text-secondary dark:text-white leading-tight">
               {identity.title}
             </h2>
-            <blockquote className="text-foreground/80 dark:text-brand-gray-300 italic text-base sm:text-lg border-r-2 border-brand-orange pr-4 font-sans leading-relaxed">
+            <blockquote className="text-neutral dark:text-neutral-300 italic text-base sm:text-lg border-r-2 border-accent pr-4 font-sans leading-relaxed">
               "{identity.quote}"
             </blockquote>
 
             <div className="pt-2 space-y-3">
               {identity.points.map((pt, index) => (
-                <div key={index} className="flex items-center gap-3 text-xs sm:text-sm text-foreground/80 dark:text-brand-gray-300">
-                  <CheckCircle2 className="w-4 h-4 text-brand-orange shrink-0" />
+                <div key={index} className="flex items-center gap-3 text-xs sm:text-sm text-neutral dark:text-neutral-300">
+                  <CheckCircle2 className="w-4 h-4 text-accent shrink-0" />
                   <span>{pt}</span>
                 </div>
               ))}
@@ -207,34 +247,34 @@ export default async function HomePage() {
             description="مجموعة مختارة من المقالات المنهجية والأبحاث الأكاديمية المصاغة بأسلوب رصين."
           />
           <Link href="/articles" className="shrink-0">
-            <Button variant="outline" size="sm" className="gap-2 text-xs">
+            <Button variant="outline" size="sm" className="gap-2 text-xs rounded-xl border-neutral-300 dark:border-neutral-700">
               <span>جميع المقالات</span>
-              <ArrowLeft className="w-4 h-4 text-brand-orange" />
+              <ArrowLeft className="w-4 h-4 text-accent" />
             </Button>
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {featuredArticles.map((article) => (
-            <Card key={article.id} className="p-6 bg-card dark:bg-brand-dark-900/80 border-border dark:border-brand-dark-800 card-hover-border flex flex-col justify-between space-y-4">
+            <Card key={article.id} className="p-6 bg-card border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Badge variant="orange">{article.category}</Badge>
-                  <span className="text-[11px] font-mono text-muted-foreground">{article.publishedAt}</span>
+                  <Badge variant="accent">{article.category}</Badge>
+                  <span className="text-[11px] font-mono text-neutral">{article.publishedAt}</span>
                 </div>
 
-                <h3 className="font-display text-lg font-bold text-foreground dark:text-white hover:text-brand-orange transition-colors">
+                <h3 className="font-display text-lg font-bold text-secondary dark:text-white hover:text-accent transition-all duration-300">
                   <Link href={`/articles/${article.slug}`}>
                     {article.title}
                   </Link>
                 </h3>
 
-                <p className="text-xs text-foreground/70 dark:text-brand-gray-400 line-clamp-3 leading-relaxed">
+                <p className="text-xs text-neutral line-clamp-3 leading-relaxed">
                   {article.excerpt}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-border dark:border-brand-dark-800 flex items-center justify-between text-xs font-mono text-muted-foreground">
+              <div className="pt-4 border-t border-neutral-200 dark:border-neutral-800 flex items-center justify-between text-xs font-mono text-neutral">
                 <span>{article.author.name}</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
@@ -261,9 +301,9 @@ export default async function HomePage() {
             {partners.map((partner) => (
               <Card
                 key={partner.id}
-                className="p-6 bg-card dark:bg-brand-dark-900/80 border-border dark:border-brand-dark-800 flex flex-col items-center justify-center space-y-3 hover:border-brand-orange/40 transition-colors group text-center"
+                className="p-6 bg-card border-neutral-200 dark:border-neutral-800 rounded-2xl flex flex-col items-center justify-center space-y-3 hover:border-accent/40 shadow-sm hover:shadow-md transition-all duration-300 group text-center"
               >
-                <div className="w-16 h-16 rounded-xl bg-muted dark:bg-brand-dark-850 border border-border dark:border-brand-dark-700 p-2 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-16 h-16 rounded-xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-2 flex items-center justify-center group-hover:scale-105 transition-all duration-300">
                   <img
                     src={partner.logoUrl}
                     alt={partner.name}
@@ -271,14 +311,14 @@ export default async function HomePage() {
                   />
                 </div>
 
-                <p className="font-bold text-foreground dark:text-white text-xs sm:text-sm font-sans">{partner.name}</p>
+                <p className="font-bold text-secondary dark:text-white text-xs sm:text-sm font-sans">{partner.name}</p>
 
                 {partner.websiteUrl && (
                   <a
                     href={partner.websiteUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] font-mono text-brand-orange hover:underline inline-flex items-center gap-1"
+                    className="text-[11px] font-mono text-accent hover:underline inline-flex items-center gap-1"
                   >
                     <span>زيارة الموقع</span>
                     <ExternalLink className="w-3 h-3" />
@@ -294,18 +334,18 @@ export default async function HomePage() {
       {/* 7. CALL TO ACTION / JOIN US */}
       {/* ========================================================================= */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-4xl text-center space-y-6">
-        <div className="p-10 rounded-2xl border border-border dark:border-brand-dark-800 bg-card dark:bg-brand-dark-900/90 space-y-6 shadow-2xl">
-          <Badge variant="orange" className="mx-auto">انضم إلينا اليوم</Badge>
-          <h2 className="font-display text-2xl sm:text-4xl font-bold text-foreground dark:text-white">
+        <div className="p-10 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-card space-y-6 shadow-md transition-all duration-300">
+          <Badge variant="accent" className="mx-auto">انضم إلينا اليوم</Badge>
+          <h2 className="font-display text-2xl sm:text-4xl font-bold text-secondary dark:text-white">
             هل ترغب في المساهمة بجهدك التطوعي؟
           </h2>
-          <p className="text-xs sm:text-sm text-brand-gray-300 max-w-xl mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-neutral max-w-xl mx-auto leading-relaxed">
             نرحب بالمطورين والباحثين والمترجمين الشباب الراغبين في الانضمام لأقسام الفريق والمساهمة في تقديم معرفة حقيقية للمجتمع.
           </p>
 
           <div className="pt-2 flex justify-center">
             <Link href="/join-us">
-              <Button size="lg" className="gap-2 text-sm">
+              <Button size="lg" className="gap-2 text-sm bg-accent hover:bg-accent-hover text-white rounded-xl shadow-accent transition-all duration-300">
                 <span>تقديم طلب انضمام</span>
                 <ArrowLeft className="w-4 h-4" />
               </Button>

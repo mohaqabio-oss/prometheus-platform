@@ -180,3 +180,81 @@ export async function deletePartnerAction(partnerId: string) {
   revalidatePath("/admin/website");
   return { success: true };
 }
+
+// 6. Get Public Website Data for Homepage
+export async function getPublicWebsiteData() {
+  const settings = await getSiteSettings();
+  const partners = await getPartners();
+
+  let hoursCount = 600;
+  let articlesCount = 45;
+  let membersCount = 30;
+
+  try {
+    const totalHoursAgg = await prisma.member.aggregate({
+      _sum: { volunteerHours: true },
+    });
+    if (totalHoursAgg._sum.volunteerHours) {
+      hoursCount = totalHoursAgg._sum.volunteerHours;
+    }
+    const countArticles = await prisma.article.count({
+      where: { status: "PUBLISHED" },
+    });
+    if (countArticles > 0) {
+      articlesCount = countArticles;
+    }
+    const countMembers = await prisma.member.count({
+      where: { status: "ACTIVE" },
+    });
+    if (countMembers > 0) {
+      membersCount = countMembers;
+    }
+  } catch (e) {}
+
+  const dynamicStats = [
+    { label: "ساعة تطوعية موثقة", value: `+${hoursCount}` },
+    { label: "مقالة ورقة بحثية", value: `+${articlesCount}` },
+    { label: "عضواً فاعلاً في الكادر", value: `+${membersCount}` },
+    { label: "أقسام وتخصصات رئيسية", value: "4" },
+  ];
+
+  let featuredArticles: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    excerpt: string;
+    category: string;
+    publishedAt: string;
+    readTime: string;
+    author: { name: string };
+  }> = [];
+
+  try {
+    const articles = await prisma.article.findMany({
+      where: { status: "PUBLISHED" },
+      take: 3,
+      orderBy: { createdAt: "desc" },
+    });
+
+    featuredArticles = articles.map((art) => ({
+      id: art.id,
+      title: art.title,
+      slug: art.slug,
+      excerpt: art.excerpt || "",
+      category: "بحوث وتقنيات",
+      publishedAt: art.createdAt.toISOString().split("T")[0],
+      readTime: "5 دقائق",
+      author: {
+        name: "محرر بروميثيوس",
+      },
+    }));
+  } catch (e) {}
+
+  return {
+    settings,
+    dynamicStats,
+    featuredArticles,
+    partners,
+  };
+}
+

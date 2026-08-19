@@ -13,19 +13,19 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "inline-flex items-center justify-center font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange disabled:pointer-events-none disabled:opacity-50 rounded-md cursor-pointer select-none",
+          "inline-flex items-center justify-center font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:pointer-events-none disabled:opacity-50 rounded-xl cursor-pointer select-none",
           {
-            "bg-brand-orange text-white hover:bg-brand-orange-600 shadow-md shadow-brand-orange/10 active:scale-[0.98]":
+            "bg-accent text-white hover:bg-accent-hover shadow-md shadow-accent/20 active:scale-[0.98]":
               variant === "default",
-            "border border-brand-dark-800 bg-transparent text-foreground hover:bg-brand-dark-900 hover:border-brand-orange/40 hover:text-white":
+            "border border-neutral-300 dark:border-neutral-700 bg-transparent text-foreground hover:border-accent hover:text-accent shadow-sm":
               variant === "outline",
-            "bg-brand-dark-850 text-foreground hover:bg-brand-dark-800 border border-brand-dark-800 hover:text-white":
+            "bg-secondary text-white hover:bg-secondary-hover shadow-sm shadow-secondary/20 active:scale-[0.98]":
               variant === "secondary",
-            "bg-transparent hover:bg-brand-dark-900 text-brand-gray-300 hover:text-white":
+            "bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral hover:text-foreground":
               variant === "ghost",
-            "bg-red-600/90 text-white hover:bg-red-600":
+            "bg-red-600 text-white hover:bg-red-700 shadow-sm":
               variant === "destructive",
-            "bg-transparent text-brand-orange hover:underline p-0 h-auto":
+            "bg-transparent text-accent hover:underline p-0 h-auto":
               variant === "link",
           },
           {
