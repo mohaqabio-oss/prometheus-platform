@@ -1,164 +1,299 @@
 import { PrismaClient, RoleType } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
 
 const prisma = new PrismaClient();
 
+function slugify(text: string): string {
+  const clean = text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return clean || `dept-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+}
+
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
+function parseCSV(content: string): Array<Record<string, string>> {
+  const cleanContent = content.replace(/^\uFEFF/, "");
+  const lines = cleanContent.split(/\r?\n/).filter((line) => line.trim() !== "");
+  if (lines.length === 0) return [];
+
+  const headers = parseCSVLine(lines[0]).map((h) => h.trim());
+  const rows: Array<Record<string, string>> = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i]);
+    if (values.length === 0 || (values.length === 1 && values[0].trim() === "")) continue;
+
+    const row: Record<string, string> = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] ? values[index].trim() : "";
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function mapRoleType(roleStr?: string | null, titleStr?: string | null): RoleType {
+  if (roleStr) {
+    const normalized = roleStr.trim().toUpperCase();
+    switch (normalized) {
+      case "ADMIN":
+        return RoleType.ADMIN;
+      case "HR_EDITOR":
+      case "HR":
+        return RoleType.HR_EDITOR;
+      case "POST_EDITOR":
+      case "EDITOR":
+        return RoleType.POST_EDITOR;
+      case "AUTHOR":
+        return RoleType.AUTHOR;
+      case "MEMBER":
+        return RoleType.MEMBER;
+    }
+  }
+
+  if (titleStr) {
+    const normTitle = titleStr.trim().toLowerCase();
+    if (normTitle.includes("founder") || normTitle.includes("leader") || normTitle.includes("director")) {
+      return RoleType.ADMIN;
+    }
+    if (normTitle.includes("head of department") || normTitle.includes("hr")) {
+      return RoleType.HR_EDITOR;
+    }
+  }
+
+  return RoleType.MEMBER;
+}
+
 async function main() {
-  console.log("🌱 Starting Prometheus Database Seeding...");
+  console.log("🌱 Starting Prometheus Master Database Seeding...");
 
-  // 1. Clear Existing Data
-  await prisma.userRole.deleteMany({});
-  await prisma.volunteerRecord.deleteMany({});
-  await prisma.certificate.deleteMany({});
-  await prisma.socialLink.deleteMany({});
-  await prisma.memberAchievement.deleteMany({});
-  await prisma.projectMember.deleteMany({});
-  await prisma.application.deleteMany({});
-  await prisma.articleCollection.deleteMany({});
-  await prisma.articleSource.deleteMany({});
-  await prisma.article.deleteMany({});
-  await prisma.member.deleteMany({});
-  await prisma.user.deleteMany({});
-  await prisma.role.deleteMany({});
-  await prisma.department.deleteMany({});
-  await prisma.category.deleteMany({});
-  await prisma.collection.deleteMany({});
-  await prisma.project.deleteMany({});
-  await prisma.achievement.deleteMany({});
+  // 1. Ensure System Roles Exist
+  const roleTypes: RoleType[] = ["ADMIN", "HR_EDITOR", "POST_EDITOR", "AUTHOR", "MEMBER"];
+  const roles: Record<RoleType, any> = {} as any;
 
-  console.log("🧹 Cleared existing database records.");
+  for (const rType of roleTypes) {
+    roles[rType] = await prisma.role.upsert({
+      where: { name: rType },
+      update: {},
+      create: {
+        name: rType,
+        description: `${rType} system role`,
+      },
+    });
+  }
+  console.log("✅ 5 RBAC System Roles verified.");
 
-  // 2. Create System Roles
-  const roles: Record<RoleType, any> = {
-    ADMIN: await prisma.role.create({
-      data: { name: "ADMIN", description: "Unrestricted system administrator" },
-    }),
-    HR_EDITOR: await prisma.role.create({
-      data: { name: "HR_EDITOR", description: "HR recruitment and member management" },
-    }),
-    POST_EDITOR: await prisma.role.create({
-      data: { name: "POST_EDITOR", description: "Publication editor and content moderator" },
-    }),
-    AUTHOR: await prisma.role.create({
-      data: { name: "AUTHOR", description: "Article writer and contributor" },
-    }),
-    MEMBER: await prisma.role.create({
-      data: { name: "MEMBER", description: "Standard voluntary team member" },
-    }),
-  };
-  console.log("✅ Created 5 RBAC System Roles.");
+  // 2. Create Master Admin Account (admin@mywebsite.com / adminpassword123)
+  const masterAdminEmail = "admin@mywebsite.com";
+  const masterAdminPasswordHash = await bcrypt.hash("adminpassword123", 10);
 
-  // 3. Create Departments
-  const deptTech = await prisma.department.create({
-    data: { name: "Technology", slug: "technology", description: "Software architecture, web platforms, and open source tools." },
-  });
-  const deptResearch = await prisma.department.create({
-    data: { name: "Research", slug: "research", description: "Academic research synthesis, genomics, and literature reviews." },
-  });
-  const deptEdu = await prisma.department.create({
-    data: { name: "Education", slug: "education", description: "Interactive workshops, training bootcamps, and technical writing." },
-  });
-  const deptHR = await prisma.department.create({
-    data: { name: "HR & Operations", slug: "hr-operations", description: "Member recruitment, volunteer hours logging, and events." },
-  });
-  console.log("✅ Created 4 Primary Departments.");
-
-  // Password Hash for 'password123'
-  const defaultPasswordHash = await bcrypt.hash("password123", 10);
-
-  // 4. Create Initial Staff Users & Linked Member Profiles
-
-  // Account 1: ADMIN
-  const userAdmin = await prisma.user.create({
-    data: {
-      email: "admin@prometheus.local",
-      passwordHash: defaultPasswordHash,
+  const masterAdminUser = await prisma.user.upsert({
+    where: { email: masterAdminEmail },
+    update: {
+      passwordHash: masterAdminPasswordHash,
+    },
+    create: {
+      email: masterAdminEmail,
+      passwordHash: masterAdminPasswordHash,
       emailVerified: new Date(),
       userRoles: {
-        create: { roleId: roles.ADMIN.id },
+        create: {
+          roleId: roles.ADMIN.id,
+        },
       },
       member: {
         create: {
-          fullName: "Karrar Al-Mansoor",
-          title: "Technical Lead & Software Architect",
-          bio: "Full-stack software architect specializing in Next.js App Router and Prisma ORM.",
-          departmentId: deptTech.id,
-          volunteerHours: 140,
+          fullName: "Master Admin",
+          title: "System Administrator",
+          bio: "Default Master System Administrator",
+          volunteerHours: 200,
         },
       },
     },
-  });
-
-  // Account 2: HR_EDITOR
-  const userHR = await prisma.user.create({
-    data: {
-      email: "hr@prometheus.local",
-      passwordHash: defaultPasswordHash,
-      emailVerified: new Date(),
-      userRoles: {
-        create: { roleId: roles.HR_EDITOR.id },
-      },
-      member: {
-        create: {
-          fullName: "Omar Al-Farooq",
-          title: "HR & Recruitment Coordinator",
-          bio: "Coordinates voluntary application reviews, onboarding, and certificate verification.",
-          departmentId: deptHR.id,
-          volunteerHours: 85,
-        },
-      },
+    include: {
+      userRoles: true,
+      member: true,
     },
   });
 
-  // Account 3: POST_EDITOR
-  const userEditor = await prisma.user.create({
-    data: {
-      email: "editor@prometheus.local",
-      passwordHash: defaultPasswordHash,
-      emailVerified: new Date(),
-      userRoles: {
-        create: { roleId: roles.POST_EDITOR.id },
+  // Ensure ADMIN role assignment
+  const hasAdminRole = masterAdminUser.userRoles.some((ur) => ur.roleId === roles.ADMIN.id);
+  if (!hasAdminRole) {
+    await prisma.userRole.create({
+      data: {
+        userId: masterAdminUser.id,
+        roleId: roles.ADMIN.id,
       },
-      member: {
-        create: {
-          fullName: "Mustafa Tariq",
-          title: "Post Editor-in-Chief",
-          bio: "Leads technical journalism and publication standards across Prometheus Post.",
-          departmentId: deptEdu.id,
-          volunteerHours: 95,
+    });
+  }
+  console.log(`✅ Master Admin Account Ready: ${masterAdminEmail} (Password: adminpassword123)`);
+
+  // 3. Find CSV File
+  const possiblePaths = [
+    path.join(process.cwd(), "Members.csv"),
+    path.join(process.cwd(), "Members copy.csv"),
+    path.join(process.cwd(), "members.csv"),
+  ];
+
+  let csvFilePath = "";
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      csvFilePath = p;
+      break;
+    }
+  }
+
+  if (!csvFilePath) {
+    console.log("⚠️ No CSV file found in root. Skipping CSV import.");
+    return;
+  }
+
+  console.log(`📄 Found CSV file at: ${csvFilePath}`);
+  const fileContent = fs.readFileSync(csvFilePath, "utf-8");
+  const records = parseCSV(fileContent);
+
+  if (records.length === 0) {
+    console.log("⚠️ No records found in CSV file.");
+    return;
+  }
+
+  console.log(`📥 Processing ${records.length} member records from CSV...`);
+
+  let createdCount = 0;
+  let skippedCount = 0;
+  const defaultMemberPasswordHash = await bcrypt.hash("Prometheus@2026", 10);
+
+  for (const [index, row] of records.entries()) {
+    const fullName =
+      row["fullName - Arabic"]?.trim() ||
+      row["fullName"]?.trim() ||
+      row["fullname - English"]?.trim();
+    const email = row["email"]?.trim().toLowerCase();
+    const deptName = row["department"]?.trim();
+    const title = row["title"]?.trim() || null;
+    const systemRoleStr = row["systemRole"]?.trim();
+    const rawVolunteerHours = row["volunteerHours"]?.trim();
+    const rawPhotoUrl = row["photoUrl"]?.trim();
+
+    if (!email || !fullName) {
+      console.log(`⚠️ Row ${index + 1}: Missing fullName or email. Skipping.`);
+      skippedCount++;
+      continue;
+    }
+
+    const cleanHoursStr = rawVolunteerHours ? rawVolunteerHours.replace(/[^0-9]/g, "") : "";
+    const volunteerHours = cleanHoursStr ? parseInt(cleanHoursStr, 10) || 0 : 0;
+    const photoUrl = rawPhotoUrl && rawPhotoUrl !== "" && rawPhotoUrl !== "null" ? rawPhotoUrl : null;
+    const roleType = mapRoleType(systemRoleStr, title);
+    const targetRole = roles[roleType] || roles.MEMBER;
+
+    // A. Resolve or Create Department (Parent Record)
+    let deptRecord = null;
+    if (deptName) {
+      deptRecord = await prisma.department.findFirst({
+        where: {
+          OR: [
+            { name: { equals: deptName, mode: "insensitive" } },
+            { slug: { equals: slugify(deptName), mode: "insensitive" } },
+          ],
+        },
+      });
+
+      if (!deptRecord) {
+        const slug = slugify(deptName);
+        deptRecord = await prisma.department.create({
+          data: {
+            name: deptName,
+            slug: slug,
+            description: `Department for ${deptName}`,
+          },
+        });
+      }
+    }
+
+    // B. Check for Existing User (Parent Record)
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+      include: { member: true },
+    });
+
+    if (existingUser) {
+      if (!existingUser.member) {
+        await prisma.member.create({
+          data: {
+            userId: existingUser.id,
+            fullName,
+            title,
+            departmentId: deptRecord?.id,
+            volunteerHours,
+            avatarUrl: photoUrl,
+          },
+        });
+      }
+      skippedCount++;
+      continue;
+    }
+
+    // C. Create User and Linked Member
+    await prisma.user.create({
+      data: {
+        email,
+        passwordHash: defaultMemberPasswordHash,
+        emailVerified: new Date(),
+        userRoles: {
+          create: {
+            roleId: targetRole.id,
+          },
+        },
+        member: {
+          create: {
+            fullName,
+            title,
+            departmentId: deptRecord?.id,
+            volunteerHours,
+            avatarUrl: photoUrl,
+          },
         },
       },
-    },
-  });
+    });
 
-  // Account 4: AUTHOR
-  const userAuthor = await prisma.user.create({
-    data: {
-      email: "author@prometheus.local",
-      passwordHash: defaultPasswordHash,
-      emailVerified: new Date(),
-      userRoles: {
-        create: { roleId: roles.AUTHOR.id },
-      },
-      member: {
-        create: {
-          fullName: "Sarah Al-Hassani",
-          title: "Research Director & Computational Biologist",
-          bio: "Bioinformatics researcher evaluating non-coding genomic variant predictions.",
-          departmentId: deptResearch.id,
-          volunteerHours: 125,
-        },
-      },
-    },
-  });
+    createdCount++;
+  }
 
-  console.log("🎉 Seeding Completed Successfully!");
   console.log("=========================================");
-  console.log("Test Accounts (Password: password123):");
-  console.log("1. admin@prometheus.local  -> Role: ADMIN");
-  console.log("2. hr@prometheus.local     -> Role: HR_EDITOR");
-  console.log("3. editor@prometheus.local -> Role: POST_EDITOR");
-  console.log("4. author@prometheus.local -> Role: AUTHOR");
+  console.log("🎉 Seeding & Import Completed Successfully!");
+  console.log(`- Created Users from CSV: ${createdCount}`);
+  console.log(`- Skipped Existing: ${skippedCount}`);
+  console.log(`- Master Admin: ${masterAdminEmail} (adminpassword123)`);
   console.log("=========================================");
 }
 

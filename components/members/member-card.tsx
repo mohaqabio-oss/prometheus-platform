@@ -41,7 +41,7 @@ export function MemberCard({ member }: MemberCardProps) {
           <Badge variant="orange" className="text-[10px] mb-1">
             {member.department}
           </Badge>
-          <h3 className="font-display text-base font-bold text-white group-hover:text-brand-orange transition-colors">
+          <h3 className="font-display text-base font-bold text-foreground dark:text-white group-hover:text-brand-orange transition-colors">
             <Link href={`/members/${member.id}`}>{member.name}</Link>
           </h3>
           <p className="text-xs font-mono text-brand-gray-400">{member.role}</p>
@@ -55,7 +55,7 @@ export function MemberCard({ member }: MemberCardProps) {
             <Clock className="w-3.5 h-3.5 text-brand-orange" />
             ساعات التطوع:
           </span>
-          <strong className="text-white">{member.volunteerHours}h</strong>
+          <strong className="text-foreground dark:text-white">{member.volunteerHours}h</strong>
         </div>
 
         <Link href={`/members/${member.id}`}>

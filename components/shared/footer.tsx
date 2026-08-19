@@ -1,20 +1,27 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Shield, Github, Twitter, Linkedin, Send } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-brand-dark-800 bg-brand-dark-950 text-foreground text-xs">
+    <footer className="border-t border-brand-dark-800 bg-background dark:bg-brand-dark-950 text-foreground text-xs">
       <div className="container mx-auto px-4 sm:px-6 md:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           
           {/* Col 1: Organization Summary */}
           <div className="space-y-4 md:col-span-1">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded bg-brand-dark-900 border border-brand-dark-700">
-                <span className="h-2 w-2 bg-brand-orange rounded-sm rotate-45" />
+              <div className="flex p-1 items-center justify-center rounded bg-brand-dark-900 border border-brand-dark-700">
+                <Image
+                  src="/logo.svg"
+                  alt="Prometheus Logo"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 object-contain"
+                />
               </div>
-              <span className="font-display text-sm font-bold tracking-wider text-white">
+              <span className="font-display text-sm font-bold tracking-wider text-foreground dark:text-white">
                 فريق بروميثيوس التطوعي
               </span>
             </Link>

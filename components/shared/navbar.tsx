@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,16 +22,23 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-brand-dark-800 bg-brand-dark-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-brand-dark-800 bg-background/90 dark:bg-brand-dark-950/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 md:px-8">
         
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-brand-dark-900 border border-brand-dark-700 group-hover:border-brand-orange/60 transition-colors">
-            <span className="h-2.5 w-2.5 bg-brand-orange rounded-sm rotate-45 group-hover:scale-110 transition-transform" />
+          <div className="relative flex items-center justify-center p-1 rounded-lg bg-brand-dark-900 border border-brand-dark-700 group-hover:border-brand-orange/60 transition-colors">
+            <Image
+              src="/logo.svg"
+              alt="فريق بروميثيوس التطوعي"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain group-hover:scale-105 transition-transform"
+              priority
+            />
           </div>
           <div className="flex flex-col">
-            <span className="font-display text-base font-bold tracking-widest text-white leading-none">
+            <span className="font-display text-base font-bold tracking-widest text-foreground dark:text-white leading-none">
               بروميثيوس
             </span>
             <span className="text-[9px] font-mono tracking-wider text-brand-orange uppercase mt-0.5">
