@@ -221,16 +221,13 @@ export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
                   <label className="block text-[#6B7280] font-medium mb-1">
                     القسم التخصصي (Department)
                   </label>
-                  <select
+                  <input
+                    type="text"
                     name="departmentName"
-                    defaultValue={member?.departmentName || "Technology"}
+                    defaultValue={member?.departmentName || ""}
+                    placeholder="اكتب اسم القسم (مثال: الهندسة البرمجية)"
                     className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
-                  >
-                    <option value="Technology">الهندسة البرمجية (Technology)</option>
-                    <option value="Research">البحث العلمي (Research)</option>
-                    <option value="Education">التعليم والتطوير (Education)</option>
-                    <option value="HR & Operations">الموارد البشرية والعمليات (HR)</option>
-                  </select>
+                  />
                 </div>
 
                 <div>

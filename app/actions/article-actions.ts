@@ -67,6 +67,7 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
           excerpt,
           content,
           coverImage,
+          categoryName: categoryName || "عام",
           status: "DRAFT",
           author: {
             connectOrCreate: {
@@ -221,7 +222,6 @@ export async function getAdminArticlesList() {
     const dbArticles = await prisma.article.findMany({
       include: {
         author: true,
-        category: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -230,7 +230,7 @@ export async function getAdminArticlesList() {
       let filtered = dbArticles;
       // If AUTHOR only, show their own articles
       if (session.roles.includes("AUTHOR") && !session.roles.includes("POST_EDITOR") && !session.roles.includes("ADMIN")) {
-        filtered = dbArticles.filter((a) => a.author.userId === session.userId);
+        filtered = dbArticles.filter((a) => a.author?.userId === session.userId);
       }
 
       return filtered.map((a) => ({
@@ -239,11 +239,11 @@ export async function getAdminArticlesList() {
         slug: a.slug,
         excerpt: a.excerpt || "",
         content: a.content,
-        categoryName: a.category?.name || "General",
+        categoryName: a.categoryName || "General",
         status: a.status,
         editorNotes: a.editorNotes || undefined,
-        authorId: a.author.userId || a.authorId,
-        authorName: a.author.fullName,
+        authorId: a.author?.userId || a.authorId,
+        authorName: a.author?.fullName || "محرر بروميثيوس",
         publishedAt: a.publishedAt?.toISOString(),
         createdAt: a.createdAt.toISOString(),
       }));
@@ -266,7 +266,6 @@ export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
       where: { status: ArticleStatus.PUBLISHED },
       include: {
         author: true,
-        category: true,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -278,11 +277,11 @@ export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
         slug: a.slug,
         excerpt: a.excerpt || "",
         content: a.content,
-        categoryName: a.category?.name || "عام",
+        categoryName: a.categoryName || "عام",
         status: a.status,
         editorNotes: a.editorNotes || undefined,
-        authorId: a.author.userId || a.authorId,
-        authorName: a.author.fullName,
+        authorId: a.author?.userId || a.authorId,
+        authorName: a.author?.fullName || "محرر بروميثيوس",
         publishedAt: a.publishedAt?.toISOString(),
         createdAt: a.createdAt.toISOString(),
       }));
@@ -309,14 +308,6 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
   }
 
   try {
-    let categoryId: string | undefined = undefined;
-    if (categoryName) {
-      const cat = await prisma.category.findFirst({
-        where: { name: categoryName },
-      });
-      if (cat) categoryId = cat.id;
-    }
-
     await prisma.article.update({
       where: { id },
       data: {
@@ -324,9 +315,9 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
         excerpt,
         content,
         coverImage,
+        categoryName: categoryName || undefined,
         status,
         ...(status === "PUBLISHED" ? { publishedAt: new Date() } : {}),
-        ...(categoryId ? { categoryId } : {}),
       },
     });
   } catch (err: any) {

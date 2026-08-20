@@ -69,14 +69,6 @@ export async function createMemberAction(prevState: any, formData: FormData) {
   }
 
   try {
-    let departmentId: string | undefined = undefined;
-    if (departmentName) {
-      const dept = await prisma.department.findFirst({
-        where: { name: departmentName },
-      });
-      if (dept) departmentId = dept.id;
-    }
-
     await prisma.member.create({
       data: {
         fullName,
@@ -85,8 +77,8 @@ export async function createMemberAction(prevState: any, formData: FormData) {
         volunteerHours: Math.max(0, Math.floor(initialHours)),
         avatarUrl: profileImage || undefined,
         profileImage: profileImage || undefined,
+        departmentName: departmentName || "General",
         customSections: customSections || undefined,
-        ...(departmentId ? { department: { connect: { id: departmentId } } } : {}),
         user: {
           connectOrCreate: {
             where: { email },
@@ -128,14 +120,6 @@ export async function updateMemberAction(prevState: any, formData: FormData) {
   }
 
   try {
-    let departmentId: string | undefined = undefined;
-    if (departmentName) {
-      const dept = await prisma.department.findFirst({
-        where: { name: departmentName },
-      });
-      if (dept) departmentId = dept.id;
-    }
-
     await prisma.member.update({
       where: { id },
       data: {
@@ -145,8 +129,8 @@ export async function updateMemberAction(prevState: any, formData: FormData) {
         volunteerHours: Math.max(0, Math.floor(volunteerHours)),
         avatarUrl: profileImage || undefined,
         profileImage: profileImage || undefined,
+        departmentName: departmentName || undefined,
         customSections: customSections || undefined,
-        ...(departmentId ? { department: { connect: { id: departmentId } } } : {}),
       },
     });
   } catch (err: any) {
@@ -257,7 +241,6 @@ export async function getAdminMembersList(): Promise<LocalMemberRecord[]> {
   try {
     const dbMembers = await prisma.member.findMany({
       include: {
-        department: true,
         user: true,
         certificates: true,
       },
@@ -270,7 +253,7 @@ export async function getAdminMembersList(): Promise<LocalMemberRecord[]> {
         fullName: m.fullName,
         email: m.user?.email || "n/a",
         title: m.title || "Member",
-        departmentName: m.department?.name || "General",
+        departmentName: m.departmentName || "General",
         volunteerHours: m.volunteerHours,
         status: m.status,
         certificateCode: m.certificates[0]?.certificateCode,
@@ -287,11 +270,7 @@ export async function getAdminCertificatesList(): Promise<LocalCertificateRecord
   try {
     const dbCerts = await prisma.certificate.findMany({
       include: {
-        member: {
-          include: {
-            department: true,
-          },
-        },
+        member: true,
       },
       orderBy: { issuedAt: "desc" },
     });
@@ -303,10 +282,10 @@ export async function getAdminCertificatesList(): Promise<LocalCertificateRecord
         title: c.title,
         description: c.description || "",
         issuedAt: c.issuedAt.toISOString(),
-        memberName: c.member.fullName,
-        memberDepartment: c.member.department?.name || "General",
-        memberRole: c.member.title || "Member",
-        volunteerHours: c.member.volunteerHours,
+        memberName: c.member?.fullName || "عضو",
+        memberDepartment: c.member?.departmentName || "General",
+        memberRole: c.member?.title || "Member",
+        volunteerHours: c.member?.volunteerHours || 0,
       }));
     }
   } catch (e) {}
@@ -322,11 +301,7 @@ export async function verifyCertificateCode(code: string): Promise<LocalCertific
     const dbCert = await prisma.certificate.findUnique({
       where: { certificateCode: normalizedCode },
       include: {
-        member: {
-          include: {
-            department: true,
-          },
-        },
+        member: true,
       },
     });
 
@@ -337,10 +312,10 @@ export async function verifyCertificateCode(code: string): Promise<LocalCertific
         title: dbCert.title,
         description: dbCert.description || "",
         issuedAt: dbCert.issuedAt.toISOString(),
-        memberName: dbCert.member.fullName,
-        memberDepartment: dbCert.member.department?.name || "General",
-        memberRole: dbCert.member.title || "Member",
-        volunteerHours: dbCert.member.volunteerHours,
+        memberName: dbCert.member?.fullName || "عضو",
+        memberDepartment: dbCert.member?.departmentName || "General",
+        memberRole: dbCert.member?.title || "Member",
+        volunteerHours: dbCert.member?.volunteerHours || 0,
       };
     }
   } catch (e) {}
@@ -356,9 +331,6 @@ export async function getPublicMembersAction() {
   try {
     const dbMembers = await prisma.member.findMany({
       where: { status: "ACTIVE" },
-      include: {
-        department: true,
-      },
       orderBy: { volunteerHours: "desc" },
     });
 
@@ -367,7 +339,7 @@ export async function getPublicMembersAction() {
         id: m.id,
         name: m.fullName,
         role: m.title || "عضو متطوع",
-        department: m.department?.name || "عام",
+        department: m.departmentName || "عام",
         avatarUrl: m.avatarUrl,
         photoUrl: m.avatarUrl,
         volunteerHours: m.volunteerHours,

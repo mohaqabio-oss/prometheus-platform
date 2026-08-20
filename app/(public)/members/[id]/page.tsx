@@ -36,13 +36,12 @@ export async function generateMetadata({ params }: MemberProfilePageProps): Prom
   try {
     const member = await prisma.member.findUnique({
       where: { id },
-      include: { department: true },
     });
 
     if (member) {
       return {
         title: `${member.fullName} - ${member.title || "عضو فريق"}`,
-        description: `${member.fullName} is a ${member.title || "Member"} in the ${member.department?.name || "General"} department at Prometheus Voluntary Team.`,
+        description: `${member.fullName} is a ${member.title || "Member"} in the ${member.departmentName || "General"} department at Prometheus Voluntary Team.`,
       };
     }
   } catch (e) {}
@@ -60,7 +59,6 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
     member = await prisma.member.findUnique({
       where: { id },
       include: {
-        department: true,
         certificates: true,
         socialLinks: true,
       },
@@ -114,7 +112,7 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
 
             <div className="space-y-3 flex-1">
               <div className="flex flex-wrap items-center gap-3">
-                <Badge variant="orange">{member.department?.name || "عام"}</Badge>
+                <Badge variant="orange">{member.departmentName || "عام"}</Badge>
                 <Badge variant="dark" className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1" />
                   {member.status} MEMBER

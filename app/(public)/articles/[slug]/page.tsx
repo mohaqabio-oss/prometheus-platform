@@ -49,7 +49,6 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
       where: { slug },
       include: {
         author: true,
-        category: true,
         sources: true,
       },
     });
@@ -74,7 +73,7 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
         {/* Article Header */}
         <header className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
-            <Badge variant="orange">{article.category?.name || "عام"}</Badge>
+            <Badge variant="orange">{article.categoryName || "عام"}</Badge>
             <span className="text-xs font-mono text-[#6B7280] flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5" />
               {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString("ar-SA") : "جديد"}

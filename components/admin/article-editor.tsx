@@ -516,15 +516,13 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
             {/* Academic Category Selector */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
               <h3 className="font-display font-bold text-white text-base">التصنيف الأكاديمي</h3>
-              <select
+              <input
+                type="text"
                 name="categoryName"
-                defaultValue={article?.categoryName || "Technology"}
+                defaultValue={article?.categoryName || ""}
+                placeholder="اكتب اسم التصنيف (مثال: الذكاء الاصطناعي)"
                 className="w-full h-11 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C]"
-              >
-                <option value="Technology">الهندسة البرمجية والذكاء الاصطناعي</option>
-                <option value="Research">القرارات والبحوث العلمية</option>
-                <option value="Education">التعليم والتطوير الذاتي</option>
-              </select>
+              />
             </div>
 
             {/* Cover Image Upload to 'magazine' Bucket */}

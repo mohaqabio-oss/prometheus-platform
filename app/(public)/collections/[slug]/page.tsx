@@ -26,7 +26,6 @@ export default async function SingleCollectionPage({ params }: CollectionPagePro
             article: {
               include: {
                 author: true,
-                category: true,
               },
             },
           },

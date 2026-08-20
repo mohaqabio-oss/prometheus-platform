@@ -192,7 +192,7 @@ async function main() {
             userId: existingUser.id,
             fullName,
             title,
-            departmentId: deptRecord?.id,
+            departmentName: deptName || "Technology",
             volunteerHours,
             avatarUrl: photoUrl,
           },
@@ -218,7 +218,7 @@ async function main() {
           create: {
             fullName,
             title,
-            departmentId: deptRecord?.id,
+            departmentName: deptName || "Technology",
             volunteerHours,
             avatarUrl: photoUrl,
           },
