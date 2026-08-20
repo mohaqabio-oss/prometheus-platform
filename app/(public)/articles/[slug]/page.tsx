@@ -131,7 +131,7 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
         <Card className="p-8 sm:p-12 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl shadow-xl">
           {article.content.includes("<") ? (
             <div
-              className="article-body font-sans text-white leading-relaxed space-y-4 prose prose-invert max-w-none [&_img]:rounded-xl [&_img]:border [&_img]:border-[#6B7280]/20 [&_img]:my-4 [&_h1]:text-2xl [&_h1]:font-bold [&_h2]:text-xl [&_h2]:font-bold [&_h3]:text-lg [&_h3]:font-bold [&_blockquote]:border-r-4 [&_blockquote]:border-[#E84A0C] [&_blockquote]:pr-4 [&_blockquote]:italic [&_ul]:list-disc [&_ul]:pr-6 [&_ol]:list-decimal [&_ol]:pr-6"
+              className="article-body font-sans text-white leading-relaxed space-y-4 prose prose-invert max-w-none [&_img]:rounded-xl [&_img]:border [&_img]:border-[#6B7280]/20 [&_img]:my-4 [&_blockquote]:border-r-4 [&_blockquote]:border-[#E84A0C] [&_blockquote]:pr-4 [&_blockquote]:italic [&_ul]:list-disc [&_ul]:pr-6 [&_ol]:list-decimal [&_ol]:pr-6"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
           ) : (

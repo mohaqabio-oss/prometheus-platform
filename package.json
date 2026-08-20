@@ -18,7 +18,13 @@
     "@ducanh2912/next-pwa": "^10.2.9",
     "@prisma/client": "^6.4.1",
     "@supabase/supabase-js": "^2.112.3",
+    "@tiptap/extension-color": "^3.30.2",
+    "@tiptap/extension-font-family": "^3.30.2",
+    "@tiptap/extension-highlight": "^3.30.2",
     "@tiptap/extension-image": "^3.30.2",
+    "@tiptap/extension-text-align": "^3.30.2",
+    "@tiptap/extension-text-style": "^3.30.2",
+    "@tiptap/extension-underline": "^3.30.2",
     "@tiptap/pm": "^3.30.2",
     "@tiptap/react": "^3.30.2",
     "@tiptap/starter-kit": "^3.30.2",
@@ -33,7 +39,8 @@
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.0.1"
+    "tailwind-merge": "^3.0.1",
+    "tiptap-extension-resize-image": "^1.4.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.7",
