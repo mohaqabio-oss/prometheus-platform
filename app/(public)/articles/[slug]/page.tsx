@@ -13,6 +13,8 @@ import {
   Calendar,
   ExternalLink,
   BookOpen,
+  Users,
+  Building2,
 } from "lucide-react";
 
 interface ArticlePageProps {
@@ -29,14 +31,14 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
     });
     if (article) {
       return {
-        title: article.title,
+        title: `${article.title} | مجلة بروميثيوس الأكاديمية`,
         description: article.excerpt || "",
       };
     }
   } catch (e) {}
 
   return {
-    title: "Article | Prometheus Voluntary Team",
+    title: "منشورات بروميثيوس | فريق بروميثيوس التطوعي",
   };
 }
 
@@ -49,6 +51,7 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
       where: { slug },
       include: {
         author: true,
+        authors: true,
         sources: true,
       },
     });
@@ -57,6 +60,23 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
   if (!article) {
     notFound();
   }
+
+  // Determine assigned authors (NYT / Nature style multi-author list)
+  const authorsList =
+    article.authors && article.authors.length > 0
+      ? article.authors
+      : article.author
+      ? [article.author]
+      : [
+          {
+            id: "default-author",
+            fullName: "محرر بروميثيوس",
+            title: "عضو الهيئة التحريرية",
+            departmentName: "البحث والتحرير",
+            avatarUrl: null,
+            bio: "عضو فاعل ومساهم في إعداد المنشورات والبحوث لدى فريق بروميثيوس التطوعي.",
+          },
+        ];
 
   return (
     <article className="py-12 sm:py-20 bg-[#1A2B4A] min-h-screen text-white animate-fade-in">
@@ -90,21 +110,25 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
             </p>
           )}
 
-          {/* Author info bar */}
-          <div className="pt-4 border-t border-[#6B7280]/20 flex items-center justify-between">
+          {/* Authors Summary Line & Read Time Bar */}
+          <div className="pt-4 border-t border-[#6B7280]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Avatar
-                src={article.author?.avatarUrl}
-                name={article.author?.fullName || "محرر بروميثيوس"}
-                size="md"
-              />
-              <div>
-                <p className="text-sm font-bold text-white leading-none">
-                  {article.author?.fullName || "محرر بروميثيوس"}
-                </p>
-                <p className="text-xs font-mono text-[#6B7280] mt-0.5">
-                  {article.author?.title || "عضو فريق بروميثيوس"}
-                </p>
+              <div className="flex -space-x-2 space-x-reverse overflow-hidden">
+                {authorsList.map((au: any, index: number) => (
+                  <Avatar
+                    key={au.id || index}
+                    src={au.avatarUrl || au.profileImage}
+                    name={au.fullName}
+                    size="sm"
+                    className="ring-2 ring-[#1A2B4A]"
+                  />
+                ))}
+              </div>
+              <div className="text-xs font-sans">
+                <span className="text-[#6B7280]">بقلم: </span>
+                <strong className="text-white font-semibold">
+                  {authorsList.map((au: any) => au.fullName).join("، ")}
+                </strong>
               </div>
             </div>
 
@@ -126,11 +150,11 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
           </div>
         )}
 
-        {/* Main Article Content */}
+        {/* Main Article Body Container */}
         <Card className="p-8 sm:p-12 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl shadow-xl">
           {article.content.includes("<") ? (
             <div
-              className="article-body font-sans text-white leading-relaxed space-y-4 prose prose-invert max-w-none [&_img]:rounded-xl [&_img]:border [&_img]:border-[#6B7280]/20 [&_img]:my-4 [&_blockquote]:border-r-4 [&_blockquote]:border-[#E84A0C] [&_blockquote]:pr-4 [&_blockquote]:italic [&_ul]:list-disc [&_ul]:pr-6 [&_ol]:list-decimal [&_ol]:pr-6"
+              className="article-body font-sans text-white leading-relaxed space-y-4 prose prose-invert max-w-none [&_img]:rounded-xl [&_img]:border [&_img]:border-[#6B7280]/20 [&_img]:my-6 [&_blockquote]:border-r-4 [&_blockquote]:border-[#E84A0C] [&_blockquote]:pr-4 [&_blockquote]:italic [&_ul]:list-disc [&_ul]:pr-6 [&_ol]:list-decimal [&_ol]:pr-6"
               dangerouslySetInnerHTML={{ __html: article.content }}
             />
           ) : (
@@ -141,6 +165,49 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
             </div>
           )}
         </Card>
+
+        {/* ELEGANT MULTI-AUTHOR ATTRIBUTION SECTION (NYT / Nature Style) */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-[#E84A0C] font-mono text-xs">
+            <Users className="w-4 h-4" />
+            <span>عن المؤلفين والمشاركين في البحث</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {authorsList.map((author: any, index: number) => (
+              <Card
+                key={author.id || index}
+                className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-md hover:border-[#E84A0C]/40 transition-all duration-300"
+              >
+                <div className="flex items-start gap-4">
+                  <Avatar
+                    src={author.avatarUrl || author.profileImage}
+                    name={author.fullName}
+                    size="lg"
+                  />
+                  <div className="space-y-1">
+                    <h4 className="font-display text-lg font-bold text-white">
+                      {author.fullName}
+                    </h4>
+                    <p className="text-xs font-mono text-[#E84A0C]">
+                      {author.title || "عضو فريق بروميثيوس"}
+                    </p>
+                    <p className="text-[11px] font-mono text-[#6B7280] flex items-center gap-1">
+                      <Building2 className="w-3 h-3" />
+                      <span>قسم {author.departmentName || "عام"}</span>
+                    </p>
+                  </div>
+                </div>
+
+                {author.bio && (
+                  <p className="text-xs text-[#6B7280] leading-relaxed border-t border-[#6B7280]/20 pt-3">
+                    {author.bio}
+                  </p>
+                )}
+              </Card>
+            ))}
+          </div>
+        </div>
 
         {/* References & Sources */}
         {article.sources && article.sources.length > 0 && (

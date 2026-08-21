@@ -6,7 +6,15 @@ import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { ArticleStatus, RoleType } from "@prisma/client";
 
-// In-Memory Mock Store Fallback for Development Preview when PostgreSQL DB is not seeded
+export interface ArticleAuthor {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  title?: string;
+  department?: string;
+  bio?: string;
+}
+
 export interface LocalArticleRecord {
   id: string;
   title: string;
@@ -19,6 +27,7 @@ export interface LocalArticleRecord {
   editorNotes?: string;
   authorId: string;
   authorName: string;
+  authors: ArticleAuthor[];
   publishedAt?: string;
   createdAt: string;
 }
@@ -38,6 +47,35 @@ async function requireAuth(allowedRoles: RoleType[]) {
   return session;
 }
 
+// Fetch all members for Multi-Select Author dropdown in Article Editor
+export async function getMembersForSelectAction(): Promise<ArticleAuthor[]> {
+  try {
+    const dbMembers = await prisma.member.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { fullName: "asc" },
+    });
+    if (dbMembers.length > 0) {
+      return dbMembers.map((m) => ({
+        id: m.id,
+        name: m.fullName,
+        avatarUrl: m.avatarUrl || m.profileImage || undefined,
+        title: m.title || "عضو فريق بروميثيوس",
+        department: m.departmentName || "عام",
+        bio: m.bio || undefined,
+      }));
+    }
+  } catch (e) {}
+
+  return [
+    {
+      id: "mem-default-1",
+      name: "محرر بروميثيوس",
+      title: "محرر أكاديمي",
+      department: "البحث والتطوير",
+    },
+  ];
+}
+
 // 1. Create Article Draft
 export async function createArticleDraftAction(prevState: any, formData: FormData) {
   const session = await requireAuth(["AUTHOR", "POST_EDITOR", "ADMIN"]);
@@ -47,9 +85,19 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
   const content = formData.get("content")?.toString().trim();
   const categoryName = formData.get("categoryName")?.toString() || "Technology";
   const coverImage = formData.get("coverImage")?.toString() || "";
+  const rawAuthorIds = formData.get("authorIds")?.toString() || "";
 
   if (!title || !content) {
     return { error: "Article title and body content are required." };
+  }
+
+  let selectedAuthorIds: string[] = [];
+  if (rawAuthorIds) {
+    try {
+      selectedAuthorIds = JSON.parse(rawAuthorIds);
+    } catch (e) {
+      selectedAuthorIds = rawAuthorIds.split(",").map((s) => s.trim()).filter(Boolean);
+    }
   }
 
   const slug = title
@@ -58,8 +106,28 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
     .replace(/(^-|-$)+/g, "") + "-" + Date.now().toString().slice(-4);
 
   try {
-    // Try database insertion
     try {
+      // Find or create current logged in user's Member record as primary author
+      let currentMember = await prisma.member.findFirst({
+        where: { userId: session.userId },
+      });
+
+      if (!currentMember) {
+        currentMember = await prisma.member.create({
+          data: {
+            fullName: session.fullName,
+            userId: session.userId,
+            title: "محرر بروميثيوس",
+            departmentName: "البحث والتحرير",
+          },
+        });
+      }
+
+      // Merge primary author with selected co-authors
+      const allAuthorIds = Array.from(
+        new Set([currentMember.id, ...selectedAuthorIds])
+      );
+
       const article = await prisma.article.create({
         data: {
           title,
@@ -70,20 +138,18 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
           categoryName: categoryName || "عام",
           status: "DRAFT",
           author: {
-            connectOrCreate: {
-              where: { userId: session.userId },
-              create: {
-                fullName: session.fullName,
-                userId: session.userId,
-              },
-            },
+            connect: { id: currentMember.id },
+          },
+          authors: {
+            connect: allAuthorIds.map((id) => ({ id })),
           },
         },
       });
       revalidatePath("/admin/articles");
       redirect("/admin/articles");
-    } catch (dbErr) {
-      // Fallback in-memory insertion for preview
+    } catch (dbErr: any) {
+      if (dbErr.message === "NEXT_REDIRECT") throw dbErr;
+
       const newArticle: LocalArticleRecord = {
         id: `art-${Date.now()}`,
         title,
@@ -95,6 +161,14 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
         status: "DRAFT",
         authorId: session.userId,
         authorName: session.fullName,
+        authors: [
+          {
+            id: session.userId,
+            name: session.fullName,
+            title: "محرر بروميثيوس",
+            department: "البحث والتحرير",
+          },
+        ],
         createdAt: new Date().toISOString(),
       };
       MOCK_DB_ARTICLES.unshift(newArticle);
@@ -108,9 +182,9 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
   redirect("/admin/articles");
 }
 
-// 2. Submit Article for Review (DRAFT / CHANGES_REQUESTED -> SUBMITTED)
+// 2. Submit Article for Review
 export async function submitArticleAction(articleId: string) {
-  const session = await requireAuth(["AUTHOR", "POST_EDITOR", "ADMIN"]);
+  await requireAuth(["AUTHOR", "POST_EDITOR", "ADMIN"]);
 
   const art = MOCK_DB_ARTICLES.find((a) => a.id === articleId);
   if (art) {
@@ -128,9 +202,9 @@ export async function submitArticleAction(articleId: string) {
   return { success: true };
 }
 
-// 3. Mark Article as Under Review (POST_EDITOR / ADMIN)
+// 3. Mark Article as Under Review
 export async function reviewArticleAction(articleId: string) {
-  const session = await requireAuth(["POST_EDITOR", "ADMIN"]);
+  await requireAuth(["POST_EDITOR", "ADMIN"]);
 
   const art = MOCK_DB_ARTICLES.find((a) => a.id === articleId);
   if (art) {
@@ -148,9 +222,9 @@ export async function reviewArticleAction(articleId: string) {
   return { success: true };
 }
 
-// 4. Request Changes with Editor Notes (POST_EDITOR / ADMIN)
+// 4. Request Changes with Editor Notes
 export async function requestArticleChangesAction(articleId: string, editorNotes: string) {
-  const session = await requireAuth(["POST_EDITOR", "ADMIN"]);
+  await requireAuth(["POST_EDITOR", "ADMIN"]);
 
   const art = MOCK_DB_ARTICLES.find((a) => a.id === articleId);
   if (art) {
@@ -172,28 +246,26 @@ export async function requestArticleChangesAction(articleId: string, editorNotes
   return { success: true };
 }
 
-// 5. Publish Article (POST_EDITOR / ADMIN) - STRICT SECURITY: Authors cannot publish their own articles!
+// 5. Publish Article - STRICT SECURITY: Authors cannot publish their own articles!
 export async function publishArticleAction(articleId: string) {
   const session = await requireAuth(["POST_EDITOR", "ADMIN"]);
 
   const art = MOCK_DB_ARTICLES.find((a) => a.id === articleId);
   if (art) {
-    // SECURITY RULE ENFORCEMENT: Author cannot approve/publish own article unless ADMIN
     if (art.authorId === session.userId && !session.roles.includes("ADMIN")) {
-      throw new Error("Security Violation: Authors cannot approve or publish their own articles. An independent editor must review and publish.");
+      throw new Error("Security Violation: Authors cannot approve or publish their own articles.");
     }
     art.status = "PUBLISHED";
     art.publishedAt = new Date().toISOString();
   }
 
   try {
-    // Database check for self-publishing
     const dbArt = await prisma.article.findUnique({
       where: { id: articleId },
       include: { author: true },
     });
 
-    if (dbArt && dbArt.author.userId === session.userId && !session.roles.includes("ADMIN")) {
+    if (dbArt && dbArt.author?.userId === session.userId && !session.roles.includes("ADMIN")) {
       throw new Error("Security Violation: Authors cannot approve or publish their own articles.");
     }
 
@@ -209,48 +281,71 @@ export async function publishArticleAction(articleId: string) {
   }
 
   revalidatePath("/admin/articles");
+  revalidatePath("/articles");
   return { success: true };
 }
 
 // Helper to fetch articles for admin list
-export async function getAdminArticlesList() {
+export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
   const session = await getSession();
   if (!session) return [];
 
-  // Try DB query
   try {
     const dbArticles = await prisma.article.findMany({
       include: {
         author: true,
+        authors: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
     if (dbArticles.length > 0) {
       let filtered = dbArticles;
-      // If AUTHOR only, show their own articles
       if (session.roles.includes("AUTHOR") && !session.roles.includes("POST_EDITOR") && !session.roles.includes("ADMIN")) {
         filtered = dbArticles.filter((a) => a.author?.userId === session.userId);
       }
 
-      return filtered.map((a) => ({
-        id: a.id,
-        title: a.title,
-        slug: a.slug,
-        excerpt: a.excerpt || "",
-        content: a.content,
-        categoryName: a.categoryName || "General",
-        status: a.status,
-        editorNotes: a.editorNotes || undefined,
-        authorId: a.author?.userId || a.authorId,
-        authorName: a.author?.fullName || "محرر بروميثيوس",
-        publishedAt: a.publishedAt?.toISOString(),
-        createdAt: a.createdAt.toISOString(),
-      }));
+      return filtered.map((a) => {
+        const authorsList: ArticleAuthor[] =
+          a.authors && a.authors.length > 0
+            ? a.authors.map((m) => ({
+                id: m.id,
+                name: m.fullName,
+                avatarUrl: m.avatarUrl || m.profileImage || undefined,
+                title: m.title || "عضو فريق بروميثيوس",
+                department: m.departmentName || "عام",
+                bio: m.bio || undefined,
+              }))
+            : [
+                {
+                  id: a.author?.id || a.authorId,
+                  name: a.author?.fullName || "محرر بروميثيوس",
+                  avatarUrl: a.author?.avatarUrl || undefined,
+                  title: a.author?.title || "عضو فريق بروميثيوس",
+                  department: a.author?.departmentName || "عام",
+                },
+              ];
+
+        return {
+          id: a.id,
+          title: a.title,
+          slug: a.slug,
+          excerpt: a.excerpt || "",
+          content: a.content,
+          coverImage: a.coverImage || undefined,
+          categoryName: a.categoryName || "General",
+          status: a.status,
+          editorNotes: a.editorNotes || undefined,
+          authorId: a.author?.userId || a.authorId,
+          authorName: authorsList.map((au) => au.name).join("، "),
+          authors: authorsList,
+          publishedAt: a.publishedAt?.toISOString(),
+          createdAt: a.createdAt.toISOString(),
+        };
+      });
     }
   } catch (e) {}
 
-  // Fallback to local mock data
   let filtered = MOCK_DB_ARTICLES;
   if (session.roles.includes("AUTHOR") && !session.roles.includes("POST_EDITOR") && !session.roles.includes("ADMIN")) {
     filtered = MOCK_DB_ARTICLES.filter((a) => a.authorId === session.userId);
@@ -266,25 +361,50 @@ export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
       where: { status: ArticleStatus.PUBLISHED },
       include: {
         author: true,
+        authors: true,
       },
       orderBy: { createdAt: "desc" },
     });
 
     if (dbArticles.length > 0) {
-      return dbArticles.map((a) => ({
-        id: a.id,
-        title: a.title,
-        slug: a.slug,
-        excerpt: a.excerpt || "",
-        content: a.content,
-        categoryName: a.categoryName || "عام",
-        status: a.status,
-        editorNotes: a.editorNotes || undefined,
-        authorId: a.author?.userId || a.authorId,
-        authorName: a.author?.fullName || "محرر بروميثيوس",
-        publishedAt: a.publishedAt?.toISOString(),
-        createdAt: a.createdAt.toISOString(),
-      }));
+      return dbArticles.map((a) => {
+        const authorsList: ArticleAuthor[] =
+          a.authors && a.authors.length > 0
+            ? a.authors.map((m) => ({
+                id: m.id,
+                name: m.fullName,
+                avatarUrl: m.avatarUrl || m.profileImage || undefined,
+                title: m.title || "عضو فريق بروميثيوس",
+                department: m.departmentName || "عام",
+                bio: m.bio || undefined,
+              }))
+            : [
+                {
+                  id: a.author?.id || a.authorId,
+                  name: a.author?.fullName || "محرر بروميثيوس",
+                  avatarUrl: a.author?.avatarUrl || undefined,
+                  title: a.author?.title || "عضو فريق بروميثيوس",
+                  department: a.author?.departmentName || "عام",
+                },
+              ];
+
+        return {
+          id: a.id,
+          title: a.title,
+          slug: a.slug,
+          excerpt: a.excerpt || "",
+          content: a.content,
+          coverImage: a.coverImage || undefined,
+          categoryName: a.categoryName || "عام",
+          status: a.status,
+          editorNotes: a.editorNotes || undefined,
+          authorId: a.author?.userId || a.authorId,
+          authorName: authorsList.map((au) => au.name).join("، "),
+          authors: authorsList,
+          publishedAt: a.publishedAt?.toISOString(),
+          createdAt: a.createdAt.toISOString(),
+        };
+      });
     }
   } catch (e) {}
 
@@ -302,9 +422,19 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
   const categoryName = formData.get("categoryName")?.toString() || "Technology";
   const coverImage = formData.get("coverImage")?.toString() || "";
   const status = (formData.get("status")?.toString() || "DRAFT") as ArticleStatus;
+  const rawAuthorIds = formData.get("authorIds")?.toString() || "";
 
   if (!id || !title || !content) {
     return { error: "Article ID, title, and content are required." };
+  }
+
+  let selectedAuthorIds: string[] = [];
+  if (rawAuthorIds) {
+    try {
+      selectedAuthorIds = JSON.parse(rawAuthorIds);
+    } catch (e) {
+      selectedAuthorIds = rawAuthorIds.split(",").map((s) => s.trim()).filter(Boolean);
+    }
   }
 
   try {
@@ -318,6 +448,13 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
         categoryName: categoryName || undefined,
         status,
         ...(status === "PUBLISHED" ? { publishedAt: new Date() } : {}),
+        ...(selectedAuthorIds.length > 0
+          ? {
+              authors: {
+                set: selectedAuthorIds.map((authorId) => ({ id: authorId })),
+              },
+            }
+          : {}),
       },
     });
   } catch (err: any) {
@@ -346,4 +483,3 @@ export async function deleteArticleAction(articleId: string) {
   revalidatePath("/articles");
   return { success: true };
 }
-

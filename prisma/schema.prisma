@@ -138,6 +138,7 @@ model Member {
 
   // Relations
   articles             Article[]            @relation("MemberArticles")
+  coAuthoredArticles   Article[]            @relation("ArticleAuthors")
   volunteerRecords     VolunteerRecord[]
   certificates         Certificate[]
   socialLinks          SocialLink[]
@@ -203,6 +204,7 @@ model Article {
 
   authorId    String
   author      Member              @relation("MemberArticles", fields: [authorId], references: [id], onDelete: Restrict)
+  authors     Member[]            @relation("ArticleAuthors")
 
   sources     ArticleSource[]
   collections ArticleCollection[]

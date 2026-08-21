@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useActionState } from "react";
+import React, { useState, useEffect, useActionState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -13,6 +13,7 @@ import ImageResize from "tiptap-extension-resize-image";
 import { FontSize } from "@/lib/tiptap/font-size";
 import { Button } from "@/components/ui/button";
 import { uploadImageToSupabase } from "@/lib/supabase/storage";
+import { getMembersForSelectAction, ArticleAuthor } from "@/app/actions/article-actions";
 import {
   Bold,
   Italic,
@@ -40,6 +41,9 @@ import {
   Palette,
   Highlighter,
   Type,
+  Users,
+  Check,
+  FileText,
 } from "lucide-react";
 
 export interface ArticleEditorProps {
@@ -51,7 +55,9 @@ export interface ArticleEditorProps {
     categoryName?: string;
     coverImage?: string;
     status?: string;
+    authors?: ArticleAuthor[];
   } | null;
+  availableMembers?: ArticleAuthor[];
   saveAction: (prevState: any, formData: FormData) => Promise<any>;
 }
 
@@ -76,7 +82,7 @@ const FONT_SIZES = [
   { label: "36px (عنوان رئيسي)", value: "36px" },
 ];
 
-export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
+export function ArticleEditor({ article, availableMembers = [], saveAction }: ArticleEditorProps) {
   const [focusMode, setFocusMode] = useState(false);
   const [coverImageUrl, setCoverImageUrl] = useState<string>(article?.coverImage || "");
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -85,6 +91,33 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
 
   const [textColor, setTextColor] = useState("#FFFFFF");
   const [highlightColor, setHighlightColor] = useState("#E84A0C");
+
+  // Multi-Author Selection State
+  const [membersList, setMembersList] = useState<ArticleAuthor[]>(availableMembers);
+  const [selectedAuthorIds, setSelectedAuthorIds] = useState<string[]>(() => {
+    if (article?.authors && article.authors.length > 0) {
+      return article.authors.map((a) => a.id);
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (membersList.length === 0) {
+      async function loadMembers() {
+        const data = await getMembersForSelectAction();
+        setMembersList(data || []);
+      }
+      loadMembers();
+    }
+  }, [membersList.length]);
+
+  const toggleAuthorSelection = (authorId: string) => {
+    setSelectedAuthorIds((prev) =>
+      prev.includes(authorId)
+        ? prev.filter((id) => id !== authorId)
+        : [...prev, authorId]
+    );
+  };
 
   const editor = useEditor({
     extensions: [
@@ -109,7 +142,7 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
         allowBase64: true,
       }),
     ],
-    content: article?.content || "<p>اكتب هنا نص المقالة الأكاديمي والبحثي التخصصي...</p>",
+    content: article?.content || "<p>اكتب هنا نص المقالة أو البحث الأكاديمي التخصصي...</p>",
     onUpdate: ({ editor }) => {
       setEditorContent(editor.getHTML());
     },
@@ -120,6 +153,7 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
     if (coverImageUrl) {
       formData.set("coverImage", coverImageUrl);
     }
+    formData.set("authorIds", JSON.stringify(selectedAuthorIds));
     return await saveAction(prevState, formData);
   }, null);
 
@@ -154,8 +188,9 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
   };
 
   return (
-    <form action={formAction} className={`transition-all duration-300 text-white ${focusMode ? "fixed inset-0 z-50 bg-[#1A2B4A] p-4 sm:p-10 overflow-y-auto" : "max-w-7xl mx-auto space-y-6"}`}>
+    <form action={formAction} className={`transition-all duration-300 text-white ${focusMode ? "fixed inset-0 z-50 bg-[#1A2B4A] p-4 sm:p-8 overflow-y-auto" : "max-w-7xl mx-auto space-y-6"}`}>
       {article?.id && <input type="hidden" name="id" value={article.id} />}
+      <input type="hidden" name="authorIds" value={JSON.stringify(selectedAuthorIds)} />
 
       {/* Error Banner */}
       {state?.error && (
@@ -177,11 +212,11 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
             title={focusMode ? "خروج من وضع التركيز" : "تفعيل وضع التركيز التحريري"}
           >
             {focusMode ? <Minimize2 className="w-4 h-4 text-[#E84A0C]" /> : <Maximize2 className="w-4 h-4 text-[#E84A0C]" />}
-            <span>{focusMode ? "إنهاء التركيز" : "وضع التركيز (Focus Mode)"}</span>
+            <span>{focusMode ? "إنهاء التركيز" : "وضع معالج المستندات (Word Mode)"}</span>
           </Button>
 
           <span className="text-xs text-[#6B7280] font-mono hidden md:inline">
-            Prometheus CMS Pro Editor v2.0
+            Prometheus Academic Writer v3.0 (Word/LibreOffice Style)
           </span>
         </div>
 
@@ -199,28 +234,33 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
           <Button
             type="submit"
             disabled={isPending}
-            className="gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md px-5"
+            className="gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md px-6 font-bold text-xs"
           >
             {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            <span>حفظ المقالة</span>
+            <span>حفظ المستند والمقالة</span>
           </Button>
         </div>
       </div>
 
-      {/* Main Wide Container */}
+      {/* Main Container Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2">
         
-        {/* Main Editor Column */}
+        {/* Main Editor Column (LibreOffice / Word Processor Document Canvas) */}
         <div className={`${focusMode ? "lg:col-span-12 max-w-5xl mx-auto w-full" : "lg:col-span-8"} space-y-6`}>
           
-          {/* Seamless Massive Title Input */}
-          <div className="bg-[#0D0D0D] p-6 rounded-2xl border border-[#6B7280]/20 shadow-xl">
+          {/* Article Title Header Box */}
+          <div className="bg-[#0D0D0D] p-6 sm:p-8 rounded-2xl border border-[#6B7280]/20 shadow-xl space-y-4">
+            <div className="flex items-center gap-2 text-xs font-mono text-[#E84A0C]">
+              <FileText className="w-4 h-4" />
+              <span>عنوان المستند الورقي</span>
+            </div>
+
             <input
               type="text"
               name="title"
               defaultValue={article?.title || ""}
               required
-              placeholder="اكتب عنوان المقالة الأكاديمية هنا..."
+              placeholder="اكتب عنوان المقالة أو البحث الأكاديمي هنا..."
               className="w-full bg-transparent border-none text-white font-display text-2xl sm:text-4xl font-extrabold focus:outline-none placeholder-[#6B7280]"
             />
             
@@ -228,16 +268,16 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
               name="excerpt"
               rows={2}
               defaultValue={article?.excerpt || ""}
-              placeholder="اكتب ملخص المقالة المكثف هنا..."
-              className="w-full bg-transparent border-none text-[#6B7280] font-sans text-sm focus:outline-none mt-3 placeholder-[#6B7280]/60 resize-none"
+              placeholder="اكتب ملخص المستند أو المراجعة العلمية هنا..."
+              className="w-full bg-transparent border-none text-[#6B7280] font-sans text-sm focus:outline-none pt-2 border-t border-[#6B7280]/20 placeholder-[#6B7280]/60 resize-none"
             />
           </div>
 
-          {/* STICKY PRO RICH TEXT EDITOR TOOLBAR & CANVAS */}
+          {/* LIBREOFFICE / MS WORD STYLE DOCUMENT PROCESSOR EDITOR CONTAINER */}
           <div className="border border-[#6B7280]/20 rounded-2xl overflow-hidden bg-[#0D0D0D] shadow-2xl">
             
-            {/* Sticky Professional Formatting Toolbar */}
-            <div className="p-3 bg-[#1A2B4A] border-b border-[#6B7280]/20 sticky top-16 z-30 flex flex-wrap items-center gap-2 text-white">
+            {/* FIXED STICKY TOP TOOLBAR */}
+            <div className="p-3 bg-[#1A2B4A] border-b border-[#6B7280]/20 sticky top-16 z-30 flex flex-wrap items-center gap-2 text-white shadow-md">
               
               {/* Font Family Selector */}
               <div className="flex items-center gap-1 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl px-2 py-1">
@@ -250,9 +290,9 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
                       editor?.chain().focus().unsetFontFamily().run();
                     }
                   }}
-                  className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+                  className="bg-transparent text-xs text-white focus:outline-none cursor-pointer font-sans"
                 >
-                  <option value="" className="bg-[#0D0D0D] text-white">اختر الخط (Font)</option>
+                  <option value="" className="bg-[#0D0D0D] text-white">نوع الخط (Font)</option>
                   {SUPPORTED_FONTS.map((f) => (
                     <option key={f.value} value={f.value} className="bg-[#0D0D0D] text-white" style={{ fontFamily: f.value }}>
                       {f.name}
@@ -271,7 +311,7 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
                       editor?.chain().focus().unsetFontSize().run();
                     }
                   }}
-                  className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+                  className="bg-transparent text-xs text-white focus:outline-none cursor-pointer font-mono"
                 >
                   <option value="" className="bg-[#0D0D0D] text-white">حجم الخط (Size)</option>
                   {FONT_SIZES.map((s) => (
@@ -418,7 +458,6 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
 
               {/* Color Pickers */}
               <div className="flex items-center gap-2 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl px-2 py-1">
-                {/* Text Color */}
                 <label className="cursor-pointer flex items-center gap-1" title="لون النص (Text Color)">
                   <Palette className="w-3.5 h-3.5 text-[#E84A0C]" />
                   <input
@@ -432,7 +471,6 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
                   />
                 </label>
 
-                {/* Highlight Color */}
                 <label className="cursor-pointer flex items-center gap-1 border-r border-[#6B7280]/30 pr-2" title="تظليل النص (Background Highlight)">
                   <Highlighter className="w-3.5 h-3.5 text-[#F5A623]" />
                   <input
@@ -481,14 +519,14 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
 
               <div className="w-px h-6 bg-[#6B7280]/30 mx-1" />
 
-              {/* Resizable Inline Image Upload */}
-              <label className="cursor-pointer p-1.5 rounded-lg hover:bg-[#0D0D0D] text-[#6B7280] hover:text-[#E84A0C] transition-colors flex items-center gap-1">
+              {/* Inline Image Upload targeting 'magazine' bucket */}
+              <label className="cursor-pointer p-1.5 rounded-lg hover:bg-[#0D0D0D] text-[#6B7280] hover:text-[#E84A0C] transition-colors flex items-center gap-1 border border-[#6B7280]/30 bg-[#0D0D0D]">
                 {uploadingInlineImg ? (
                   <Loader2 className="w-4 h-4 animate-spin text-[#E84A0C]" />
                 ) : (
                   <ImageIcon className="w-4 h-4 text-[#E84A0C]" />
                 )}
-                <span className="text-xs font-mono font-bold">إدراج صورة قابلة للتعديل</span>
+                <span className="text-xs font-mono font-bold">إدراج صورة (Magazine Bucket)</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -500,9 +538,11 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
 
             </div>
 
-            {/* Writer Viewport */}
-            <div className="p-6 sm:p-10 min-h-[480px] font-sans text-base sm:text-lg text-white focus:outline-none leading-relaxed prose prose-invert max-w-none [&_img]:rounded-xl [&_img]:border [&_img]:border-[#6B7280]/20 [&_img]:my-4">
-              <EditorContent editor={editor} />
+            {/* FREE-FLOWING CENTERED WORD PROCESSOR PAPER CANVAS */}
+            <div className="p-4 sm:p-8 bg-[#121A2B]/80 flex justify-center overflow-x-auto min-h-[750px]">
+              <div className="w-full max-w-4xl bg-[#0D0D0D] border border-[#6B7280]/30 rounded-2xl p-8 sm:p-12 shadow-2xl min-h-[700px] text-white font-sans text-base sm:text-lg leading-relaxed focus:outline-none prose prose-invert max-w-none [&_img]:rounded-xl [&_img]:border [&_img]:border-[#6B7280]/30 [&_img]:my-6">
+                <EditorContent editor={editor} />
+              </div>
             </div>
 
           </div>
@@ -513,6 +553,55 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
         {!focusMode && (
           <div className="lg:col-span-4 space-y-6">
             
+            {/* MULTI-AUTHOR ATTRIBUTION SELECTOR (Task 4 - NYT Style) */}
+            <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
+              <div className="flex items-center gap-2 border-b border-[#6B7280]/20 pb-3">
+                <Users className="w-4 h-4 text-[#E84A0C]" />
+                <h3 className="font-display font-bold text-white text-base">
+                  المؤلفون والمشاركون (Multi-Author)
+                </h3>
+              </div>
+              <p className="text-xs text-[#6B7280]">
+                اختر مؤلفاً واحداً أو مجموعة مؤلفين من كادر الفريق لإتاحة ونشر نسب المقالة بالكامل.
+              </p>
+
+              {/* Members Selection List */}
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {membersList.length === 0 ? (
+                  <p className="text-xs text-[#6B7280] font-mono">جاري تحميل دليل الكادر...</p>
+                ) : (
+                  membersList.map((member) => {
+                    const isSelected = selectedAuthorIds.includes(member.id);
+                    return (
+                      <div
+                        key={member.id}
+                        onClick={() => toggleAuthorSelection(member.id)}
+                        className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all duration-200 ${
+                          isSelected
+                            ? "bg-[#1A2B4A] border-[#E84A0C] text-white shadow-sm"
+                            : "bg-[#1A2B4A]/30 border-[#6B7280]/20 text-[#6B7280] hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${isSelected ? "bg-[#E84A0C] border-[#E84A0C] text-white" : "border-[#6B7280]/40"}`}>
+                            {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-white leading-none">
+                              {member.name}
+                            </p>
+                            <p className="text-[10px] font-mono text-[#6B7280] mt-1">
+                              {member.title} ({member.department})
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
             {/* Academic Category Selector */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
               <h3 className="font-display font-bold text-white text-base">التصنيف الأكاديمي</h3>
@@ -520,14 +609,14 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
                 type="text"
                 name="categoryName"
                 defaultValue={article?.categoryName || ""}
-                placeholder="اكتب اسم التصنيف (مثال: الذكاء الاصطناعي)"
+                placeholder="اسم التصنيف (مثال: الهندسة البرمجية)"
                 className="w-full h-11 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C]"
               />
             </div>
 
             {/* Cover Image Upload to 'magazine' Bucket */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
-              <h3 className="font-display font-bold text-white text-base">صورة الغلاف (Cover Image)</h3>
+              <h3 className="font-display font-bold text-white text-base">صورة الغلاف (Magazine Bucket)</h3>
 
               {coverImageUrl ? (
                 <div className="relative aspect-video rounded-xl overflow-hidden border border-[#6B7280]/30">
@@ -543,12 +632,12 @@ export function ArticleEditor({ article, saveAction }: ArticleEditorProps) {
                 {uploadingCover ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-[#E84A0C]" />
-                    <span>جاري الرفع إلى Supabase...</span>
+                    <span>جاري الرفع لـ Supabase...</span>
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4 text-[#E84A0C]" />
-                    <span>رفع صورة الغلاف من الجهاز</span>
+                    <span>رفع صورة الغلاف</span>
                   </>
                 )}
                 <input

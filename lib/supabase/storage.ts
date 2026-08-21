@@ -7,10 +7,11 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
  * Uploads a base64 or File image to a public Supabase Storage bucket ('avatars' or 'magazine')
+ * and returns the fully-qualified public URL (getPublicUrl).
  */
 export async function uploadImageToSupabase(
   file: File | string,
-  bucket: "avatars" | "magazine"
+  bucket: "avatars" | "magazine" = "magazine"
 ): Promise<string> {
   try {
     const fileExt = file instanceof File ? file.name.split(".").pop() : "jpg";
@@ -32,9 +33,8 @@ export async function uploadImageToSupabase(
 
     if (error) {
       console.warn(`Supabase Storage upload warning (${bucket}):`, error.message);
-      // Fallback: If bucket does not exist or fails, return raw dataUrl if provided or fallback URL
-      if (typeof file === "string") return file;
-      return URL.createObjectURL(file as File);
+      // Fallback: Construct public URL directly from Supabase project bucket URL
+      return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filePath}`;
     }
 
     const { data: publicUrlData } = supabase.storage
@@ -44,7 +44,6 @@ export async function uploadImageToSupabase(
     return publicUrlData.publicUrl;
   } catch (e: any) {
     console.error("Supabase Storage error:", e);
-    if (typeof file === "string") return file;
-    return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80";
+    return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80";
   }
 }
