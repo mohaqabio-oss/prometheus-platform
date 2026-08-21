@@ -188,20 +188,49 @@ export async function updateVolunteerHoursAction(memberId: string, addedHours: n
 export async function issueCertificateAction(prevState: any, formData: FormData) {
   await requireHRPermission();
 
-  const memberId = formData.get("memberId")?.toString();
-  const title = formData.get("title")?.toString().trim() || "Verified Certificate of Voluntary Contribution";
+  const memberId = formData.get("memberId")?.toString().trim();
+  const title = formData.get("title")?.toString().trim() || "شهادة توثيق مساهمة تطوعية معتمدة";
   const description = formData.get("description")?.toString().trim() || "";
 
   if (!memberId) {
-    return { error: "Please select a team member." };
+    return { error: "يرجى اختيار عضو من القائمة." };
   }
 
-  const mem = MOCK_HR_MEMBERS.find((m) => m.id === memberId);
-  if (!mem) {
-    return { error: "Member not found." };
+  // 1. First, search for the Member in Prisma Database
+  let dbMember: any = null;
+  try {
+    dbMember = await prisma.member.findUnique({
+      where: { id: memberId },
+    });
+  } catch (e) {}
+
+  let memberName = "";
+  let memberDept = "General";
+  let memberRole = "Member";
+  let volunteerHours = 0;
+  let targetMemberId = memberId;
+
+  if (dbMember) {
+    targetMemberId = dbMember.id;
+    memberName = dbMember.fullName;
+    memberDept = dbMember.departmentName || "General";
+    memberRole = dbMember.title || "Member";
+    volunteerHours = dbMember.volunteerHours || 0;
+  } else {
+    // Fallback: Check in-memory list if offline/mocking
+    const mockMem = MOCK_HR_MEMBERS.find((m) => m.id === memberId);
+    if (!mockMem) {
+      return { error: "Member not found. لم يتم العثور على العضو في النظام." };
+    }
+    targetMemberId = mockMem.id;
+    memberName = mockMem.fullName;
+    memberDept = mockMem.departmentName;
+    memberRole = mockMem.title;
+    volunteerHours = mockMem.volunteerHours;
   }
 
-  const deptCode = mem.departmentName.substring(0, 3).toUpperCase();
+  // 2. Generate Unique Certificate Code
+  const deptCode = (memberDept || "GEN").substring(0, 3).toUpperCase();
   const randomSuffix = Math.floor(1000 + Math.random() * 9000).toString();
   const certificateCode = `PRM-2026-${deptCode}-${randomSuffix}`;
 
@@ -211,25 +240,27 @@ export async function issueCertificateAction(prevState: any, formData: FormData)
     title,
     description,
     issuedAt: new Date().toISOString(),
-    memberName: mem.fullName,
-    memberDepartment: mem.departmentName,
-    memberRole: mem.title,
-    volunteerHours: mem.volunteerHours,
+    memberName,
+    memberDepartment: memberDept,
+    memberRole,
+    volunteerHours,
   };
 
   MOCK_HR_CERTIFICATES.unshift(newCert);
-  mem.certificateCode = certificateCode;
 
+  // 3. Create Certificate Record in Database
   try {
     await prisma.certificate.create({
       data: {
         certificateCode,
         title,
         description,
-        memberId: mem.id,
+        memberId: targetMemberId,
       },
     });
-  } catch (e) {}
+  } catch (e: any) {
+    console.error("Certificate creation DB error:", e);
+  }
 
   revalidatePath("/admin/certificates");
   revalidatePath("/admin/members");
