@@ -15,6 +15,8 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
+  Layers,
+  Link2,
 } from "lucide-react";
 
 export const revalidate = 60;
@@ -23,17 +25,21 @@ export default async function HomePage() {
   const { settings, dynamicStats, featuredArticles, partners } =
     await getPublicWebsiteData();
 
+  const heroBadge =
+    settings.pageHeaders?.homeHero?.badge || "منصة مؤسسية وأكاديمية تطوعية";
   const heroTitle =
-    settings["hero.title"] || "فريق بروميثيوس التطوعي";
+    settings.pageHeaders?.homeHero?.title || "فريق بروميثيوس التطوعي";
   const heroSubtitle =
-    settings["hero.subtitle"] ||
+    settings.pageHeaders?.homeHero?.subtitle ||
     "مؤسسة تطوعية أكاديمية تعنى بتطوير المنصات البرمجية، نشر المقالات والبحوث المفتوحة، وتدريب الطاقات الشبابية.";
 
+  const aboutBadge =
+    settings.pageHeaders?.homeAbout?.badge || "رؤيتنا ورسالتنا";
   const aboutTitle =
-    settings["about.title"] ||
+    settings.pageHeaders?.homeAbout?.title ||
     "منظمة تطوعية تسعى للنهوض بالواقع الأكاديمي والتقني";
   const aboutDescription =
-    settings["about.description"] ||
+    settings.pageHeaders?.homeAbout?.subtitle ||
     "تأسس فريق بروميثيوس التطوعي بهدف سد الثغرة بين الدراسة الأكاديمية وسوق العمل التقني، من خلال مشاريع حقيقية وأبحاث رصينة.";
 
   const pillars = [
@@ -95,6 +101,8 @@ export default async function HomePage() {
     }
   };
 
+  const homeBlocks = settings.homeBlocks || [];
+
   return (
     <div className="space-y-20 pb-20">
       
@@ -105,7 +113,7 @@ export default async function HomePage() {
           
           <div className="inline-flex items-center gap-2 rounded-xl border border-[#E84A0C]/30 bg-[#E84A0C]/10 px-4 py-1.5 text-xs font-mono text-[#E84A0C] backdrop-blur-sm animate-fade-in">
             <span className="w-2 h-2 rounded-full bg-[#E84A0C] animate-pulse" />
-            <span>منصة مؤسسية وأكاديمية تطوعية</span>
+            <span>{heroBadge}</span>
           </div>
 
           <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
@@ -144,7 +152,7 @@ export default async function HomePage() {
           
           <div className="lg:col-span-6 space-y-6">
             <SectionHeader
-              badgeText="رؤيتنا ورسالتنا"
+              badgeText={aboutBadge}
               title={aboutTitle}
               description={aboutDescription}
             />
@@ -176,7 +184,157 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 3. WHAT WE DO (PILLARS) */}
+      {/* 3. DYNAMIC CONTENT BLOCKS SECTION (Custom Admin Configured Blocks) */}
+      {homeBlocks.length > 0 && (
+        <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-8">
+          <SectionHeader
+            badgeText="المكونات التفاعلية"
+            title="منصات ومبادرات بروميثيوس"
+            description="مكونات ديناميكية مصممة ومخصصة عبر لوحة التحكم لعرض المبادرات والمشاريع الرئيسية."
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {homeBlocks.map((block) => {
+              if (block.type === "image-card") {
+                return (
+                  <Card
+                    key={block.id}
+                    className="overflow-hidden bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md hover:border-[#E84A0C]/40 transition-all duration-300 group"
+                  >
+                    {block.image_url && (
+                      <div className="h-44 w-full overflow-hidden relative bg-[#1A2B4A]">
+                        <img
+                          src={block.image_url}
+                          alt={block.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    )}
+                    <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        {block.subtitle && (
+                          <span className="text-[11px] font-mono text-[#E84A0C] block">
+                            {block.subtitle}
+                          </span>
+                        )}
+                        <h3 className="font-display text-lg font-bold text-white">
+                          {block.title}
+                        </h3>
+                        {block.content && (
+                          <p className="text-xs text-[#6B7280] leading-relaxed line-clamp-3">
+                            {block.content}
+                          </p>
+                        )}
+                      </div>
+
+                      {block.target_url && (
+                        <div className="pt-4 border-t border-[#6B7280]/20">
+                          <Link href={block.target_url}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full gap-2 text-xs rounded-xl border-[#6B7280]/30 text-white hover:text-[#E84A0C]"
+                            >
+                              <span>استكشف المزيد</span>
+                              <ArrowLeft className="w-3.5 h-3.5 text-[#E84A0C]" />
+                            </Button>
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                );
+              }
+
+              if (block.type === "shortcut-link") {
+                return (
+                  <Card
+                    key={block.id}
+                    className="p-6 bg-gradient-to-br from-[#1A2B4A]/60 to-[#0D0D0D] border border-[#E84A0C]/30 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md hover:border-[#E84A0C]/60 transition-all duration-300"
+                  >
+                    <div className="space-y-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#E84A0C]/10 border border-[#E84A0C]/30 flex items-center justify-center">
+                        <Link2 className="w-5 h-5 text-[#E84A0C]" />
+                      </div>
+                      {block.subtitle && (
+                        <span className="text-[11px] font-mono text-[#E84A0C] block">
+                          {block.subtitle}
+                        </span>
+                      )}
+                      <h3 className="font-display text-lg font-bold text-white">
+                        {block.title}
+                      </h3>
+                      {block.content && (
+                        <p className="text-xs text-[#6B7280] leading-relaxed">
+                          {block.content}
+                        </p>
+                      )}
+                    </div>
+
+                    {block.target_url && (
+                      <div className="pt-2">
+                        <Link href={block.target_url}>
+                          <Button
+                            size="sm"
+                            className="w-full gap-2 text-xs bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md"
+                          >
+                            <span>انتقال سريع</span>
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
+                  </Card>
+                );
+              }
+
+              // Default: info-box
+              return (
+                <Card
+                  key={block.id}
+                  className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md hover:border-[#E84A0C]/40 transition-all duration-300"
+                >
+                  <div className="space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-[#E84A0C]" />
+                    </div>
+                    {block.subtitle && (
+                      <span className="text-[11px] font-mono text-[#E84A0C] block">
+                        {block.subtitle}
+                      </span>
+                    )}
+                    <h3 className="font-display text-lg font-bold text-white">
+                      {block.title}
+                    </h3>
+                    {block.content && (
+                      <p className="text-xs text-[#6B7280] leading-relaxed">
+                        {block.content}
+                      </p>
+                    )}
+                  </div>
+
+                  {block.target_url && (
+                    <div className="pt-4 border-t border-[#6B7280]/20">
+                      <Link href={block.target_url}>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full gap-2 text-xs rounded-xl border-[#6B7280]/30 text-white hover:text-[#E84A0C]"
+                        >
+                          <span>عرض التفاصيل</span>
+                          <ArrowLeft className="w-3.5 h-3.5 text-[#E84A0C]" />
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* 4. WHAT WE DO (PILLARS) */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-12">
         <SectionHeader
           badgeText="أقسام العمل التطوعي"
@@ -204,7 +362,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 4. BRAND IDENTITY & ETHOS */}
+      {/* 5. BRAND IDENTITY & ETHOS */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl">
         <Card className="p-8 sm:p-12 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-8 relative overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
           <div className="max-w-3xl space-y-6">
@@ -228,7 +386,7 @@ export default async function HomePage() {
         </Card>
       </section>
 
-      {/* 5. PROMETHEUS POST PREVIEW (Only if published articles exist) */}
+      {/* 6. PROMETHEUS POST PREVIEW (Only if published articles exist) */}
       {featuredArticles.length > 0 && (
         <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
@@ -278,13 +436,13 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 6. OUR PARTNERS & SPONSORS SECTION */}
+      {/* 7. OUR PARTNERS & SPONSORS SECTION */}
       {partners.length > 0 && (
         <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-8">
           <SectionHeader
-            badgeText="الشركاء والرعاة"
-            title={settings["partners.title"] || "شركاؤنا الداعمون والمؤسسات الراعية"}
-            description={settings["partners.subtitle"] || "نفخر بالتعاون مع المؤسسات التكنولوجية والمنابر الأكاديمية لدعم منصاتنا التطوعية المفتوحة."}
+            badgeText={settings.pageHeaders?.partners?.badge || "الشركاء والرعاة"}
+            title={settings.pageHeaders?.partners?.title || "شركاؤنا الداعمون والمؤسسات الراعية"}
+            description={settings.pageHeaders?.partners?.subtitle || "نفخر بالتعاون مع المؤسسات التكنولوجية والمنابر الأكاديمية لدعم منصاتنا التطوعية المفتوحة."}
           />
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
@@ -320,7 +478,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 7. CALL TO ACTION / JOIN US */}
+      {/* 8. CALL TO ACTION / JOIN US */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-4xl text-center space-y-6">
         <div className="p-10 rounded-2xl border border-[#6B7280]/20 bg-[#0D0D0D] space-y-6 shadow-md transition-all duration-300">
           <Badge variant="accent" className="mx-auto">انضم إلينا اليوم</Badge>

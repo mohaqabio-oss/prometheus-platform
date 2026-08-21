@@ -241,9 +241,12 @@ model ArticleSource {
 // ==========================================
 
 model SiteSetting {
-  key       String   @id
-  value     String   @db.Text
-  updatedAt DateTime @updatedAt
+  id             String   @id @default("default")
+  primaryColor   String   @default("#E84A0C")
+  secondaryColor String   @default("#1A2B4A")
+  pageHeaders    Json?
+  homeBlocks     Json?
+  updatedAt      DateTime @updatedAt
 
   @@map("site_settings")
 }

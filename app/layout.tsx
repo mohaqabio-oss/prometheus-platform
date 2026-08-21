@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
+import { getSiteSettings } from "@/app/actions/website-actions";
 
 const tajawal = Tajawal({
   subsets: ["arabic"],
@@ -62,13 +63,46 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const settings = await getSiteSettings();
+  const primaryColor = settings?.primaryColor || "#E84A0C";
+  const secondaryColor = settings?.secondaryColor || "#1A2B4A";
+
   return (
     <html lang="ar" dir="rtl" className={`${tajawal.variable} h-full antialiased`}>
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: `
+          :root {
+            --primary: ${primaryColor};
+            --accent: ${primaryColor};
+            --ring: ${primaryColor};
+            --secondary: ${secondaryColor};
+            --background: ${secondaryColor};
+          }
+          body {
+            background-color: var(--secondary) !important;
+          }
+          .bg-\\[\\#1A2B4A\\] {
+            background-color: var(--secondary) !important;
+          }
+          .bg-\\[\\#E84A0C\\], .hover\\:bg-\\[\\#E84A0C\\]:hover, .bg-brand-orange {
+            background-color: var(--primary) !important;
+          }
+          .text-\\[\\#E84A0C\\], .hover\\:text-\\[\\#E84A0C\\]:hover, .text-brand-orange {
+            color: var(--primary) !important;
+          }
+          .border-\\[\\#E84A0C\\], .border-\\[\\#E84A0C\\]\\/30, .border-\\[\\#E84A0C\\]\\/40 {
+            border-color: var(--primary) !important;
+          }
+          ::selection {
+            background-color: var(--primary) !important;
+          }
+        ` }} />
+      </head>
       <body className="min-h-full flex flex-col bg-[#1A2B4A] text-white font-sans selection:bg-[#E84A0C] selection:text-white">
         {children}
       </body>
