@@ -1,5 +1,6 @@
 import React from "react";
 import type { Metadata } from "next";
+import { getSiteSettings } from "@/app/actions/website-actions";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,11 +8,14 @@ import { Avatar } from "@/components/ui/avatar";
 import { prisma } from "@/lib/db/prisma";
 import { ShieldCheck, BookOpen, UserCheck, Award } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "الهيئة التحريرية | فريق ومجلة بروميثيوس الأكاديمية",
-  description:
-    "اعرف أكثر عن أعضاء الهيئة التحريرية، المحكمين الأكاديميين، والقائمين على مراجعة المنشورات والبحوث وفق معايير الترقيم الدولي ISSN.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const ed = settings.pageHeaders.editorialBoard;
+  return {
+    title: `${ed.title} | فريق ومجلة بروميثيوس`,
+    description: ed.subtitle,
+  };
+}
 
 interface EditorialMember {
   id: string;
@@ -56,13 +60,16 @@ const DEFAULT_EDITORIAL_BOARD: EditorialMember[] = [
     fullName: "م. أحمد الزهراني",
     title: "مستشار التحكيم والنشر الرقمي",
     departmentName: "البحث العلمي والتحليل",
-    bio: "متخصص في أمن المعلومات والأوراق البحثية المفتوحة المصدر وربط المعايير الدولية ISSN.",
+    bio: "متخصص في أمن المعلومات والأوراق البحثية المفتوحة المصدر.",
     roleBadge: "محكّم أكاديمي",
     avatarUrl: undefined,
   },
 ];
 
 export default async function EditorialBoardPage() {
+  const settings = await getSiteSettings();
+  const ed = settings.pageHeaders.editorialBoard;
+
   let editorialMembers = DEFAULT_EDITORIAL_BOARD;
 
   try {
@@ -90,12 +97,11 @@ export default async function EditorialBoardPage() {
   return (
     <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-16 animate-fade-in">
       
-      {/* Header */}
+      {/* Dynamic Header */}
       <SectionHeader
-        badgeText="الهيئة التحريرية والاستشارية (ISSN Board)"
-        title="الهيئة التحريرية لمجلة"
-        highlightedTitle="بروميثيوس الأكاديمية"
-        description="تتكون الهيئة التحريرية من نخبة من المطورين والباحثين والمحكمين الأكاديميين الملتزمين بأعلى معايير الرصانة العلمية والتحكيم المزدوج (Double-Blind Peer Review)."
+        badgeText={ed.badge || "الهيئة التحريرية"}
+        title={ed.title}
+        description={ed.subtitle}
       />
 
       {/* Editorial Standards Overview */}
@@ -114,9 +120,9 @@ export default async function EditorialBoardPage() {
           <div className="w-10 h-10 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/30 flex items-center justify-center">
             <BookOpen className="w-5 h-5 text-[#F5A623]" />
           </div>
-          <h3 className="font-display text-base font-bold text-white">معايير الترقيم الدولي ISSN</h3>
+          <h3 className="font-display text-base font-bold text-white">معايير النشر والأكاديميا</h3>
           <p className="text-xs text-[#6B7280] leading-relaxed">
-            التزام كامل بالهياكل التحريرية والتفهرس الرقمي المعتمد للمجلات العلمية الدورية والتخصصية.
+            التزام كامل بالهياكل التحريرية والتفهرس الرقمي المعتمد للمجلات والمنشورات العلمية الدورية والتخصصية.
           </p>
         </Card>
 
@@ -135,7 +141,7 @@ export default async function EditorialBoardPage() {
       <div className="space-y-8">
         <div className="flex items-center gap-3 border-b border-[#6B7280]/20 pb-4">
           <UserCheck className="w-5 h-5 text-[#E84A0C]" />
-          <h2 className="font-display text-xl font-bold text-white">اعضاء هيئة التحرير والمراجعة</h2>
+          <h2 className="font-display text-xl font-bold text-white">أعضاء هيئة التحرير والمراجعة</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

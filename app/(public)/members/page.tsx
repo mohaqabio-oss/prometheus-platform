@@ -6,25 +6,31 @@ import { MemberCard } from "@/components/members/member-card";
 import { Card } from "@/components/ui/card";
 import { Search, Users } from "lucide-react";
 import { getPublicMembersAction } from "@/app/actions/hr-actions";
+import { getSiteSettings, PageHeaderConfig } from "@/app/actions/website-actions";
 
 export default function MembersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDept, setSelectedDept] = useState<string>("الكل");
   const [members, setMembers] = useState<any[]>([]);
+  const [headerConfig, setHeaderConfig] = useState<PageHeaderConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadMembers() {
+    async function loadData() {
       try {
-        const data = await getPublicMembersAction();
-        setMembers(data || []);
+        const [mems, settings] = await Promise.all([
+          getPublicMembersAction(),
+          getSiteSettings(),
+        ]);
+        setMembers(mems || []);
+        setHeaderConfig(settings.pageHeaders.members);
       } catch (e) {
         setMembers([]);
       } finally {
         setLoading(false);
       }
     }
-    loadMembers();
+    loadData();
   }, []);
 
   const departments = [
@@ -47,12 +53,11 @@ export default function MembersPage() {
   return (
     <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-16">
       
-      {/* Header */}
+      {/* Dynamic Header */}
       <SectionHeader
-        badgeText="دليل أعضاء الفريق"
-        title="فريقنا المتطوع و"
-        highlightedTitle="التخصصات"
-        description="استكشف الكوادر التطوعية، مهندسي البرمجيات، الباحثين الأكاديميين، والمحررين القائمين على مشاريع فريق بروميثيوس."
+        badgeText={headerConfig?.badge || "دليل أعضاء الفريق"}
+        title={headerConfig?.title || "فريقنا المتطوع والكوادر"}
+        description={headerConfig?.subtitle || "استكشف الكوادر التطوعية، مهندسي البرمجيات، الباحثين الأكاديميين، والمحررين القائمين على مشاريع فريق بروميثيوس."}
       />
 
       {/* Search & Department Filters */}

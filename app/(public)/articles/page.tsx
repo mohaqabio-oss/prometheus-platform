@@ -5,29 +5,34 @@ import Link from "next/link";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Search, Clock, BookOpen } from "lucide-react";
 import { getPublicArticlesAction } from "@/app/actions/article-actions";
+import { getSiteSettings, PageHeaderConfig } from "@/app/actions/website-actions";
 
 export default function ArticlesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("الكل");
   const [sortBy, setSortBy] = useState<"latest" | "oldest">("latest");
   const [articles, setArticles] = useState<any[]>([]);
+  const [headerConfig, setHeaderConfig] = useState<PageHeaderConfig | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadArticles() {
+    async function loadData() {
       try {
-        const data = await getPublicArticlesAction();
-        setArticles(data || []);
+        const [arts, settings] = await Promise.all([
+          getPublicArticlesAction(),
+          getSiteSettings(),
+        ]);
+        setArticles(arts || []);
+        setHeaderConfig(settings.pageHeaders.articles);
       } catch (e) {
         setArticles([]);
       } finally {
         setLoading(false);
       }
     }
-    loadArticles();
+    loadData();
   }, []);
 
   const categories = ["الكل", "الهندسة البرمجية", "البحث العلمي", "التعليم والتطوير", "المهارات الناعمة"];
@@ -49,12 +54,11 @@ export default function ArticlesPage() {
   return (
     <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-16">
       
-      {/* Header */}
+      {/* Dynamic Header */}
       <SectionHeader
-        badgeText="منصة منشورات بروميثيوس"
-        title="المكتبة والأوراق البحثية"
-        highlightedTitle="المفتوحة"
-        description="منصة تحريرية موجهة لنشر المقالات المنهجية، والمراجعات البحثية المصاغة بأعلى معايير الرصانة الأكاديمية."
+        badgeText={headerConfig?.badge || "منصة منشورات بروميثيوس"}
+        title={headerConfig?.title || "المكتبة والأوراق البحثية المفتوحة"}
+        description={headerConfig?.subtitle || "منصة تحريرية موجهة لنشر المقالات المنهجية، والمراجعات البحثية المصاغة بأعلى معايير الرصانة الأكاديمية."}
       />
 
       {/* Search & Category Filter Controls */}

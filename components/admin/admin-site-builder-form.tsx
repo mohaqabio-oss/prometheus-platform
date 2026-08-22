@@ -21,12 +21,14 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
-  Sparkles,
-  Link2,
   Image as ImageIcon,
   CheckCircle2,
   AlertCircle,
-  ExternalLink,
+  Link2,
+  FileText,
+  ShieldAlert,
+  Mail,
+  Users,
 } from "lucide-react";
 
 interface AdminSiteBuilderFormProps {
@@ -39,7 +41,7 @@ export function AdminSiteBuilderForm({
   partners,
 }: AdminSiteBuilderFormProps) {
   const [activeTab, setActiveTab] = useState<
-    "theme" | "headers" | "blocks" | "partners"
+    "theme" | "headers" | "ethics" | "contact" | "blocks" | "partners"
   >("theme");
   const [settings, setSettings] = useState<SiteSettingsData>(initialSettings);
   const [isPending, startTransition] = useTransition();
@@ -51,7 +53,9 @@ export function AdminSiteBuilderForm({
   // Tab Navigation items
   const tabs = [
     { id: "theme", label: "ألوان ومظهر الموقع", icon: <Palette className="w-4 h-4" /> },
-    { id: "headers", label: "عناوين وترويسات الصفحات", icon: <Type className="w-4 h-4" /> },
+    { id: "headers", label: "إدارة الترويسات والعناوين (CMS)", icon: <Type className="w-4 h-4" /> },
+    { id: "ethics", label: "محتوى أخلاقيات النشر", icon: <ShieldAlert className="w-4 h-4" /> },
+    { id: "contact", label: "بيانات صفحة اتصل بنا", icon: <Mail className="w-4 h-4" /> },
     { id: "blocks", label: "منشئ المكونات (Homepage)", icon: <LayoutGrid className="w-4 h-4" /> },
     { id: "partners", label: "إدارة الشركاء والرعاة", icon: <Building2 className="w-4 h-4" /> },
   ];
@@ -64,7 +68,7 @@ export function AdminSiteBuilderForm({
   // Helper for setting page header fields
   const handleHeaderChange = (
     sectionKey: keyof SiteSettingsData["pageHeaders"],
-    field: "title" | "subtitle" | "badge",
+    field: string,
     val: string
   ) => {
     setSettings((prev) => ({
@@ -72,7 +76,7 @@ export function AdminSiteBuilderForm({
       pageHeaders: {
         ...prev.pageHeaders,
         [sectionKey]: {
-          ...prev.pageHeaders[sectionKey],
+          ...(prev.pageHeaders[sectionKey] || {}),
           [field]: val,
         },
       },
@@ -130,7 +134,7 @@ export function AdminSiteBuilderForm({
       if (res.success) {
         setStatusMessage({
           type: "success",
-          text: "تم حفظ التعديلات وإعادة بناء المظهر العام بنجاح!",
+          text: "تم حفظ التعديلات وإعادة بناء المظهر العام والمحتوى بنجاح!",
         });
       } else {
         setStatusMessage({
@@ -262,62 +266,11 @@ export function AdminSiteBuilderForm({
               </div>
 
             </div>
-
-            {/* Live Color Preview Card */}
-            <div className="pt-4 border-t border-[#6B7280]/20 space-y-3">
-              <h4 className="text-xs font-bold text-white">معاينة حية للمظهر الجديد</h4>
-              <div
-                className="p-6 rounded-2xl border transition-all duration-300 space-y-4"
-                style={{
-                  backgroundColor: settings.secondaryColor,
-                  borderColor: `${settings.primaryColor}40`,
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className="px-3 py-1 rounded-lg text-xs font-mono"
-                    style={{
-                      backgroundColor: `${settings.primaryColor}20`,
-                      color: settings.primaryColor,
-                      border: `1px solid ${settings.primaryColor}40`,
-                    }}
-                  >
-                    شارة تجريبية
-                  </span>
-                </div>
-                <h5 className="font-display text-xl font-bold text-white">
-                  عنوان تجريبي بالنمط المختار
-                </h5>
-                <p className="text-xs text-gray-300 max-w-md">
-                  هذا المربع يوضح شكل دمج اللون الأساسي المختار مع خلفية الموقع قبل عملية الحفظ.
-                </p>
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-white transition-all shadow-md"
-                    style={{ backgroundColor: settings.primaryColor }}
-                  >
-                    زر رئيسي
-                  </button>
-                  <button
-                    type="button"
-                    className="px-4 py-2 rounded-xl text-xs font-bold text-white border transition-all"
-                    style={{
-                      borderColor: `${settings.primaryColor}60`,
-                      color: settings.primaryColor,
-                    }}
-                  >
-                    زر ثانوي
-                  </button>
-                </div>
-              </div>
-            </div>
-
           </Card>
         </div>
       )}
 
-      {/* TAB 2: PAGE HEADERS & TYPOGRAPHY */}
+      {/* TAB 2: PAGE HEADERS & TYPOGRAPHY CMS */}
       {activeTab === "headers" && (
         <div className="space-y-6">
           <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-8 rounded-2xl">
@@ -326,10 +279,10 @@ export function AdminSiteBuilderForm({
               <Type className="w-5 h-5 text-[#E84A0C]" />
               <div>
                 <h3 className="font-display font-bold text-white text-base">
-                  إدارة عناوين وترويسات أقسام الموقع
+                  نظام إدارة الترويسات والعناوين العامة (Page Headers CMS)
                 </h3>
                 <p className="text-xs text-[#6B7280]">
-                  تعديل الترويسات والشارات الوصفية لمختلف صفحات الواجهة العامة بشكل مباشر.
+                  تعديل الترويسات، العناوين، والشارات الوصفية لمختلف صفحات الواجهة العامة مباشرة من قاعدة البيانات.
                 </p>
               </div>
             </div>
@@ -365,41 +318,40 @@ export function AdminSiteBuilderForm({
                       rows={2}
                       value={settings.pageHeaders.homeHero?.subtitle || ""}
                       onChange={(e) => handleHeaderChange("homeHero", "subtitle", e.target.value)}
-                      className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white placeholder:text-[#6B7280] focus:border-[#E84A0C] focus:outline-none font-sans"
+                      className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white focus:border-[#E84A0C] focus:outline-none font-sans"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Home About Section */}
+              {/* Editorial Board Header */}
               <div className="p-4 bg-[#1A2B4A]/20 border border-[#6B7280]/20 rounded-xl space-y-3">
                 <h4 className="font-bold text-xs text-[#E84A0C] font-mono">
-                  2. قسم التعريف والرؤية (Home About Section)
+                  2. صفحة الهيئة التحريرية (/editorial-board)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] text-[#6B7280]">الشارة الوصفية (Badge)</label>
+                    <label className="text-[11px] text-[#6B7280]">الشارة</label>
                     <Input
-                      value={settings.pageHeaders.homeAbout?.badge || ""}
-                      onChange={(e) => handleHeaderChange("homeAbout", "badge", e.target.value)}
+                      value={settings.pageHeaders.editorialBoard?.badge || ""}
+                      onChange={(e) => handleHeaderChange("editorialBoard", "badge", e.target.value)}
                       className="text-xs"
                     />
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <label className="text-[11px] text-[#6B7280]">عنوان قسم التعريف</label>
+                    <label className="text-[11px] text-[#6B7280]">العنوان الرئيسي</label>
                     <Input
-                      value={settings.pageHeaders.homeAbout?.title || ""}
-                      onChange={(e) => handleHeaderChange("homeAbout", "title", e.target.value)}
+                      value={settings.pageHeaders.editorialBoard?.title || ""}
+                      onChange={(e) => handleHeaderChange("editorialBoard", "title", e.target.value)}
                       className="text-xs font-bold"
                     />
                   </div>
                   <div className="space-y-1 md:col-span-3">
-                    <label className="text-[11px] text-[#6B7280]">نص الرسالة والرؤية المؤسسية</label>
-                    <textarea
-                      rows={2}
-                      value={settings.pageHeaders.homeAbout?.subtitle || ""}
-                      onChange={(e) => handleHeaderChange("homeAbout", "subtitle", e.target.value)}
-                      className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white placeholder:text-[#6B7280] focus:border-[#E84A0C] focus:outline-none font-sans"
+                    <label className="text-[11px] text-[#6B7280]">الوصف</label>
+                    <Input
+                      value={settings.pageHeaders.editorialBoard?.subtitle || ""}
+                      onChange={(e) => handleHeaderChange("editorialBoard", "subtitle", e.target.value)}
+                      className="text-xs"
                     />
                   </div>
                 </div>
@@ -471,79 +423,161 @@ export function AdminSiteBuilderForm({
                 </div>
               </div>
 
-              {/* Join Us Header */}
-              <div className="p-4 bg-[#1A2B4A]/20 border border-[#6B7280]/20 rounded-xl space-y-3">
-                <h4 className="font-bold text-xs text-[#E84A0C] font-mono">
-                  5. صفحة الانضمام والتوظيف التطوعي (/join-us)
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[11px] text-[#6B7280]">الشارة</label>
-                    <Input
-                      value={settings.pageHeaders.joinUs?.badge || ""}
-                      onChange={(e) => handleHeaderChange("joinUs", "badge", e.target.value)}
-                      className="text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-[11px] text-[#6B7280]">عنوان الصفحة</label>
-                    <Input
-                      value={settings.pageHeaders.joinUs?.title || ""}
-                      onChange={(e) => handleHeaderChange("joinUs", "title", e.target.value)}
-                      className="text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1 md:col-span-3">
-                    <label className="text-[11px] text-[#6B7280]">الوصف</label>
-                    <Input
-                      value={settings.pageHeaders.joinUs?.subtitle || ""}
-                      onChange={(e) => handleHeaderChange("joinUs", "subtitle", e.target.value)}
-                      className="text-xs"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Collections Header */}
-              <div className="p-4 bg-[#1A2B4A]/20 border border-[#6B7280]/20 rounded-xl space-y-3">
-                <h4 className="font-bold text-xs text-[#E84A0C] font-mono">
-                  6. صفحة المجموعات والسلاسل الأكاديمية (/collections)
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[11px] text-[#6B7280]">الشارة</label>
-                    <Input
-                      value={settings.pageHeaders.collections?.badge || ""}
-                      onChange={(e) => handleHeaderChange("collections", "badge", e.target.value)}
-                      className="text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1 md:col-span-2">
-                    <label className="text-[11px] text-[#6B7280]">عنوان الصفحة</label>
-                    <Input
-                      value={settings.pageHeaders.collections?.title || ""}
-                      onChange={(e) => handleHeaderChange("collections", "title", e.target.value)}
-                      className="text-xs font-bold"
-                    />
-                  </div>
-                  <div className="space-y-1 md:col-span-3">
-                    <label className="text-[11px] text-[#6B7280]">الوصف</label>
-                    <Input
-                      value={settings.pageHeaders.collections?.subtitle || ""}
-                      onChange={(e) => handleHeaderChange("collections", "subtitle", e.target.value)}
-                      className="text-xs"
-                    />
-                  </div>
-                </div>
-              </div>
-
             </div>
 
           </Card>
         </div>
       )}
 
-      {/* TAB 3: HOMEPAGE BLOCK BUILDER */}
+      {/* TAB 3: PUBLICATION ETHICS CMS */}
+      {activeTab === "ethics" && (
+        <div className="space-y-6">
+          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
+            <div className="flex items-center gap-3 border-b border-[#6B7280]/20 pb-4">
+              <ShieldAlert className="w-5 h-5 text-[#E84A0C]" />
+              <div>
+                <h3 className="font-display font-bold text-white text-base">
+                  إدارة محتوى صفحة أخلاقيات النشر (/publication-ethics)
+                </h3>
+                <p className="text-xs text-[#6B7280]">
+                  التحكم بترويسة الصفحة، الشارات، وميثاق النزاهة العلمية المعروض للمستخدمين.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] text-[#6B7280]">الشارة</label>
+                  <Input
+                    value={settings.pageHeaders.publicationEthics?.badge || ""}
+                    onChange={(e) => handleHeaderChange("publicationEthics", "badge", e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-[11px] text-[#6B7280]">عنوان الصفحة</label>
+                  <Input
+                    value={settings.pageHeaders.publicationEthics?.title || ""}
+                    onChange={(e) => handleHeaderChange("publicationEthics", "title", e.target.value)}
+                    className="text-xs font-bold"
+                  />
+                </div>
+                <div className="space-y-1 md:col-span-3">
+                  <label className="text-[11px] text-[#6B7280]">الوصف العام للصفحة</label>
+                  <Input
+                    value={settings.pageHeaders.publicationEthics?.subtitle || ""}
+                    onChange={(e) => handleHeaderChange("publicationEthics", "subtitle", e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 bg-[#1A2B4A]/30 border border-[#6B7280]/20 rounded-xl space-y-3">
+                <h4 className="text-xs font-bold text-white font-mono">
+                  ميثاق النزاهة والشفافية (Ethos Card)
+                </h4>
+                <div className="space-y-2">
+                  <label className="text-[11px] text-[#6B7280]">عنوان بطاقة الميثاق</label>
+                  <Input
+                    value={settings.pageHeaders.publicationEthics?.ethosTitle || ""}
+                    onChange={(e) => handleHeaderChange("publicationEthics", "ethosTitle", e.target.value)}
+                    className="text-xs font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[11px] text-[#6B7280]">نص ميثاق النزاهة والشفافية</label>
+                  <textarea
+                    rows={3}
+                    value={settings.pageHeaders.publicationEthics?.ethosText || ""}
+                    onChange={(e) => handleHeaderChange("publicationEthics", "ethosText", e.target.value)}
+                    className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white focus:border-[#E84A0C] focus:outline-none font-sans"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 4: CONTACT US CMS */}
+      {activeTab === "contact" && (
+        <div className="space-y-6">
+          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
+            <div className="flex items-center gap-3 border-b border-[#6B7280]/20 pb-4">
+              <Mail className="w-5 h-5 text-[#E84A0C]" />
+              <div>
+                <h3 className="font-display font-bold text-white text-base">
+                  إدارة محتوى ومعلومات صفحة اتصل بنا (/contact)
+                </h3>
+                <p className="text-xs text-[#6B7280]">
+                  التحكم بالبريد الإلكتروني للتحرير، وصف المكتب التحريري، وساعات العمل.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[11px] text-[#6B7280]">الشارة</label>
+                  <Input
+                    value={settings.pageHeaders.contact?.badge || ""}
+                    onChange={(e) => handleHeaderChange("contact", "badge", e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-[11px] text-[#6B7280]">عنوان الصفحة</label>
+                  <Input
+                    value={settings.pageHeaders.contact?.title || ""}
+                    onChange={(e) => handleHeaderChange("contact", "title", e.target.value)}
+                    className="text-xs font-bold"
+                  />
+                </div>
+                <div className="space-y-1 md:col-span-3">
+                  <label className="text-[11px] text-[#6B7280]">الوصف</label>
+                  <Input
+                    value={settings.pageHeaders.contact?.subtitle || ""}
+                    onChange={(e) => handleHeaderChange("contact", "subtitle", e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] text-[#6B7280]">البريد الإلكتروني المعتمد</label>
+                  <Input
+                    value={settings.pageHeaders.contact?.email || ""}
+                    onChange={(e) => handleHeaderChange("contact", "email", e.target.value)}
+                    className="text-xs font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] text-[#6B7280]">ساعات العمل والاستقبال</label>
+                  <Input
+                    value={settings.pageHeaders.contact?.hours || ""}
+                    onChange={(e) => handleHeaderChange("contact", "hours", e.target.value)}
+                    className="text-xs font-mono"
+                  />
+                </div>
+
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-[11px] text-[#6B7280]">وصف المكتب التحريري</label>
+                  <Input
+                    value={settings.pageHeaders.contact?.officeInfo || ""}
+                    onChange={(e) => handleHeaderChange("contact", "officeInfo", e.target.value)}
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 5: HOMEPAGE BLOCK BUILDER */}
       {activeTab === "blocks" && (
         <div className="space-y-6">
           <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
@@ -561,7 +595,7 @@ export function AdminSiteBuilderForm({
                 </div>
               </div>
 
-              {/* Add Block Dropdown / Action Buttons */}
+              {/* Add Block Action Buttons */}
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
@@ -698,7 +732,7 @@ export function AdminSiteBuilderForm({
                           rows={2}
                           value={block.content || ""}
                           onChange={(e) => updateBlock(block.id, "content", e.target.value)}
-                          className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white placeholder:text-[#6B7280] focus:border-[#E84A0C] focus:outline-none font-sans"
+                          className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white focus:border-[#E84A0C] focus:outline-none font-sans"
                           placeholder="تفاصيل المكون النصية..."
                         />
                       </div>
@@ -736,7 +770,7 @@ export function AdminSiteBuilderForm({
         </div>
       )}
 
-      {/* TAB 4: PARTNERSHIPS & SPONSORS */}
+      {/* TAB 6: PARTNERSHIPS & SPONSORS */}
       {activeTab === "partners" && (
         <div className="space-y-6">
           <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
@@ -760,7 +794,7 @@ export function AdminSiteBuilderForm({
       {/* Global Bottom Actions Bar */}
       <div className="pt-4 border-t border-[#6B7280]/20 flex items-center justify-between sticky bottom-4 bg-[#0D0D0D]/90 p-4 rounded-2xl backdrop-blur-md shadow-xl border border-[#6B7280]/30 z-20">
         <span className="text-xs font-mono text-[#6B7280]">
-          * الحفظ ينطبق على الألوان، الترويسات، والمكونات الديناميكية.
+          * الحفظ ينطبق على الألوان، كافة الترويسات والمحتوى، والمكونات الديناميكية.
         </span>
 
         <Button

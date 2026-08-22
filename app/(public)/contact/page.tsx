@@ -1,42 +1,48 @@
 import React from "react";
 import type { Metadata } from "next";
+import { getSiteSettings } from "@/app/actions/website-actions";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Mail, MapPin, Send, MessageSquare, BookOpen, Clock } from "lucide-react";
+import { Mail, Send, BookOpen, Clock } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "اتصل بنا والاستفسارات الأكاديمية | مجلة بروميثيوس",
-  description:
-    "تواصل مع الهيئة التحريرية لمجلة وفريق بروميثيوس للاستفسارات عن الترقيم الدولي ISSN، إيداع المقالات، والرعاية.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const contact = settings.pageHeaders.contact;
+  return {
+    title: `${contact.title} | فريق ومجلة بروميثيوس`,
+    description: contact.subtitle,
+  };
+}
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getSiteSettings();
+  const contact = settings.pageHeaders.contact;
+
   return (
     <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-5xl space-y-16 animate-fade-in">
       
-      {/* Header */}
+      {/* Dynamic Header */}
       <SectionHeader
-        badgeText="التواصل والاستفسارات الأكاديمية"
-        title="تواصل مع الهيئة التحريرية"
-        highlightedTitle="وإدارة المنصة"
-        description="نرحب باستفسارات الباحثين والمؤسسات الأكاديمية بشأن النشر، معايير ISSN، والانضمام للكوادر التطوعية."
+        badgeText={contact.badge || "التواصل والاستفسارات الأكاديمية"}
+        title={contact.title}
+        description={contact.subtitle}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Contact Info Sidebar */}
+        {/* Dynamic Contact Info Sidebar */}
         <div className="lg:col-span-5 space-y-6">
-          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-6">
+          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-6 shadow-xl">
             <div className="space-y-2">
-              <Badge variant="orange">المكتب التحريري الرسمى</Badge>
+              <Badge variant="orange">المكتب التحريري الرسمي</Badge>
               <h3 className="font-display text-xl font-bold text-white">
                 معلومات الاتصال والإيداع
               </h3>
               <p className="text-xs text-[#6B7280]">
-                فريق ومجلة بروميثيوس التطوعية - قسم النشر الأكاديمي والبحوث.
+                {contact.officeInfo || "فريق ومجلة بروميثيوس التطوعية - قسم النشر الأكاديمي والبحوث."}
               </p>
             </div>
 
@@ -47,7 +53,9 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-bold text-white">البريد الإلكتروني للتحرير</p>
-                  <p className="text-[#6B7280] font-mono mt-0.5">editorial@prometheus-voluntary.org</p>
+                  <p className="text-[#6B7280] font-mono mt-0.5">
+                    {contact.email || "editorial@prometheus-voluntary.org"}
+                  </p>
                 </div>
               </div>
 
@@ -56,8 +64,8 @@ export default function ContactPage() {
                   <BookOpen className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="font-bold text-white">معايير الترقيم الدولي</p>
-                  <p className="text-[#6B7280] font-mono mt-0.5">ISSN Online Registration (Pending Final Certification)</p>
+                  <p className="font-bold text-white">قسم النشر والبحوث</p>
+                  <p className="text-[#6B7280] font-mono mt-0.5">منصة إيداع المنشورات والأوراق البحثية</p>
                 </div>
               </div>
 
@@ -67,7 +75,9 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <p className="font-bold text-white">ساعات استقبال الاستفسارات</p>
-                  <p className="text-[#6B7280] font-mono mt-0.5">الأحد - الخميس (9:00 ص - 5:00 م)</p>
+                  <p className="text-[#6B7280] font-mono mt-0.5">
+                    {contact.hours || "الأحد - الخميس (9:00 ص - 5:00 م)"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -76,7 +86,7 @@ export default function ContactPage() {
 
         {/* Contact Form */}
         <div className="lg:col-span-7">
-          <Card className="p-8 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-6">
+          <Card className="p-8 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-6 shadow-xl">
             <div className="space-y-1">
               <h3 className="font-display text-lg font-bold text-white">
                 إرسال رسالة مباشرة للهيئة التحريرية
@@ -113,7 +123,7 @@ export default function ContactPage() {
                 />
               </div>
 
-              <Button type="button" className="w-full gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl py-3 text-xs font-bold">
+              <Button type="button" className="w-full gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl py-3 text-xs font-bold shadow-md">
                 <Send className="w-4 h-4" />
                 <span>إرسال الرسالة للهيئة التحريرية</span>
               </Button>

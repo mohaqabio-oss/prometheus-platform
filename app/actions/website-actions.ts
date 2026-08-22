@@ -16,6 +16,11 @@ export interface PageHeaderConfig {
   title: string;
   subtitle: string;
   badge?: string;
+  ethosTitle?: string;
+  ethosText?: string;
+  email?: string;
+  officeInfo?: string;
+  hours?: string;
 }
 
 export interface PageHeadersMap {
@@ -26,6 +31,9 @@ export interface PageHeadersMap {
   joinUs: PageHeaderConfig;
   collections: PageHeaderConfig;
   partners: PageHeaderConfig;
+  editorialBoard: PageHeaderConfig;
+  publicationEthics: PageHeaderConfig;
+  contact: PageHeaderConfig;
 }
 
 export interface HomeBlockConfig {
@@ -53,7 +61,7 @@ const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
     homeHero: {
       title: "فريق بروميثيوس التطوعي",
       subtitle:
-        "مؤسسة تطوعية أكاديمية تعنى بتطوير المنصات البرمجية، نشر المقالات والبحوث المفتوحة، وتدريب الطاقات الشبابية.",
+        "مؤسسة تطوعية تعنى بتطوير المنصات البرمجية، نشر المقالات والبحوث المفتوحة المصدر، وتدريب الكوادر والشباب.",
       badge: "منصة مؤسسية وأكاديمية تطوعية",
     },
     homeAbout: {
@@ -91,6 +99,30 @@ const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
       subtitle:
         "نفخر بالتعاون مع المؤسسات التكنولوجية والمنابر الأكاديمية لدعم منصاتنا التطوعية المفتوحة.",
       badge: "الشركاء والرعاة",
+    },
+    editorialBoard: {
+      title: "الهيئة التحريرية والاستشارية",
+      subtitle:
+        "أعضاء الهيئة التحريرية والمحكمين الأكاديميين والقائمين على مراجعة المنشورات والبحوث وفق معايير النشر والأكاديميا المعتمدة.",
+      badge: "الكادر التحريري الأكاديمي",
+    },
+    publicationEthics: {
+      title: "أخلاقيات النشر والمعايير الأكاديمية",
+      subtitle:
+        "دليل النزاهة العلمية وقواعد السلوك المهني المعتمدة لدى فريق ومجلة بروميثيوس التطوعية لضمان جودة الأبحاث المنشورة.",
+      badge: "سياسات وقواعد النشر",
+      ethosTitle: "التزامنا بالشفافية والنزاهة العلمية",
+      ethosText:
+        "تلتزم مجلة ومجموعة بروميثيوس التطوعية بكافة مبادئ الشفافية والنزاهة الأكاديمية والتحكيم المنهجي المزدوج. نهدف لبناء منبر عربي موثوق يجمع بين الرصانة العلمية وروح العمل التطوعي المفتوح المصدر.",
+    },
+    contact: {
+      title: "تواصل مع الهيئة التحريرية",
+      subtitle:
+        "نرحب باستفسارات الباحثين والمؤسسات الأكاديمية بشأن النشر، إيداع المقالات، والانضمام للكوادر التطوعية.",
+      badge: "التواصل والاستفسارات الأكاديمية",
+      email: "editorial@prometheus-voluntary.org",
+      officeInfo: "فريق ومجلة بروميثيوس التطوعية - قسم النشر الأكاديمي والبحوث",
+      hours: "الأحد - الخميس (9:00 ص - 5:00 م)",
     },
   },
   homeBlocks: [
@@ -150,10 +182,21 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
   try {
     const setting = await prisma.siteSetting.findFirst();
     if (setting) {
-      const pageHeadersMerged = {
+      const dbPageHeaders = (setting.pageHeaders as unknown as PageHeadersMap) || {};
+      const pageHeadersMerged: PageHeadersMap = {
         ...DEFAULT_SITE_SETTINGS.pageHeaders,
-        ...((setting.pageHeaders as unknown as PageHeadersMap) || {}),
+        ...dbPageHeaders,
       };
+
+      // Deep merge for optional object keys
+      Object.keys(DEFAULT_SITE_SETTINGS.pageHeaders).forEach((key) => {
+        const k = key as keyof PageHeadersMap;
+        pageHeadersMerged[k] = {
+          ...DEFAULT_SITE_SETTINGS.pageHeaders[k],
+          ...(dbPageHeaders[k] || {}),
+        };
+      });
+
       const homeBlocksMerged =
         (setting.homeBlocks as unknown as HomeBlockConfig[]) ||
         DEFAULT_SITE_SETTINGS.homeBlocks;
@@ -220,6 +263,9 @@ export async function updateSiteBuilderAction(
     revalidatePath("/members");
     revalidatePath("/join-us");
     revalidatePath("/collections");
+    revalidatePath("/editorial-board");
+    revalidatePath("/publication-ethics");
+    revalidatePath("/contact");
 
     return { success: true };
   } catch (err: any) {

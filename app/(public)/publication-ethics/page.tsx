@@ -1,17 +1,23 @@
 import React from "react";
 import type { Metadata } from "next";
+import { getSiteSettings } from "@/app/actions/website-actions";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { FileText, ShieldAlert, Scale, CheckCircle2, Lock, Sparkles } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "أخلاقيات النشر والمعايير الأكاديمية | مجلة بروميثيوس",
-  description:
-    "قواعد وسلوكيات النشر الأكاديمي، سياسة منع الانتحال، حقوق الطبع والنشر، وضوابط التحكيم العلمي بمجلة بروميثيوس وفق الترقيم الدولي ISSN.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const ethics = settings.pageHeaders.publicationEthics;
+  return {
+    title: `${ethics.title} | مجلة وفريق بروميثيوس`,
+    description: ethics.subtitle,
+  };
+}
 
-export default function PublicationEthicsPage() {
+export default async function PublicationEthicsPage() {
+  const settings = await getSiteSettings();
+  const ethics = settings.pageHeaders.publicationEthics;
+
   const sections = [
     {
       icon: <Scale className="w-5 h-5 text-[#E84A0C]" />,
@@ -58,25 +64,25 @@ export default function PublicationEthicsPage() {
   return (
     <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-5xl space-y-16 animate-fade-in">
       
-      {/* Header */}
+      {/* Dynamic Header */}
       <SectionHeader
-        badgeText="سياسات ومعايير ISSN"
-        title="أخلاقيات النشر والمعايير"
-        highlightedTitle="الأكاديمية"
-        description="دليل النزاهة العلمية وقواعد السلوك المهني المعتمدة لدى مجلة بروميثيوس التطوعية لضمان جودة الأبحاث المنشورة."
+        badgeText={ethics.badge || "سياسات النشر"}
+        title={ethics.title}
+        description={ethics.subtitle}
       />
 
-      {/* Intro Ethos Card */}
-      <Card className="p-8 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4">
+      {/* Dynamic Intro Ethos Card */}
+      <Card className="p-8 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
         <div className="flex items-center gap-2 text-[#E84A0C] font-mono text-xs">
           <Sparkles className="w-4 h-4" />
-          <span>ميثاق الشفافية العلمية</span>
+          <span>ميثاق النزاهة والشفافية</span>
         </div>
         <h2 className="font-display text-2xl font-bold text-white">
-          التزامنا بالمعايير الدولية للنشر العلمي
+          {ethics.ethosTitle || "التزامنا بالشفافية والنزاهة العلمية"}
         </h2>
         <p className="text-xs sm:text-sm text-[#6B7280] leading-relaxed">
-          تلتزم مجلة فريق بروميثيوس بكافة المبادئ التوجيهية الصادرة عن لجنة أخلاقيات النشر (COPE) ومعايير الترقيم الدولي الموحد للدوريات (ISSN). نهدف لبناء منبر عربي موثوق يجمع بين الرصانة الأكاديمية وروح العمل التطوعي المفتوح.
+          {ethics.ethosText ||
+            "تلتزم مجلة ومجموعة بروميثيوس التطوعية بكافة مبادئ الشفافية والنزاهة الأكاديمية والتحكيم المنهجي المزدوج. نهدف لبناء منبر عربي موثوق يجمع بين الرصانة العلمية وروح العمل التطوعي المفتوح المصدر."}
         </p>
       </Card>
 
