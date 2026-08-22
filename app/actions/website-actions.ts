@@ -46,17 +46,26 @@ export interface HomeBlockConfig {
   target_url?: string;
 }
 
+export interface AcademicSpecsConfig {
+  enabled: boolean;
+  volumeTitle: string;
+  peerReviewType: string;
+  licenseType: string;
+  repositoryStatus: string;
+}
+
 export interface SiteSettingsData {
   primaryColor: string;
   secondaryColor: string;
   pageHeaders: PageHeadersMap;
   homeBlocks: HomeBlockConfig[];
+  academicSpecs: AcademicSpecsConfig;
 }
 
 // Default Site Settings Fallback Map
 const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
-  primaryColor: "#E84A0C",
-  secondaryColor: "#1A2B4A",
+  primaryColor: "#D49B4B",
+  secondaryColor: "#0A0F1D",
   pageHeaders: {
     homeHero: {
       title: "فريق بروميثيوس التطوعي",
@@ -156,6 +165,13 @@ const DEFAULT_SITE_SETTINGS: SiteSettingsData = {
       target_url: "/join-us",
     },
   ],
+  academicSpecs: {
+    enabled: false,
+    volumeTitle: "SPEC REGISTRY // VOL. 04",
+    peerReviewType: "Double-Blind Peer Review",
+    licenseType: "Open Access (CC BY 4.0)",
+    repositoryStatus: "Active Academic Repository",
+  },
 };
 
 let MOCK_SITE_SETTINGS: SiteSettingsData = JSON.parse(
@@ -201,11 +217,17 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
         (setting.homeBlocks as unknown as HomeBlockConfig[]) ||
         DEFAULT_SITE_SETTINGS.homeBlocks;
 
+      const academicSpecsMerged: AcademicSpecsConfig = {
+        ...DEFAULT_SITE_SETTINGS.academicSpecs,
+        ...((setting.academicSpecs as unknown as AcademicSpecsConfig) || {}),
+      };
+
       return {
         primaryColor: setting.primaryColor || DEFAULT_SITE_SETTINGS.primaryColor,
         secondaryColor: setting.secondaryColor || DEFAULT_SITE_SETTINGS.secondaryColor,
         pageHeaders: pageHeadersMerged,
         homeBlocks: homeBlocksMerged,
+        academicSpecs: academicSpecsMerged,
       };
     }
   } catch (e) {}
@@ -228,6 +250,10 @@ export async function updateSiteBuilderAction(
         ...(data.pageHeaders || {}),
       },
       homeBlocks: data.homeBlocks || [],
+      academicSpecs: {
+        ...DEFAULT_SITE_SETTINGS.academicSpecs,
+        ...(data.academicSpecs || {}),
+      },
     };
 
     try {
@@ -240,6 +266,7 @@ export async function updateSiteBuilderAction(
             secondaryColor: MOCK_SITE_SETTINGS.secondaryColor,
             pageHeaders: JSON.parse(JSON.stringify(MOCK_SITE_SETTINGS.pageHeaders)),
             homeBlocks: JSON.parse(JSON.stringify(MOCK_SITE_SETTINGS.homeBlocks)),
+            academicSpecs: JSON.parse(JSON.stringify(MOCK_SITE_SETTINGS.academicSpecs)),
           },
         });
       } else {
@@ -250,6 +277,7 @@ export async function updateSiteBuilderAction(
             secondaryColor: MOCK_SITE_SETTINGS.secondaryColor,
             pageHeaders: JSON.parse(JSON.stringify(MOCK_SITE_SETTINGS.pageHeaders)),
             homeBlocks: JSON.parse(JSON.stringify(MOCK_SITE_SETTINGS.homeBlocks)),
+            academicSpecs: JSON.parse(JSON.stringify(MOCK_SITE_SETTINGS.academicSpecs)),
           },
         });
       }

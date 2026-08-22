@@ -1,4 +1,5 @@
-// Prisma Schema for Prometheus Voluntary Team Organizational Platform
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -7,236 +8,131 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
 }
 
 // ==========================================
-// ENUMS
+// AUTHENTICATION & USER MANAGEMENT MODELS
 // ==========================================
 
 enum RoleType {
   ADMIN
+  WRITER
   HR_EDITOR
-  POST_EDITOR
-  AUTHOR
   MEMBER
 }
 
-enum ApplicationStatus {
-  PENDING
-  UNDER_REVIEW
-  INTERVIEW_SCHEDULED
-  ACCEPTED
-  REJECTED
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  fullName  String?
+  password  String
+  image     String?
+  role      RoleType @default(MEMBER)
+  roles     RoleType[] @default([MEMBER])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articles Article[]
+
+  @@map("users")
 }
 
-enum ArticleStatus {
-  DRAFT
-  SUBMITTED
-  IN_REVIEW
-  CHANGES_REQUESTED
-  PUBLISHED
-  ARCHIVED
-}
+// ==========================================
+// MEMBER & HR DIRECTORY MODELS
+// ==========================================
 
 enum MemberStatus {
   ACTIVE
   INACTIVE
   ALUMNI
-  ON_LEAVE
-}
-
-enum ProjectStatus {
-  PLANNING
-  IN_PROGRESS
-  COMPLETED
-  ON_HOLD
-}
-
-// ==========================================
-// AUTH & USER IDENTITY MODELS
-// ==========================================
-
-model User {
-  id            String     @id @default(uuid())
-  email         String     @unique
-  fullName      String?
-  passwordHash  String?
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  // Relations
-  userRoles     UserRole[]
-  member        Member?
-
-  @@map("users")
-}
-
-model Role {
-  id          String     @id @default(uuid())
-  name        RoleType   @unique
-  description String?
-
-  // Relations
-  userRoles   UserRole[]
-
-  @@map("roles")
-}
-
-model UserRole {
-  userId     String
-  roleId     String
-  assignedAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
-
-  @@id([userId, roleId])
-  @@map("user_roles")
-}
-
-// ==========================================
-// ORGANIZATIONAL STRUCTURE MODELS
-// ==========================================
-
-model Department {
-  id          String   @id @default(uuid())
-  name        String   @unique
-  slug        String   @unique
-  description String?  @db.Text
-  icon        String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  applications Application[]
-  projects     Project[]
-
-  @@map("departments")
 }
 
 model Member {
   id             String       @id @default(uuid())
-  userId         String?      @unique
-  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  departmentName String?
-
   fullName       String
   title          String?
-  bio            String?      @db.Text
-  avatarUrl      String?
+  departmentName String?
+  bio            String?
   profileImage   String?
-  phone          String?
-  joinDate       DateTime     @default(now())
-  status         MemberStatus @default(ACTIVE)
+  avatarUrl      String?
   volunteerHours Int          @default(0)
+  status         MemberStatus @default(ACTIVE)
+  joinDate       DateTime     @default(now())
   customSections Json?
-
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  // Relations
-  articles             Article[]            @relation("MemberArticles")
-  coAuthoredArticles   Article[]            @relation("ArticleAuthors")
-  volunteerRecords     VolunteerRecord[]
-  certificates         Certificate[]
-  socialLinks          SocialLink[]
-  achievements         MemberAchievement[]
-  projectMemberships   ProjectMember[]
-  reviewedApplications Application[]        @relation("HRReviewer")
+  certificates Certificate[]
 
   @@map("members")
 }
 
-model VolunteerRecord {
-  id            String   @id @default(uuid())
-  memberId      String
-  member        Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  activityTitle String
-  description   String?  @db.Text
-  hours         Float
-  activityDate  DateTime
-  verifiedBy    String?
-  createdAt     DateTime @default(now())
+model Certificate {
+  id              String   @id @default(uuid())
+  certificateCode String   @unique
+  title           String
+  description     String
+  issuedAt        DateTime @default(now())
+  memberId        String
+  member          Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  @@map("volunteer_records")
+  @@map("certificates")
 }
 
 // ==========================================
-// CONTENT MANAGEMENT & PUBLISHING MODELS
+// ARTICLE EDITOR & JOURNAL PUBLISHING MODELS
 // ==========================================
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
 
 model Category {
   id          String    @id @default(uuid())
   name        String    @unique
   slug        String    @unique
-  description String?   @db.Text
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  articles    Article[]
 
   @@map("categories")
 }
 
-model Collection {
-  id          String              @id @default(uuid())
-  title       String
-  slug        String              @unique
-  description String?             @db.Text
-  coverImage  String?
-  articles    ArticleCollection[]
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
-
-  @@map("collections")
-}
-
 model Article {
-  id          String              @id @default(uuid())
+  id          String        @id @default(uuid())
   title       String
-  slug        String              @unique
-  excerpt     String?             @db.Text
-  content     String              @db.Text
+  slug        String        @unique
+  excerpt     String?
+  content     String
   coverImage  String?
-  status      ArticleStatus       @default(DRAFT)
-  editorNotes String?             @db.Text
+  status      ArticleStatus @default(DRAFT)
   publishedAt DateTime?
-  viewsCount  Int                 @default(0)
-  categoryName String?
-
   authorId    String
-  author      Member              @relation("MemberArticles", fields: [authorId], references: [id], onDelete: Restrict)
-  authors     Member[]            @relation("ArticleAuthors")
-
-  sources     ArticleSource[]
-  collections ArticleCollection[]
-
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  author      User          @relation(fields: [authorId], references: [id])
+  categoryId  String?
+  category    Category?     @relation(fields: [categoryId], references: [id])
+  authors     ArticleAuthors[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@map("articles")
 }
 
-model ArticleCollection {
-  articleId    String
-  collectionId String
-  order        Int        @default(0)
-
-  article    Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-
-  @@id([articleId, collectionId])
-  @@map("article_collections")
-}
-
-model ArticleSource {
+model ArticleAuthors {
   id        String   @id @default(uuid())
   articleId String
   article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  title     String
-  url       String?
-  citation  String?
+  name      String
+  role      String?  @default("مؤلف مشارك")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
 
-  @@map("article_sources")
+  @@map("article_authors")
 }
 
 // ==========================================
@@ -249,6 +145,7 @@ model SiteSetting {
   secondaryColor String   @default("#1A2B4A")
   pageHeaders    Json?
   homeBlocks     Json?
+  academicSpecs  Json?
   updatedAt      DateTime @updatedAt
 
   @@map("site_settings")
@@ -261,123 +158,7 @@ model Partner {
   websiteUrl String?
   order      Int      @default(0)
   createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@map("partners")
-}
-
-// ==========================================
-// ACHIEVEMENTS & CERTIFICATES MODELS
-// ==========================================
-
-model Achievement {
-  id          String              @id @default(uuid())
-  title       String
-  description String              @db.Text
-  icon        String?
-  badgeUrl    String?
-  createdAt   DateTime            @default(now())
-
-  members     MemberAchievement[]
-
-  @@map("achievements")
-}
-
-model MemberAchievement {
-  memberId      String
-  achievementId String
-  awardedAt     DateTime    @default(now())
-
-  member      Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  achievement Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
-
-  @@id([memberId, achievementId])
-  @@map("member_achievements")
-}
-
-model Certificate {
-  id              String   @id @default(uuid())
-  certificateCode String   @unique
-  title           String
-  description     String?  @db.Text
-  issuedAt        DateTime @default(now())
-  pdfUrl          String?
-
-  memberId        String
-  member          Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
-
-  @@map("certificates")
-}
-
-model SocialLink {
-  id       String @id @default(uuid())
-  platform String
-  url      String
-  memberId String
-  member   Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
-
-  @@map("social_links")
-}
-
-// ==========================================
-// PROJECTS & VOLUNTEER WORK MODELS
-// ==========================================
-
-model Project {
-  id           String          @id @default(uuid())
-  title        String
-  slug         String          @unique
-  description  String          @db.Text
-  status       ProjectStatus   @default(PLANNING)
-  startDate    DateTime?
-  endDate      DateTime?
-  coverImage   String?
-
-  departmentId String?
-  department   Department?     @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-
-  members      ProjectMember[]
-
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-
-  @@map("projects")
-}
-
-model ProjectMember {
-  projectId     String
-  memberId      String
-  roleInProject String?
-
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  member  Member  @relation(fields: [memberId], references: [id], onDelete: Cascade)
-
-  @@id([projectId, memberId])
-  @@map("project_members")
-}
-
-// ==========================================
-// JOIN US & HR APPLICATIONS MODEL
-// ==========================================
-
-model Application {
-  id           String            @id @default(uuid())
-  fullName     String
-  email        String
-  phone        String
-  resumeUrl    String?
-  motivation   String            @db.Text
-  experience   String?           @db.Text
-  status       ApplicationStatus @default(PENDING)
-
-  departmentId String
-  department   Department        @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-
-  reviewerId   String?
-  reviewer     Member?           @relation("HRReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
-  notes        String?           @db.Text
-
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-
-  @@map("applications")
 }

@@ -6,6 +6,7 @@ import {
   PartnerRecord,
   HomeBlockConfig,
   updateSiteBuilderAction,
+  AcademicSpecsConfig,
 } from "@/app/actions/website-actions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,10 +26,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Link2,
-  FileText,
   ShieldAlert,
   Mail,
-  Users,
+  ShieldCheck,
 } from "lucide-react";
 
 interface AdminSiteBuilderFormProps {
@@ -41,7 +41,7 @@ export function AdminSiteBuilderForm({
   partners,
 }: AdminSiteBuilderFormProps) {
   const [activeTab, setActiveTab] = useState<
-    "theme" | "headers" | "ethics" | "contact" | "blocks" | "partners"
+    "theme" | "headers" | "ethics" | "contact" | "specs" | "blocks" | "partners"
   >("theme");
   const [settings, setSettings] = useState<SiteSettingsData>(initialSettings);
   const [isPending, startTransition] = useTransition();
@@ -54,6 +54,7 @@ export function AdminSiteBuilderForm({
   const tabs = [
     { id: "theme", label: "ألوان ومظهر الموقع", icon: <Palette className="w-4 h-4" /> },
     { id: "headers", label: "إدارة الترويسات والعناوين (CMS)", icon: <Type className="w-4 h-4" /> },
+    { id: "specs", label: "شارة التوثيق الأكاديمي (Academic Specs)", icon: <ShieldCheck className="w-4 h-4" /> },
     { id: "ethics", label: "محتوى أخلاقيات النشر", icon: <ShieldAlert className="w-4 h-4" /> },
     { id: "contact", label: "بيانات صفحة اتصل بنا", icon: <Mail className="w-4 h-4" /> },
     { id: "blocks", label: "منشئ المكونات (Homepage)", icon: <LayoutGrid className="w-4 h-4" /> },
@@ -79,6 +80,23 @@ export function AdminSiteBuilderForm({
           ...(prev.pageHeaders[sectionKey] || {}),
           [field]: val,
         },
+      },
+    }));
+  };
+
+  // Helper for Academic Specs
+  const handleSpecChange = (field: keyof AcademicSpecsConfig, val: any) => {
+    setSettings((prev) => ({
+      ...prev,
+      academicSpecs: {
+        ...(prev.academicSpecs || {
+          enabled: false,
+          volumeTitle: "SPEC REGISTRY // VOL. 04",
+          peerReviewType: "Double-Blind Peer Review",
+          licenseType: "Open Access (CC BY 4.0)",
+          repositoryStatus: "Active Academic Repository",
+        }),
+        [field]: val,
       },
     }));
   };
@@ -145,6 +163,14 @@ export function AdminSiteBuilderForm({
     });
   };
 
+  const specs = settings.academicSpecs || {
+    enabled: false,
+    volumeTitle: "SPEC REGISTRY // VOL. 04",
+    peerReviewType: "Double-Blind Peer Review",
+    licenseType: "Open Access (CC BY 4.0)",
+    repositoryStatus: "Active Academic Repository",
+  };
+
   return (
     <div className="space-y-6">
       
@@ -153,8 +179,8 @@ export function AdminSiteBuilderForm({
         <div
           className={`p-4 rounded-xl flex items-center justify-between gap-3 text-xs font-sans border ${
             statusMessage.type === "success"
-              ? "bg-emerald-950/60 border-emerald-500/40 text-emerald-300"
-              : "bg-rose-950/60 border-rose-500/40 text-rose-300"
+              ? "bg-[#0A0F1D] border-emerald-500/40 text-emerald-300"
+              : "bg-[#0A0F1D] border-rose-500/40 text-rose-300"
           }`}
         >
           <div className="flex items-center gap-2">
@@ -175,7 +201,7 @@ export function AdminSiteBuilderForm({
       )}
 
       {/* Tabs Header Navigation */}
-      <div className="flex items-center gap-2 border-b border-[#6B7280]/20 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-2 border-b border-[#1E293B] overflow-x-auto pb-1 scrollbar-none">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
@@ -184,11 +210,11 @@ export function AdminSiteBuilderForm({
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-3 rounded-t-xl text-xs font-mono transition-all duration-200 whitespace-nowrap border-b-2 ${
                 isActive
-                  ? "bg-[#1A2B4A]/60 text-white font-bold border-[#E84A0C]"
-                  : "text-[#6B7280] hover:text-white border-transparent hover:bg-[#1A2B4A]/20"
+                  ? "bg-[#141C2F] text-[#F8FAFC] font-bold border-[#D49B4B]"
+                  : "text-[#94A3B8] hover:text-[#F8FAFC] border-transparent hover:bg-[#141C2F]/50"
               }`}
             >
-              <span className={isActive ? "text-[#E84A0C]" : "text-[#6B7280]"}>
+              <span className={isActive ? "text-[#D49B4B]" : "text-[#94A3B8]"}>
                 {tab.icon}
               </span>
               <span>{tab.label}</span>
@@ -200,14 +226,14 @@ export function AdminSiteBuilderForm({
       {/* TAB 1: THEME & COLOR SETTINGS */}
       {activeTab === "theme" && (
         <div className="space-y-6">
-          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
-            <div className="flex items-center gap-3 border-b border-[#6B7280]/20 pb-4">
-              <Palette className="w-5 h-5 text-[#E84A0C]" />
+          <Card className="p-6 bg-[#141C2F] border border-[#1E293B] space-y-6 rounded-2xl">
+            <div className="flex items-center gap-3 border-b border-[#1E293B] pb-4">
+              <Palette className="w-5 h-5 text-[#D49B4B]" />
               <div>
-                <h3 className="font-display font-bold text-white text-base">
+                <h3 className="font-serif font-bold text-[#F8FAFC] text-base">
                   ألوان الثيم الرئيسية (Theme Palette)
                 </h3>
-                <p className="text-xs text-[#6B7280]">
+                <p className="text-xs text-[#94A3B8] font-sans">
                   التحكم الديناميكي باللون الأساسي (Primary Color) ولون الخلفية الثاني (Secondary Color) عبر كامل الواجهة العامة.
                 </p>
               </div>
@@ -216,8 +242,8 @@ export function AdminSiteBuilderForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               
               {/* Primary Color Picker */}
-              <div className="space-y-3 p-4 bg-[#1A2B4A]/30 border border-[#6B7280]/20 rounded-xl">
-                <label className="text-xs text-white font-bold block font-sans">
+              <div className="space-y-3 p-4 bg-[#0A0F1D] border border-[#1E293B] rounded-xl">
+                <label className="text-xs text-[#F8FAFC] font-bold block font-sans">
                   اللون الأساسي للتميز والأزرار (Primary Color)
                 </label>
                 <div className="flex items-center gap-3">
@@ -232,17 +258,17 @@ export function AdminSiteBuilderForm({
                     value={settings.primaryColor}
                     onChange={(e) => handleColorChange("primaryColor", e.target.value)}
                     className="font-mono text-xs uppercase"
-                    placeholder="#E84A0C"
+                    placeholder="#D49B4B"
                   />
                 </div>
-                <p className="text-[11px] text-[#6B7280]">
+                <p className="text-[11px] text-[#94A3B8]">
                   يستخدم للأزرار، التوهجات الشفافة، الإطارات النشطة، والنصوص التمييزية.
                 </p>
               </div>
 
               {/* Secondary Color Picker */}
-              <div className="space-y-3 p-4 bg-[#1A2B4A]/30 border border-[#6B7280]/20 rounded-xl">
-                <label className="text-xs text-white font-bold block font-sans">
+              <div className="space-y-3 p-4 bg-[#0A0F1D] border border-[#1E293B] rounded-xl">
+                <label className="text-xs text-[#F8FAFC] font-bold block font-sans">
                   اللون الثانوي للخلفية والتفاصيل (Secondary Color)
                 </label>
                 <div className="flex items-center gap-3">
@@ -257,10 +283,10 @@ export function AdminSiteBuilderForm({
                     value={settings.secondaryColor}
                     onChange={(e) => handleColorChange("secondaryColor", e.target.value)}
                     className="font-mono text-xs uppercase"
-                    placeholder="#1A2B4A"
+                    placeholder="#0A0F1D"
                   />
                 </div>
-                <p className="text-[11px] text-[#6B7280]">
+                <p className="text-[11px] text-[#94A3B8]">
                   يستخدم لخلفية الصفحة العامة، الهيدر، والأقسام الثانوية.
                 </p>
               </div>
@@ -273,15 +299,15 @@ export function AdminSiteBuilderForm({
       {/* TAB 2: PAGE HEADERS & TYPOGRAPHY CMS */}
       {activeTab === "headers" && (
         <div className="space-y-6">
-          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-8 rounded-2xl">
+          <Card className="p-6 bg-[#141C2F] border border-[#1E293B] space-y-8 rounded-2xl">
             
-            <div className="flex items-center gap-3 border-b border-[#6B7280]/20 pb-4">
-              <Type className="w-5 h-5 text-[#E84A0C]" />
+            <div className="flex items-center gap-3 border-b border-[#1E293B] pb-4">
+              <Type className="w-5 h-5 text-[#D49B4B]" />
               <div>
-                <h3 className="font-display font-bold text-white text-base">
+                <h3 className="font-serif font-bold text-[#F8FAFC] text-base">
                   نظام إدارة الترويسات والعناوين العامة (Page Headers CMS)
                 </h3>
-                <p className="text-xs text-[#6B7280]">
+                <p className="text-xs text-[#94A3B8] font-sans">
                   تعديل الترويسات، العناوين، والشارات الوصفية لمختلف صفحات الواجهة العامة مباشرة من قاعدة البيانات.
                 </p>
               </div>
@@ -291,13 +317,13 @@ export function AdminSiteBuilderForm({
             <div className="space-y-6">
               
               {/* Home Hero Section */}
-              <div className="p-4 bg-[#1A2B4A]/20 border border-[#6B7280]/20 rounded-xl space-y-3">
-                <h4 className="font-bold text-xs text-[#E84A0C] font-mono">
+              <div className="p-4 bg-[#0A0F1D] border border-[#1E293B] rounded-xl space-y-3">
+                <h4 className="font-bold text-xs text-[#D49B4B] font-mono">
                   1. الواجهة الرئيسية (Home Hero Header)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] text-[#6B7280]">الشارة الوصفية (Badge)</label>
+                    <label className="text-[11px] text-[#94A3B8]">الشارة الوصفية (Badge)</label>
                     <Input
                       value={settings.pageHeaders.homeHero?.badge || ""}
                       onChange={(e) => handleHeaderChange("homeHero", "badge", e.target.value)}
@@ -305,7 +331,7 @@ export function AdminSiteBuilderForm({
                     />
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <label className="text-[11px] text-[#6B7280]">العنوان الرئيسي</label>
+                    <label className="text-[11px] text-[#94A3B8]">العنوان الرئيسي</label>
                     <Input
                       value={settings.pageHeaders.homeHero?.title || ""}
                       onChange={(e) => handleHeaderChange("homeHero", "title", e.target.value)}
@@ -313,25 +339,25 @@ export function AdminSiteBuilderForm({
                     />
                   </div>
                   <div className="space-y-1 md:col-span-3">
-                    <label className="text-[11px] text-[#6B7280]">الوصف الفرعي</label>
+                    <label className="text-[11px] text-[#94A3B8]">الوصف الفرعي</label>
                     <textarea
                       rows={2}
                       value={settings.pageHeaders.homeHero?.subtitle || ""}
                       onChange={(e) => handleHeaderChange("homeHero", "subtitle", e.target.value)}
-                      className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white focus:border-[#E84A0C] focus:outline-none font-sans"
+                      className="w-full rounded-md border border-[#1E293B] bg-[#141C2F] p-3 text-xs text-[#F8FAFC] focus:border-[#D49B4B] focus:outline-none font-sans"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Editorial Board Header */}
-              <div className="p-4 bg-[#1A2B4A]/20 border border-[#6B7280]/20 rounded-xl space-y-3">
-                <h4 className="font-bold text-xs text-[#E84A0C] font-mono">
+              <div className="p-4 bg-[#0A0F1D] border border-[#1E293B] rounded-xl space-y-3">
+                <h4 className="font-bold text-xs text-[#D49B4B] font-mono">
                   2. صفحة الهيئة التحريرية (/editorial-board)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] text-[#6B7280]">الشارة</label>
+                    <label className="text-[11px] text-[#94A3B8]">الشارة</label>
                     <Input
                       value={settings.pageHeaders.editorialBoard?.badge || ""}
                       onChange={(e) => handleHeaderChange("editorialBoard", "badge", e.target.value)}
@@ -339,7 +365,7 @@ export function AdminSiteBuilderForm({
                     />
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <label className="text-[11px] text-[#6B7280]">العنوان الرئيسي</label>
+                    <label className="text-[11px] text-[#94A3B8]">العنوان الرئيسي</label>
                     <Input
                       value={settings.pageHeaders.editorialBoard?.title || ""}
                       onChange={(e) => handleHeaderChange("editorialBoard", "title", e.target.value)}
@@ -347,7 +373,7 @@ export function AdminSiteBuilderForm({
                     />
                   </div>
                   <div className="space-y-1 md:col-span-3">
-                    <label className="text-[11px] text-[#6B7280]">الوصف</label>
+                    <label className="text-[11px] text-[#94A3B8]">الوصف</label>
                     <Input
                       value={settings.pageHeaders.editorialBoard?.subtitle || ""}
                       onChange={(e) => handleHeaderChange("editorialBoard", "subtitle", e.target.value)}
@@ -358,13 +384,13 @@ export function AdminSiteBuilderForm({
               </div>
 
               {/* Articles Page Header */}
-              <div className="p-4 bg-[#1A2B4A]/20 border border-[#6B7280]/20 rounded-xl space-y-3">
-                <h4 className="font-bold text-xs text-[#E84A0C] font-mono">
+              <div className="p-4 bg-[#0A0F1D] border border-[#1E293B] rounded-xl space-y-3">
+                <h4 className="font-bold text-xs text-[#D49B4B] font-mono">
                   3. صفحة الأوراق والمقالات العلمية (/articles)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] text-[#6B7280]">الشارة</label>
+                    <label className="text-[11px] text-[#94A3B8]">الشارة</label>
                     <Input
                       value={settings.pageHeaders.articles?.badge || ""}
                       onChange={(e) => handleHeaderChange("articles", "badge", e.target.value)}
@@ -372,7 +398,7 @@ export function AdminSiteBuilderForm({
                     />
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <label className="text-[11px] text-[#6B7280]">عنوان الصفحة</label>
+                    <label className="text-[11px] text-[#94A3B8]">عنوان الصفحة</label>
                     <Input
                       value={settings.pageHeaders.articles?.title || ""}
                       onChange={(e) => handleHeaderChange("articles", "title", e.target.value)}
@@ -380,7 +406,7 @@ export function AdminSiteBuilderForm({
                     />
                   </div>
                   <div className="space-y-1 md:col-span-3">
-                    <label className="text-[11px] text-[#6B7280]">الوصف</label>
+                    <label className="text-[11px] text-[#94A3B8]">الوصف</label>
                     <Input
                       value={settings.pageHeaders.articles?.subtitle || ""}
                       onChange={(e) => handleHeaderChange("articles", "subtitle", e.target.value)}
@@ -391,13 +417,13 @@ export function AdminSiteBuilderForm({
               </div>
 
               {/* Members Page Header */}
-              <div className="p-4 bg-[#1A2B4A]/20 border border-[#6B7280]/20 rounded-xl space-y-3">
-                <h4 className="font-bold text-xs text-[#E84A0C] font-mono">
+              <div className="p-4 bg-[#0A0F1D] border border-[#1E293B] rounded-xl space-y-3">
+                <h4 className="font-bold text-xs text-[#D49B4B] font-mono">
                   4. صفحة دليل الأعضاء والكوادر (/members)
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[11px] text-[#6B7280]">الشارة</label>
+                    <label className="text-[11px] text-[#94A3B8]">الشارة</label>
                     <Input
                       value={settings.pageHeaders.members?.badge || ""}
                       onChange={(e) => handleHeaderChange("members", "badge", e.target.value)}
@@ -405,7 +431,7 @@ export function AdminSiteBuilderForm({
                     />
                   </div>
                   <div className="space-y-1 md:col-span-2">
-                    <label className="text-[11px] text-[#6B7280]">عنوان الصفحة</label>
+                    <label className="text-[11px] text-[#94A3B8]">عنوان الصفحة</label>
                     <Input
                       value={settings.pageHeaders.members?.title || ""}
                       onChange={(e) => handleHeaderChange("members", "title", e.target.value)}
@@ -413,7 +439,7 @@ export function AdminSiteBuilderForm({
                     />
                   </div>
                   <div className="space-y-1 md:col-span-3">
-                    <label className="text-[11px] text-[#6B7280]">الوصف</label>
+                    <label className="text-[11px] text-[#94A3B8]">الوصف</label>
                     <Input
                       value={settings.pageHeaders.members?.subtitle || ""}
                       onChange={(e) => handleHeaderChange("members", "subtitle", e.target.value)}
@@ -429,17 +455,103 @@ export function AdminSiteBuilderForm({
         </div>
       )}
 
-      {/* TAB 3: PUBLICATION ETHICS CMS */}
+      {/* TAB 3: ACADEMIC SPECS BADGE TOGGLE & CMS */}
+      {activeTab === "specs" && (
+        <div className="space-y-6">
+          <Card className="p-6 bg-[#141C2F] border border-[#1E293B] space-y-6 rounded-2xl">
+            <div className="flex items-center gap-3 border-b border-[#1E293B] pb-4">
+              <ShieldCheck className="w-5 h-5 text-[#D49B4B]" />
+              <div>
+                <h3 className="font-serif font-bold text-[#F8FAFC] text-base">
+                  شارة التوثيق الأكاديمي (Academic Specs Box)
+                </h3>
+                <p className="text-xs text-[#94A3B8] font-sans">
+                  التحكم في تفعيل أو إخفاء صندوق التوثيق الأكاديمي بالصفحة الرئيسية وتحديث النصوص المعتمدة.
+                </p>
+              </div>
+            </div>
+
+            {/* Toggle Enable/Disable Checkbox */}
+            <div className="p-4 bg-[#0A0F1D] border border-[#1E293B] rounded-xl flex items-center justify-between">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-[#F8FAFC] block cursor-pointer" htmlFor="toggle-spec">
+                  تفعيل عارض شارة التوثيق الأكاديمي (Academic Spec Box)
+                </label>
+                <p className="text-[11px] text-[#94A3B8]">
+                  عند التفعيل، يظهر الصندوق الأكاديمي الفاخر بجانب الهيدر الرئيسي على الواجهة العامة.
+                </p>
+              </div>
+
+              <input
+                id="toggle-spec"
+                type="checkbox"
+                checked={specs.enabled}
+                onChange={(e) => handleSpecChange("enabled", e.target.checked)}
+                className="w-5 h-5 accent-[#D49B4B] cursor-pointer rounded"
+              />
+            </div>
+
+            {/* Spec Fields */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div className="space-y-1">
+                  <label className="text-[11px] text-[#94A3B8]">عنوان الفهرسة / المجلد (Volume Title)</label>
+                  <Input
+                    value={specs.volumeTitle || ""}
+                    onChange={(e) => handleSpecChange("volumeTitle", e.target.value)}
+                    className="text-xs font-mono"
+                    placeholder="SPEC REGISTRY // VOL. 04"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] text-[#94A3B8]">نوع التحكيم المعتمد (Peer-Review Type)</label>
+                  <Input
+                    value={specs.peerReviewType || ""}
+                    onChange={(e) => handleSpecChange("peerReviewType", e.target.value)}
+                    className="text-xs"
+                    placeholder="Double-Blind Peer Review"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] text-[#94A3B8]">نوع الترخيص والوصول (License Type)</label>
+                  <Input
+                    value={specs.licenseType || ""}
+                    onChange={(e) => handleSpecChange("licenseType", e.target.value)}
+                    className="text-xs font-mono"
+                    placeholder="Open Access (CC BY 4.0)"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[11px] text-[#94A3B8]">حالة الأرشيف / المستودع (Repository Status)</label>
+                  <Input
+                    value={specs.repositoryStatus || ""}
+                    onChange={(e) => handleSpecChange("repositoryStatus", e.target.value)}
+                    className="text-xs"
+                    placeholder="Active Academic Repository"
+                  />
+                </div>
+
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB 4: PUBLICATION ETHICS CMS */}
       {activeTab === "ethics" && (
         <div className="space-y-6">
-          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
-            <div className="flex items-center gap-3 border-b border-[#6B7280]/20 pb-4">
-              <ShieldAlert className="w-5 h-5 text-[#E84A0C]" />
+          <Card className="p-6 bg-[#141C2F] border border-[#1E293B] space-y-6 rounded-2xl">
+            <div className="flex items-center gap-3 border-b border-[#1E293B] pb-4">
+              <ShieldAlert className="w-5 h-5 text-[#D49B4B]" />
               <div>
-                <h3 className="font-display font-bold text-white text-base">
+                <h3 className="font-serif font-bold text-[#F8FAFC] text-base">
                   إدارة محتوى صفحة أخلاقيات النشر (/publication-ethics)
                 </h3>
-                <p className="text-xs text-[#6B7280]">
+                <p className="text-xs text-[#94A3B8] font-sans">
                   التحكم بترويسة الصفحة، الشارات، وميثاق النزاهة العلمية المعروض للمستخدمين.
                 </p>
               </div>
@@ -448,7 +560,7 @@ export function AdminSiteBuilderForm({
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[11px] text-[#6B7280]">الشارة</label>
+                  <label className="text-[11px] text-[#94A3B8]">الشارة</label>
                   <Input
                     value={settings.pageHeaders.publicationEthics?.badge || ""}
                     onChange={(e) => handleHeaderChange("publicationEthics", "badge", e.target.value)}
@@ -456,7 +568,7 @@ export function AdminSiteBuilderForm({
                   />
                 </div>
                 <div className="space-y-1 md:col-span-2">
-                  <label className="text-[11px] text-[#6B7280]">عنوان الصفحة</label>
+                  <label className="text-[11px] text-[#94A3B8]">عنوان الصفحة</label>
                   <Input
                     value={settings.pageHeaders.publicationEthics?.title || ""}
                     onChange={(e) => handleHeaderChange("publicationEthics", "title", e.target.value)}
@@ -464,7 +576,7 @@ export function AdminSiteBuilderForm({
                   />
                 </div>
                 <div className="space-y-1 md:col-span-3">
-                  <label className="text-[11px] text-[#6B7280]">الوصف العام للصفحة</label>
+                  <label className="text-[11px] text-[#94A3B8]">الوصف العام للصفحة</label>
                   <Input
                     value={settings.pageHeaders.publicationEthics?.subtitle || ""}
                     onChange={(e) => handleHeaderChange("publicationEthics", "subtitle", e.target.value)}
@@ -473,12 +585,12 @@ export function AdminSiteBuilderForm({
                 </div>
               </div>
 
-              <div className="p-4 bg-[#1A2B4A]/30 border border-[#6B7280]/20 rounded-xl space-y-3">
-                <h4 className="text-xs font-bold text-white font-mono">
+              <div className="p-4 bg-[#0A0F1D] border border-[#1E293B] rounded-xl space-y-3">
+                <h4 className="text-xs font-bold text-[#F8FAFC] font-mono">
                   ميثاق النزاهة والشفافية (Ethos Card)
                 </h4>
                 <div className="space-y-2">
-                  <label className="text-[11px] text-[#6B7280]">عنوان بطاقة الميثاق</label>
+                  <label className="text-[11px] text-[#94A3B8]">عنوان بطاقة الميثاق</label>
                   <Input
                     value={settings.pageHeaders.publicationEthics?.ethosTitle || ""}
                     onChange={(e) => handleHeaderChange("publicationEthics", "ethosTitle", e.target.value)}
@@ -486,12 +598,12 @@ export function AdminSiteBuilderForm({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] text-[#6B7280]">نص ميثاق النزاهة والشفافية</label>
+                  <label className="text-[11px] text-[#94A3B8]">نص ميثاق النزاهة والشفافية</label>
                   <textarea
                     rows={3}
                     value={settings.pageHeaders.publicationEthics?.ethosText || ""}
                     onChange={(e) => handleHeaderChange("publicationEthics", "ethosText", e.target.value)}
-                    className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white focus:border-[#E84A0C] focus:outline-none font-sans"
+                    className="w-full rounded-md border border-[#1E293B] bg-[#141C2F] p-3 text-xs text-[#F8FAFC] focus:border-[#D49B4B] focus:outline-none font-sans"
                   />
                 </div>
               </div>
@@ -500,17 +612,17 @@ export function AdminSiteBuilderForm({
         </div>
       )}
 
-      {/* TAB 4: CONTACT US CMS */}
+      {/* TAB 5: CONTACT US CMS */}
       {activeTab === "contact" && (
         <div className="space-y-6">
-          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
-            <div className="flex items-center gap-3 border-b border-[#6B7280]/20 pb-4">
-              <Mail className="w-5 h-5 text-[#E84A0C]" />
+          <Card className="p-6 bg-[#141C2F] border border-[#1E293B] space-y-6 rounded-2xl">
+            <div className="flex items-center gap-3 border-b border-[#1E293B] pb-4">
+              <Mail className="w-5 h-5 text-[#D49B4B]" />
               <div>
-                <h3 className="font-display font-bold text-white text-base">
+                <h3 className="font-serif font-bold text-[#F8FAFC] text-base">
                   إدارة محتوى ومعلومات صفحة اتصل بنا (/contact)
                 </h3>
-                <p className="text-xs text-[#6B7280]">
+                <p className="text-xs text-[#94A3B8] font-sans">
                   التحكم بالبريد الإلكتروني للتحرير، وصف المكتب التحريري، وساعات العمل.
                 </p>
               </div>
@@ -519,7 +631,7 @@ export function AdminSiteBuilderForm({
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="text-[11px] text-[#6B7280]">الشارة</label>
+                  <label className="text-[11px] text-[#94A3B8]">الشارة</label>
                   <Input
                     value={settings.pageHeaders.contact?.badge || ""}
                     onChange={(e) => handleHeaderChange("contact", "badge", e.target.value)}
@@ -527,7 +639,7 @@ export function AdminSiteBuilderForm({
                   />
                 </div>
                 <div className="space-y-1 md:col-span-2">
-                  <label className="text-[11px] text-[#6B7280]">عنوان الصفحة</label>
+                  <label className="text-[11px] text-[#94A3B8]">عنوان الصفحة</label>
                   <Input
                     value={settings.pageHeaders.contact?.title || ""}
                     onChange={(e) => handleHeaderChange("contact", "title", e.target.value)}
@@ -535,7 +647,7 @@ export function AdminSiteBuilderForm({
                   />
                 </div>
                 <div className="space-y-1 md:col-span-3">
-                  <label className="text-[11px] text-[#6B7280]">الوصف</label>
+                  <label className="text-[11px] text-[#94A3B8]">الوصف</label>
                   <Input
                     value={settings.pageHeaders.contact?.subtitle || ""}
                     onChange={(e) => handleHeaderChange("contact", "subtitle", e.target.value)}
@@ -546,7 +658,7 @@ export function AdminSiteBuilderForm({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-[11px] text-[#6B7280]">البريد الإلكتروني المعتمد</label>
+                  <label className="text-[11px] text-[#94A3B8]">البريد الإلكتروني المعتمد</label>
                   <Input
                     value={settings.pageHeaders.contact?.email || ""}
                     onChange={(e) => handleHeaderChange("contact", "email", e.target.value)}
@@ -555,7 +667,7 @@ export function AdminSiteBuilderForm({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[11px] text-[#6B7280]">ساعات العمل والاستقبال</label>
+                  <label className="text-[11px] text-[#94A3B8]">ساعات العمل والاستقبال</label>
                   <Input
                     value={settings.pageHeaders.contact?.hours || ""}
                     onChange={(e) => handleHeaderChange("contact", "hours", e.target.value)}
@@ -564,7 +676,7 @@ export function AdminSiteBuilderForm({
                 </div>
 
                 <div className="space-y-1 md:col-span-2">
-                  <label className="text-[11px] text-[#6B7280]">وصف المكتب التحريري</label>
+                  <label className="text-[11px] text-[#94A3B8]">وصف المكتب التحريري</label>
                   <Input
                     value={settings.pageHeaders.contact?.officeInfo || ""}
                     onChange={(e) => handleHeaderChange("contact", "officeInfo", e.target.value)}
@@ -577,19 +689,19 @@ export function AdminSiteBuilderForm({
         </div>
       )}
 
-      {/* TAB 5: HOMEPAGE BLOCK BUILDER */}
+      {/* TAB 6: HOMEPAGE BLOCK BUILDER */}
       {activeTab === "blocks" && (
         <div className="space-y-6">
-          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
+          <Card className="p-6 bg-[#141C2F] border border-[#1E293B] space-y-6 rounded-2xl">
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#6B7280]/20 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1E293B] pb-4">
               <div className="flex items-center gap-3">
-                <LayoutGrid className="w-5 h-5 text-[#E84A0C]" />
+                <LayoutGrid className="w-5 h-5 text-[#D49B4B]" />
                 <div>
-                  <h3 className="font-display font-bold text-white text-base">
+                  <h3 className="font-serif font-bold text-[#F8FAFC] text-base">
                     منشئ المكونات الديناميكية (Home Block Builder)
                   </h3>
-                  <p className="text-xs text-[#6B7280]">
+                  <p className="text-xs text-[#94A3B8] font-sans">
                     إضافة، تعديل، وترتيب الصناديق والمكونات التفاعلية المعروضة ديناميكياً على الصفحة الرئيسية.
                   </p>
                 </div>
@@ -602,9 +714,9 @@ export function AdminSiteBuilderForm({
                   size="sm"
                   variant="outline"
                   onClick={() => addBlock("info-box")}
-                  className="gap-1.5 text-xs rounded-xl border-[#6B7280]/30"
+                  className="gap-1.5 text-xs rounded-xl border-[#1E293B] bg-[#0A0F1D] text-[#F8FAFC]"
                 >
-                  <Plus className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <Plus className="w-3.5 h-3.5 text-[#D49B4B]" />
                   <span>+ صندوق معلومات</span>
                 </Button>
                 <Button
@@ -612,9 +724,9 @@ export function AdminSiteBuilderForm({
                   size="sm"
                   variant="outline"
                   onClick={() => addBlock("image-card")}
-                  className="gap-1.5 text-xs rounded-xl border-[#6B7280]/30"
+                  className="gap-1.5 text-xs rounded-xl border-[#1E293B] bg-[#0A0F1D] text-[#F8FAFC]"
                 >
-                  <ImageIcon className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <ImageIcon className="w-3.5 h-3.5 text-[#D49B4B]" />
                   <span>+ بطاقة مصورة</span>
                 </Button>
                 <Button
@@ -622,9 +734,9 @@ export function AdminSiteBuilderForm({
                   size="sm"
                   variant="outline"
                   onClick={() => addBlock("shortcut-link")}
-                  className="gap-1.5 text-xs rounded-xl border-[#6B7280]/30"
+                  className="gap-1.5 text-xs rounded-xl border-[#1E293B] bg-[#0A0F1D] text-[#F8FAFC]"
                 >
-                  <Link2 className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <Link2 className="w-3.5 h-3.5 text-[#D49B4B]" />
                   <span>+ رابط سريع</span>
                 </Button>
               </div>
@@ -632,9 +744,9 @@ export function AdminSiteBuilderForm({
 
             {/* Blocks List */}
             {settings.homeBlocks.length === 0 ? (
-              <div className="p-12 text-center border border-dashed border-[#6B7280]/30 rounded-xl space-y-3">
-                <LayoutGrid className="w-8 h-8 text-[#6B7280] mx-auto" />
-                <p className="text-xs text-[#6B7280]">
+              <div className="p-12 text-center border border-dashed border-[#1E293B] rounded-xl space-y-3">
+                <LayoutGrid className="w-8 h-8 text-[#94A3B8] mx-auto" />
+                <p className="text-xs text-[#94A3B8]">
                   لا توجد مكونات ديناميكية حالياً. اضغط على أحد الأزرار أعلاه لإضافة مكون جديد.
                 </p>
               </div>
@@ -643,14 +755,14 @@ export function AdminSiteBuilderForm({
                 {settings.homeBlocks.map((block, index) => (
                   <div
                     key={block.id}
-                    className="p-5 bg-[#1A2B4A]/30 border border-[#6B7280]/20 rounded-xl space-y-4 relative group"
+                    className="p-5 bg-[#0A0F1D] border border-[#1E293B] rounded-xl space-y-4 relative group"
                   >
-                    <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-3">
+                    <div className="flex items-center justify-between border-b border-[#1E293B] pb-3">
                       <div className="flex items-center gap-2">
-                        <span className="w-6 h-6 rounded-lg bg-[#E84A0C]/20 border border-[#E84A0C]/30 text-[#E84A0C] font-mono text-xs flex items-center justify-center font-bold">
+                        <span className="w-6 h-6 rounded-lg bg-[#D49B4B]/20 border border-[#D49B4B]/30 text-[#D49B4B] font-mono text-xs flex items-center justify-center font-bold">
                           {index + 1}
                         </span>
-                        <span className="font-mono text-xs font-bold text-white uppercase">
+                        <span className="font-mono text-xs font-bold text-[#F8FAFC] uppercase">
                           {block.type === "info-box"
                             ? "صندوق معلومات (Info Box)"
                             : block.type === "image-card"
@@ -665,7 +777,7 @@ export function AdminSiteBuilderForm({
                           type="button"
                           disabled={index === 0}
                           onClick={() => moveBlock(index, "up")}
-                          className="p-1.5 rounded-lg border border-[#6B7280]/20 text-[#6B7280] hover:text-white disabled:opacity-30"
+                          className="p-1.5 rounded-lg border border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC] disabled:opacity-30"
                           title="تحريك للأعلى"
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
@@ -674,7 +786,7 @@ export function AdminSiteBuilderForm({
                           type="button"
                           disabled={index === settings.homeBlocks.length - 1}
                           onClick={() => moveBlock(index, "down")}
-                          className="p-1.5 rounded-lg border border-[#6B7280]/20 text-[#6B7280] hover:text-white disabled:opacity-30"
+                          className="p-1.5 rounded-lg border border-[#1E293B] text-[#94A3B8] hover:text-[#F8FAFC] disabled:opacity-30"
                           title="تحريك للأسفل"
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
@@ -694,11 +806,11 @@ export function AdminSiteBuilderForm({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       
                       <div className="space-y-1">
-                        <label className="text-[11px] text-[#6B7280]">نوع المكون</label>
+                        <label className="text-[11px] text-[#94A3B8]">نوع المكون</label>
                         <select
                           value={block.type}
                           onChange={(e) => updateBlock(block.id, "type", e.target.value as any)}
-                          className="w-full bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-none focus:border-[#E84A0C]"
+                          className="w-full bg-[#141C2F] border border-[#1E293B] rounded-xl px-3 py-2 text-xs font-mono text-[#F8FAFC] focus:outline-none focus:border-[#D49B4B]"
                         >
                           <option value="info-box">صندوق معلومات (Info Box)</option>
                           <option value="image-card">بطاقة مصورة (Image Card)</option>
@@ -707,7 +819,7 @@ export function AdminSiteBuilderForm({
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-[11px] text-[#6B7280]">العنوان الفرعي / التصنيف</label>
+                        <label className="text-[11px] text-[#94A3B8]">العنوان الفرعي / التصنيف</label>
                         <Input
                           value={block.subtitle || ""}
                           onChange={(e) => updateBlock(block.id, "subtitle", e.target.value)}
@@ -717,7 +829,7 @@ export function AdminSiteBuilderForm({
                       </div>
 
                       <div className="space-y-1 md:col-span-2">
-                        <label className="text-[11px] text-[#6B7280]">العنوان الرئيسي</label>
+                        <label className="text-[11px] text-[#94A3B8]">العنوان الرئيسي</label>
                         <Input
                           value={block.title}
                           onChange={(e) => updateBlock(block.id, "title", e.target.value)}
@@ -727,19 +839,19 @@ export function AdminSiteBuilderForm({
                       </div>
 
                       <div className="space-y-1 md:col-span-2">
-                        <label className="text-[11px] text-[#6B7280]">المحتوى والوصف</label>
+                        <label className="text-[11px] text-[#94A3B8]">المحتوى والوصف</label>
                         <textarea
                           rows={2}
                           value={block.content || ""}
                           onChange={(e) => updateBlock(block.id, "content", e.target.value)}
-                          className="w-full rounded-md border border-[#6B7280]/30 bg-[#0D0D0D] p-3 text-xs text-white focus:border-[#E84A0C] focus:outline-none font-sans"
+                          className="w-full rounded-md border border-[#1E293B] bg-[#141C2F] p-3 text-xs text-[#F8FAFC] focus:border-[#D49B4B] focus:outline-none font-sans"
                           placeholder="تفاصيل المكون النصية..."
                         />
                       </div>
 
                       {block.type === "image-card" && (
                         <div className="space-y-1 md:col-span-2">
-                          <label className="text-[11px] text-[#6B7280]">رابط الصورة (Image URL)</label>
+                          <label className="text-[11px] text-[#94A3B8]">رابط الصورة (Image URL)</label>
                           <Input
                             value={block.image_url || ""}
                             onChange={(e) => updateBlock(block.id, "image_url", e.target.value)}
@@ -750,7 +862,7 @@ export function AdminSiteBuilderForm({
                       )}
 
                       <div className="space-y-1 md:col-span-2">
-                        <label className="text-[11px] text-[#6B7280]">رابط التوجيه (Target URL)</label>
+                        <label className="text-[11px] text-[#94A3B8]">رابط التوجيه (Target URL)</label>
                         <Input
                           value={block.target_url || ""}
                           onChange={(e) => updateBlock(block.id, "target_url", e.target.value)}
@@ -770,17 +882,17 @@ export function AdminSiteBuilderForm({
         </div>
       )}
 
-      {/* TAB 6: PARTNERSHIPS & SPONSORS */}
+      {/* TAB 7: PARTNERSHIPS & SPONSORS */}
       {activeTab === "partners" && (
         <div className="space-y-6">
-          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-6 rounded-2xl">
-            <div className="flex items-center gap-3 border-b border-[#6B7280]/20 pb-4">
-              <Building2 className="w-5 h-5 text-[#E84A0C]" />
+          <Card className="p-6 bg-[#141C2F] border border-[#1E293B] space-y-6 rounded-2xl">
+            <div className="flex items-center gap-3 border-b border-[#1E293B] pb-4">
+              <Building2 className="w-5 h-5 text-[#D49B4B]" />
               <div>
-                <h3 className="font-display font-bold text-white text-base">
+                <h3 className="font-serif font-bold text-[#F8FAFC] text-base">
                   إدارة الشركاء والرعاة الرسميين
                 </h3>
-                <p className="text-xs text-[#6B7280]">
+                <p className="text-xs text-[#94A3B8] font-sans">
                   إضافة وإزالة شعارات المؤسسات والشركاء الداعمين لمنصة الفريق.
                 </p>
               </div>
@@ -792,9 +904,9 @@ export function AdminSiteBuilderForm({
       )}
 
       {/* Global Bottom Actions Bar */}
-      <div className="pt-4 border-t border-[#6B7280]/20 flex items-center justify-between sticky bottom-4 bg-[#0D0D0D]/90 p-4 rounded-2xl backdrop-blur-md shadow-xl border border-[#6B7280]/30 z-20">
-        <span className="text-xs font-mono text-[#6B7280]">
-          * الحفظ ينطبق على الألوان، كافة الترويسات والمحتوى، والمكونات الديناميكية.
+      <div className="pt-4 border-t border-[#1E293B] flex items-center justify-between sticky bottom-4 bg-[#141C2F]/95 p-4 rounded-2xl backdrop-blur-md shadow-xl border border-[#1E293B] z-20">
+        <span className="text-xs font-mono text-[#94A3B8]">
+          * الحفظ ينطبق على الألوان، الترويسات، شارة التوثيق الأكاديمي، والمكونات.
         </span>
 
         <Button
@@ -802,7 +914,7 @@ export function AdminSiteBuilderForm({
           onClick={handleSave}
           disabled={isPending}
           size="md"
-          className="gap-2 px-8 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-lg transition-all"
+          className="gap-2 px-8 bg-[#D49B4B] hover:bg-[#b8823b] text-[#0A0F1D] font-bold rounded-xl shadow-lg transition-all"
         >
           <Save className="w-4 h-4" />
           <span>{isPending ? "جاري حفظ التعديلات..." : "حفظ جميع التغييرات"}</span>
