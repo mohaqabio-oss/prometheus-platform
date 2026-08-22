@@ -32,18 +32,18 @@ export function SectionHeader({
     >
       <div className={cn("space-y-3 max-w-2xl", align === "center" && "mx-auto")}>
         {badgeText && (
-          <Badge variant="orange" className="mb-2">
+          <Badge variant="amber" className="mb-2">
             {badgeText}
           </Badge>
         )}
-        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
+        <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#F8FAFC]">
           {title}{" "}
           {highlightedTitle && (
-            <span className="text-[#E84A0C]">{highlightedTitle}</span>
+            <span className="text-[#D49B4B]">{highlightedTitle}</span>
           )}
         </h2>
         {description && (
-          <p className="text-[#6B7280] text-sm sm:text-base leading-relaxed">
+          <p className="text-[#94A3B8] text-sm sm:text-base leading-relaxed font-sans">
             {description}
           </p>
         )}

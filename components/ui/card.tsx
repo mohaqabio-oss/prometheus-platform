@@ -3,13 +3,14 @@ import { cn } from "@/lib/utils";
 
 export const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { hoverable?: boolean }
->(({ className, hoverable = true, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { hoverable?: boolean; specMargin?: boolean }
+>(({ className, hoverable = true, specMargin = false, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      "rounded-2xl border border-[#6B7280]/20 bg-[#0D0D0D] text-white shadow-sm p-6 relative overflow-hidden transition-all duration-300",
-      hoverable && "hover:shadow-md hover:border-[#E84A0C]/40",
+      "rounded-2xl border border-[#1E293B] bg-[#141C2F] text-[#F8FAFC] shadow-sm p-6 relative overflow-hidden transition-all duration-300",
+      specMargin && "border-r-4 border-r-[#D49B4B]",
+      hoverable && "hover:shadow-[0_12px_32px_-8px_rgba(212,155,75,0.15)] hover:border-[#D49B4B]/50 hover:-translate-y-0.5",
       className
     )}
     {...props}
@@ -36,7 +37,7 @@ export const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-display text-xl font-bold leading-tight tracking-tight text-white",
+      "font-serif text-xl font-bold leading-tight tracking-tight text-[#F8FAFC]",
       className
     )}
     {...props}
@@ -50,7 +51,7 @@ export const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-[#6B7280] leading-relaxed", className)}
+    className={cn("text-sm text-[#94A3B8] leading-relaxed font-sans", className)}
     {...props}
   />
 ));
@@ -70,7 +71,7 @@ export const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center pt-4 border-t border-[#6B7280]/20 mt-4 text-xs text-[#6B7280]", className)}
+    className={cn("flex items-center pt-4 border-t border-[#1E293B] mt-4 text-xs text-[#94A3B8] font-mono", className)}
     {...props}
   />
 ));

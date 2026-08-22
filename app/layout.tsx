@@ -10,7 +10,7 @@ const tajawal = Tajawal({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#1A2B4A",
+  themeColor: "#0A0F1D",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -19,14 +19,14 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "فريق بروميثيوس التطوعي | المنصة المؤسسية والأكاديمية",
+    default: "فريق ومجلة بروميثيوس التطوعية | المنصة الأكاديمية والمؤسسية",
     template: "%s | فريق بروميثيوس التطوعي",
   },
   description:
-    "فريق بروميثيوس التطوعي هو مؤسسة تطوعية تهدف لنشر المعرفة التقنية، البحث العلمي، والمحتوى الأكاديمي الرقمي المفتوح.",
+    "منصة ومجلة بروميثيوس الأكاديمية التطوعية تهدف لنشر المعرفة التقنية، البحث العلمي، والأوراق البحثية المفتوحة المصدر.",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Prometheus",
   },
   formatDetection: {
@@ -34,27 +34,27 @@ export const metadata: Metadata = {
   },
   keywords: [
     "فريق بروميثيوس التطوعي",
-    "منشورات بروميثيوس",
+    "مجلة بروميثيوس الأكاديمية",
     "البحث العلمي التطوعي",
     "الهندسة البرمجية",
-    "المجلات الأكاديمية",
+    "المجلات الأكاديمية المفتوحة",
     "التطوع التقني",
   ],
-  authors: [{ name: "فريق بروميثيوس التطوعي" }],
+  authors: [{ name: "فريق ومجلة بروميثيوس التطوعية" }],
   creator: "فريق بروميثيوس التطوعي",
   metadataBase: new URL("https://prometheus-voluntary.org"),
   openGraph: {
     type: "website",
     locale: "ar_SA",
     url: "https://prometheus-voluntary.org",
-    title: "فريق بروميثيوس التطوعي | المنصة المؤسسية والأكاديمية",
+    title: "فريق ومجلة بروميثيوس التطوعية | المنصة الأكاديمية والمؤسسية",
     description:
       "إشعال طاقات الشباب عبر الهندسة البرمجية والبحث العلمي والأوراق البحثية المفتوحة المصدر.",
     siteName: "فريق بروميثيوس التطوعي",
   },
   twitter: {
     card: "summary_large_image",
-    title: "فريق بروميثيوس التطوعي",
+    title: "فريق ومجلة بروميثيوس التطوعية",
     description: "منصة مؤسسية وأكاديمية للعمل التطوعي والتقني.",
   },
   robots: {
@@ -69,8 +69,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const settings = await getSiteSettings();
-  const primaryColor = settings?.primaryColor || "#E84A0C";
-  const secondaryColor = settings?.secondaryColor || "#1A2B4A";
+  const primaryColor = settings?.primaryColor || "#D49B4B";
+  const secondaryColor = settings?.secondaryColor || "#0A0F1D";
 
   return (
     <html lang="ar" dir="rtl" className={`${tajawal.variable} h-full antialiased`}>
@@ -82,11 +82,16 @@ export default async function RootLayout({
             --ring: ${primaryColor};
             --secondary: ${secondaryColor};
             --background: ${secondaryColor};
+            --card: #141C2F;
+            --foreground: #F8FAFC;
+            --muted-foreground: #94A3B8;
+            --border: #1E293B;
           }
           body {
             background-color: var(--secondary) !important;
+            color: #F8FAFC !important;
           }
-          .bg-\\[\\#1A2B4A\\] {
+          .bg-\\[\\#1A2B4A\\], .bg-\\[\\#0D0D0D\\], .bg-\\[\\#0A0F1D\\] {
             background-color: var(--secondary) !important;
           }
           .bg-\\[\\#E84A0C\\], .hover\\:bg-\\[\\#E84A0C\\]:hover, .bg-brand-orange {
@@ -100,10 +105,11 @@ export default async function RootLayout({
           }
           ::selection {
             background-color: var(--primary) !important;
+            color: #0A0F1D !important;
           }
         ` }} />
       </head>
-      <body className="min-h-full flex flex-col bg-[#1A2B4A] text-white font-sans selection:bg-[#E84A0C] selection:text-white">
+      <body className="min-h-full flex flex-col bg-[#0A0F1D] text-[#F8FAFC] font-sans selection:bg-[#D49B4B] selection:text-[#0A0F1D]">
         {children}
       </body>
     </html>

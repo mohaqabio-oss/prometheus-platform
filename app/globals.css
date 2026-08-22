@@ -1,39 +1,41 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap');
 @import "tailwindcss";
 
 @layer base {
   :root {
-    --background: #1A2B4A;
-    --foreground: #FFFFFF;
-    --card: #0D0D0D;
-    --card-foreground: #FFFFFF;
-    --popover: #0D0D0D;
-    --popover-foreground: #FFFFFF;
-    --primary: #E84A0C;
-    --primary-foreground: #FFFFFF;
-    --secondary: #1A2B4A;
-    --secondary-foreground: #FFFFFF;
-    --muted: #121A2B;
-    --muted-foreground: #6B7280;
-    --accent: #E84A0C;
-    --accent-foreground: #FFFFFF;
-    --highlight: #F5A623;
+    --background: #0A0F1D;
+    --foreground: #F8FAFC;
+    --card: #141C2F;
+    --card-foreground: #F8FAFC;
+    --popover: #141C2F;
+    --popover-foreground: #F8FAFC;
+    --primary: #D49B4B;
+    --primary-foreground: #0A0F1D;
+    --secondary: #0A0F1D;
+    --secondary-foreground: #F8FAFC;
+    --muted: #141C2F;
+    --muted-foreground: #94A3B8;
+    --accent: #D49B4B;
+    --accent-foreground: #0A0F1D;
+    --highlight: #0284C7;
     --highlight-foreground: #FFFFFF;
     --destructive: #EF4444;
     --destructive-foreground: #FFFFFF;
-    --border: rgba(107, 114, 128, 0.2);
-    --input: rgba(107, 114, 128, 0.2);
-    --ring: #E84A0C;
+    --border: #1E293B;
+    --input: #1E293B;
+    --ring: #D49B4B;
     --radius: 0.75rem;
 
-    --font-tt-norms: var(--font-tajawal), "TT Norms Pro", -apple-system, sans-serif;
-    --font-garet: var(--font-tajawal), "Garet", -apple-system, sans-serif;
+    --font-tajawal: "Tajawal", system-ui, sans-serif;
+    --font-serif-arabic: "Amiri", "Tajawal", Georgia, serif;
+    --font-sans-arabic: "IBM Plex Sans Arabic", "Tajawal", system-ui, sans-serif;
+    --font-mono-code: "JetBrains Mono", monospace;
   }
 }
 
 ::selection {
-  background-color: #E84A0C;
-  color: #FFFFFF;
+  background-color: #D49B4B;
+  color: #0A0F1D;
 }
 
 * {
@@ -41,7 +43,7 @@
 }
 
 *:focus-visible {
-  outline: 2px solid #E84A0C;
+  outline: 2px solid #D49B4B;
   outline-offset: 2px;
 }
 
@@ -50,18 +52,30 @@ html {
 }
 
 body {
-  background-color: #1A2B4A;
-  color: #FFFFFF;
-  font-family: var(--font-tajawal), system-ui, sans-serif;
+  background-color: #0A0F1D;
+  color: #F8FAFC;
+  font-family: var(--font-sans-arabic);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-tajawal), system-ui, sans-serif;
+  font-family: var(--font-serif-arabic);
   font-weight: 700;
-  color: #FFFFFF;
+  color: #F8FAFC;
+}
+
+.font-serif, .font-display {
+  font-family: var(--font-serif-arabic) !important;
+}
+
+.font-sans {
+  font-family: var(--font-sans-arabic) !important;
+}
+
+.font-mono {
+  font-family: var(--font-mono-code) !important;
 }
 
 @keyframes fadeIn {
@@ -79,43 +93,51 @@ h1, h2, h3, h4, h5, h6 {
   animation: fadeIn 0.35s ease-out forwards;
 }
 
-/* Custom Patterns & Utilities */
+/* Oxford Slate Grid Pattern */
 .bg-grid-pattern {
-  background-size: 40px 40px;
+  background-size: 48px 48px;
   background-image: 
-    linear-gradient(to right, rgba(107, 114, 128, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(107, 114, 128, 0.08) 1px, transparent 1px);
+    linear-gradient(to right, rgba(148, 163, 184, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
 }
 
-.radial-glow-orange {
-  background: radial-gradient(circle at 50% 20%, rgba(232, 74, 12, 0.12) 0%, rgba(26, 43, 74, 0) 70%);
+/* Promethean Amber Subtle Glow */
+.radial-glow-amber {
+  background: radial-gradient(circle at 50% 25%, rgba(212, 155, 75, 0.12) 0%, rgba(10, 15, 29, 0) 70%);
 }
 
-.card-hover-border {
+/* Archival Spec-Margin Card Styling */
+.archival-card {
+  position: relative;
+  background-color: #141C2F;
+  border: 1px solid #1E293B;
+  border-right: 3px solid #D49B4B;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card-hover-border:hover {
-  border-color: rgba(232, 74, 12, 0.4);
-  box-shadow: 0 10px 25px -5px rgba(232, 74, 12, 0.12);
+.archival-card:hover {
+  border-color: rgba(212, 155, 75, 0.5);
+  border-right-color: #D49B4B;
+  box-shadow: 0 12px 32px -8px rgba(212, 155, 75, 0.15);
   transform: translateY(-2px);
 }
 
-/* Refined Editorial Article Typography */
+/* Monograph Body Text */
 .article-body {
-  color: #FFFFFF;
+  color: #F8FAFC;
   font-size: 1.125rem;
   line-height: 1.9;
+  font-family: var(--font-sans-arabic);
 }
 
 .article-body p {
   margin-bottom: 1.75rem;
-  color: #FFFFFF;
+  color: #94A3B8;
 }
 
 .article-body h2 {
-  font-family: var(--font-tajawal), sans-serif;
-  color: #FFFFFF;
+  font-family: var(--font-serif-arabic);
+  color: #F8FAFC;
   font-size: 1.75rem;
   font-weight: 700;
   margin-top: 3rem;
@@ -124,31 +146,34 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .article-body blockquote {
-  border-right: 3px solid #E84A0C;
+  border-right: 3px solid #D49B4B;
   border-left: none;
   padding-right: 1.5rem;
   margin-top: 2rem;
   margin-bottom: 2rem;
   font-style: italic;
-  color: #6B7280;
+  color: #94A3B8;
+  background: rgba(20, 28, 47, 0.5);
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
 }
 
 .article-body code {
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-mono-code);
   font-size: 0.9em;
-  background-color: #0D0D0D;
-  color: #E84A0C;
+  background-color: #141C2F;
+  color: #D49B4B;
   padding: 0.2em 0.4em;
   border-radius: 0.375rem;
-  border: 1px solid rgba(107, 114, 128, 0.2);
+  border: 1px solid #1E293B;
 }
 
 .article-body a {
-  color: #E84A0C;
+  color: #D49B4B;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
 
 .article-body a:hover {
-  color: #D03E06;
+  color: #F8FAFC;
 }

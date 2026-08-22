@@ -15,8 +15,10 @@ import {
   CheckCircle2,
   Clock,
   ExternalLink,
-  Layers,
   Link2,
+  FileCheck,
+  ShieldCheck,
+  Award,
 } from "lucide-react";
 
 export const revalidate = 60;
@@ -45,6 +47,7 @@ export default async function HomePage() {
   const pillars = [
     {
       id: "tech",
+      specCode: "SPEC // TECH-01",
       title: "الهندسة البرمجية والتطوير",
       description:
         "بناء المنصات الرقمية والتطبيقات مفتوحة المصدر اعتماداً على أحدث التقنيات البرمجية.",
@@ -52,6 +55,7 @@ export default async function HomePage() {
     },
     {
       id: "research",
+      specCode: "SPEC // RES-02",
       title: "البحث العلمي والتحليل",
       description:
         "إعداد الأوراق والبحوث المنهجية وتحليل البيانات لدعم الحصيلة العلمية للمجتمع.",
@@ -59,6 +63,7 @@ export default async function HomePage() {
     },
     {
       id: "edu",
+      specCode: "SPEC // EDU-03",
       title: "التعليم وصناعة المحتوى",
       description:
         "تقديم ورش عمل تخصصية وكتابة مقالات تعليمية مبسطة باللغة العربية.",
@@ -66,6 +71,7 @@ export default async function HomePage() {
     },
     {
       id: "hr",
+      specCode: "SPEC // OPS-04",
       title: "الموارد البشرية والعمليات",
       description:
         "إدارة وتنظيم الطاقات التطوعية وتوجيه الكوادر نحو المكان المناسب لإمكانياتهم.",
@@ -74,7 +80,7 @@ export default async function HomePage() {
   ];
 
   const identity = {
-    badge: "الهوية والرسالة",
+    badge: "الهوية والرسالة الأكاديمية",
     title: "شعارنا: المعرفة حق متاح، والتطوع أسلوب حياة",
     quote:
       "نسعى لتوفير بيئة تطوعية ناضجة تتيح للشاب العربي اكتساب الخبرة البرمجية والبحثية المباشرة مع خدمة المجتمع.",
@@ -89,64 +95,117 @@ export default async function HomePage() {
   const getPillarIcon = (iconName: string) => {
     switch (iconName) {
       case "code":
-        return <Code2 className="w-6 h-6 text-[#E84A0C]" />;
+        return <Code2 className="w-6 h-6 text-[#D49B4B]" />;
       case "book":
-        return <BookOpen className="w-6 h-6 text-[#F5A623]" />;
+        return <BookOpen className="w-6 h-6 text-[#0284C7]" />;
       case "grad":
-        return <GraduationCap className="w-6 h-6 text-[#E84A0C]" />;
+        return <GraduationCap className="w-6 h-6 text-[#D49B4B]" />;
       case "users":
-        return <Users2 className="w-6 h-6 text-[#F5A623]" />;
+        return <Users2 className="w-6 h-6 text-[#0284C7]" />;
       default:
-        return <Sparkles className="w-6 h-6 text-[#E84A0C]" />;
+        return <Sparkles className="w-6 h-6 text-[#D49B4B]" />;
     }
   };
 
   const homeBlocks = settings.homeBlocks || [];
 
   return (
-    <div className="space-y-20 pb-20">
+    <div className="space-y-20 pb-20 bg-[#0A0F1D] text-[#F8FAFC]">
       
-      {/* 1. HERO SECTION */}
-      <section className="relative pt-12 pb-16 md:pt-20 md:pb-24 overflow-hidden bg-grid-pattern radial-glow-orange transition-all duration-300">
+      {/* 1. HERO SECTION — DUAL-PANE ARCHIVAL THESIS */}
+      <section className="relative pt-12 pb-16 md:pt-24 md:pb-28 overflow-hidden bg-grid-pattern radial-glow-amber border-b border-[#1E293B]">
         
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-5xl relative z-10 text-center space-y-8">
-          
-          <div className="inline-flex items-center gap-2 rounded-xl border border-[#E84A0C]/30 bg-[#E84A0C]/10 px-4 py-1.5 text-xs font-mono text-[#E84A0C] backdrop-blur-sm animate-fade-in">
-            <span className="w-2 h-2 rounded-full bg-[#E84A0C] animate-pulse" />
-            <span>{heroBadge}</span>
+        <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-7xl relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            {/* Right Pane (RTL Main Intro) */}
+            <div className="lg:col-span-7 space-y-8 text-right">
+              
+              <div className="inline-flex items-center gap-2 rounded-xl border border-[#D49B4B]/30 bg-[#D49B4B]/10 px-4 py-1.5 text-xs font-mono text-[#D49B4B] backdrop-blur-md animate-fade-in">
+                <span className="w-2 h-2 rounded-full bg-[#D49B4B] animate-pulse" />
+                <span>{heroBadge}</span>
+              </div>
+
+              <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold text-[#F8FAFC] tracking-tight leading-[1.15]">
+                {heroTitle}
+              </h1>
+
+              <p className="max-w-2xl text-base sm:text-xl text-[#94A3B8] leading-relaxed font-sans font-normal">
+                {heroSubtitle}
+              </p>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center gap-4">
+                <Link href="/articles">
+                  <Button size="lg" className="w-full sm:w-auto gap-2 text-sm font-bold bg-[#D49B4B] hover:bg-[#b8823b] text-[#0A0F1D] rounded-xl shadow-lg transition-all duration-300">
+                    <span>تصفح منشورات بروميثيوس</span>
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                </Link>
+
+                <Link href="/join-us">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto text-sm font-medium border-[#1E293B] bg-[#141C2F]/80 text-[#F8FAFC] hover:text-[#D49B4B] hover:border-[#D49B4B]/50 rounded-xl transition-all duration-300"
+                  >
+                    <span>تقديم طلب انضمام</span>
+                  </Button>
+                </Link>
+              </div>
+
+            </div>
+
+            {/* Left Pane — SIGNATURE ELEMENT: "The Promethean Lens & Archival Spec Box" */}
+            <div className="lg:col-span-5">
+              <div className="relative p-6 sm:p-8 bg-[#141C2F]/90 border border-[#1E293B] border-r-4 border-r-[#D49B4B] rounded-2xl shadow-2xl space-y-6 backdrop-blur-md hover:border-[#D49B4B]/50 transition-all duration-300">
+                
+                {/* Header Tag */}
+                <div className="flex items-center justify-between border-b border-[#1E293B] pb-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-[#D49B4B]" />
+                    <span className="font-mono text-xs font-bold text-[#F8FAFC] uppercase tracking-wider">
+                      SPEC REGISTRY // VOL. 04
+                    </span>
+                  </div>
+                  <Badge variant="cyan" className="text-[10px]">
+                    ● PEER-REVIEWED
+                  </Badge>
+                </div>
+
+                {/* Spec Metadata Lines */}
+                <div className="space-y-4 font-mono text-xs text-[#94A3B8]">
+                  
+                  <div className="flex items-center justify-between p-3 bg-[#0A0F1D]/80 rounded-xl border border-[#1E293B]">
+                    <span className="text-[#94A3B8]">المعيار التحريري:</span>
+                    <span className="text-[#D49B4B] font-bold">Double-Blind Peer Review</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-[#0A0F1D]/80 rounded-xl border border-[#1E293B]">
+                    <span className="text-[#94A3B8]">حقوق الوصول والترخيص:</span>
+                    <span className="text-[#0284C7] font-bold">Open Access (CC BY 4.0)</span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-[#0A0F1D]/80 rounded-xl border border-[#1E293B]">
+                    <span className="text-[#94A3B8]">حالة الفهرس الرقمي:</span>
+                    <span className="text-[#F8FAFC] font-bold">Active Academic Repository</span>
+                  </div>
+
+                </div>
+
+                {/* Bottom Verification Note */}
+                <div className="pt-2 flex items-center gap-3 text-xs text-[#94A3B8] font-sans border-t border-[#1E293B]">
+                  <FileCheck className="w-4 h-4 text-[#D49B4B] shrink-0" />
+                  <span>تخضع جميع المنشورات لمعايير الرصانة العلمية والتدقيق الأكاديمي.</span>
+                </div>
+
+              </div>
+            </div>
+
           </div>
-
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight leading-[1.1]">
-            {heroTitle}
-          </h1>
-
-          <p className="max-w-2xl mx-auto text-base sm:text-xl text-[#6B7280] leading-relaxed font-sans font-normal">
-            {heroSubtitle}
-          </p>
-
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/articles">
-              <Button size="lg" className="w-full sm:w-auto gap-2 text-sm font-medium bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md transition-all duration-300">
-                <span>تصفح منشورات بروميثيوس</span>
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-            </Link>
-
-            <Link href="/join-us">
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full sm:w-auto text-sm font-medium border-[#6B7280]/30 text-white hover:text-[#E84A0C] hover:border-[#E84A0C]/40 rounded-xl transition-all duration-300"
-              >
-                <span>تقديم طلب انضمام</span>
-              </Button>
-            </Link>
-          </div>
-
         </div>
       </section>
 
-      {/* 2. ABOUT THE TEAM SECTION */}
+      {/* 2. ABOUT THE TEAM SECTION — ARCHIVAL STATS GRID */}
       <section id="about" className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           
@@ -157,24 +216,24 @@ export default async function HomePage() {
               description={aboutDescription}
             />
 
-            <div className="pt-4">
+            <div className="pt-2">
               <Link href="/join-us">
-                <Button variant="outline" size="md" className="gap-2 text-xs rounded-xl border-[#6B7280]/30 text-white">
+                <Button variant="outline" size="md" className="gap-2 text-xs rounded-xl border-[#1E293B] bg-[#141C2F] text-[#F8FAFC] hover:border-[#D49B4B]/50 hover:text-[#D49B4B]">
                   <span>تعرّف على آلية الانضمام</span>
-                  <ArrowLeft className="w-4 h-4 text-[#E84A0C]" />
+                  <ArrowLeft className="w-4 h-4 text-[#D49B4B]" />
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Dynamic Stats Metric Cards Grid */}
+          {/* Dynamic Stats Metric Cards Grid (With Archival Spec-Margin) */}
           <div className="lg:col-span-6 grid grid-cols-2 gap-4">
             {dynamicStats.map((stat: any, i: number) => (
-              <Card key={i} className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-2 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
-                <p className="font-display font-bold text-3xl sm:text-4xl text-[#E84A0C] font-mono">
+              <Card key={i} specMargin={true} className="p-6 space-y-2">
+                <p className="font-mono font-bold text-3xl sm:text-4xl text-[#D49B4B]">
                   {stat.value}
                 </p>
-                <p className="text-xs sm:text-sm font-medium text-[#6B7280] font-sans">
+                <p className="text-xs sm:text-sm font-medium text-[#94A3B8] font-sans">
                   {stat.label}
                 </p>
               </Card>
@@ -199,44 +258,45 @@ export default async function HomePage() {
                 return (
                   <Card
                     key={block.id}
-                    className="overflow-hidden bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl flex flex-col justify-between shadow-sm hover:shadow-md hover:border-[#E84A0C]/40 transition-all duration-300 group"
+                    specMargin={true}
+                    className="p-0 overflow-hidden flex flex-col justify-between group"
                   >
                     {block.image_url && (
-                      <div className="h-44 w-full overflow-hidden relative bg-[#1A2B4A]">
+                      <div className="h-44 w-full overflow-hidden relative bg-[#0A0F1D] border-b border-[#1E293B]">
                         <img
                           src={block.image_url}
                           alt={block.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
                         />
                       </div>
                     )}
                     <div className="p-6 space-y-3 flex-1 flex flex-col justify-between">
                       <div className="space-y-2">
                         {block.subtitle && (
-                          <span className="text-[11px] font-mono text-[#E84A0C] block">
+                          <span className="text-[11px] font-mono text-[#D49B4B] block">
                             {block.subtitle}
                           </span>
                         )}
-                        <h3 className="font-display text-lg font-bold text-white">
+                        <h3 className="font-serif text-lg font-bold text-[#F8FAFC]">
                           {block.title}
                         </h3>
                         {block.content && (
-                          <p className="text-xs text-[#6B7280] leading-relaxed line-clamp-3">
+                          <p className="text-xs text-[#94A3B8] leading-relaxed line-clamp-3 font-sans">
                             {block.content}
                           </p>
                         )}
                       </div>
 
                       {block.target_url && (
-                        <div className="pt-4 border-t border-[#6B7280]/20">
+                        <div className="pt-4 border-t border-[#1E293B]">
                           <Link href={block.target_url}>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="w-full gap-2 text-xs rounded-xl border-[#6B7280]/30 text-white hover:text-[#E84A0C]"
+                              className="w-full gap-2 text-xs rounded-xl border-[#1E293B] bg-[#0A0F1D] text-[#F8FAFC] hover:text-[#D49B4B]"
                             >
                               <span>استكشف المزيد</span>
-                              <ArrowLeft className="w-3.5 h-3.5 text-[#E84A0C]" />
+                              <ArrowLeft className="w-3.5 h-3.5 text-[#D49B4B]" />
                             </Button>
                           </Link>
                         </div>
@@ -250,22 +310,23 @@ export default async function HomePage() {
                 return (
                   <Card
                     key={block.id}
-                    className="p-6 bg-gradient-to-br from-[#1A2B4A]/60 to-[#0D0D0D] border border-[#E84A0C]/30 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md hover:border-[#E84A0C]/60 transition-all duration-300"
+                    specMargin={true}
+                    className="bg-gradient-to-br from-[#141C2F] to-[#0A0F1D] flex flex-col justify-between space-y-4"
                   >
                     <div className="space-y-3">
-                      <div className="w-10 h-10 rounded-xl bg-[#E84A0C]/10 border border-[#E84A0C]/30 flex items-center justify-center">
-                        <Link2 className="w-5 h-5 text-[#E84A0C]" />
+                      <div className="w-10 h-10 rounded-xl bg-[#D49B4B]/10 border border-[#D49B4B]/30 flex items-center justify-center">
+                        <Link2 className="w-5 h-5 text-[#D49B4B]" />
                       </div>
                       {block.subtitle && (
-                        <span className="text-[11px] font-mono text-[#E84A0C] block">
+                        <span className="text-[11px] font-mono text-[#D49B4B] block">
                           {block.subtitle}
                         </span>
                       )}
-                      <h3 className="font-display text-lg font-bold text-white">
+                      <h3 className="font-serif text-lg font-bold text-[#F8FAFC]">
                         {block.title}
                       </h3>
                       {block.content && (
-                        <p className="text-xs text-[#6B7280] leading-relaxed">
+                        <p className="text-xs text-[#94A3B8] leading-relaxed font-sans">
                           {block.content}
                         </p>
                       )}
@@ -276,7 +337,7 @@ export default async function HomePage() {
                         <Link href={block.target_url}>
                           <Button
                             size="sm"
-                            className="w-full gap-2 text-xs bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md"
+                            className="w-full gap-2 text-xs bg-[#D49B4B] hover:bg-[#b8823b] text-[#0A0F1D] font-bold rounded-xl shadow-md"
                           >
                             <span>انتقال سريع</span>
                             <ArrowLeft className="w-3.5 h-3.5" />
@@ -292,37 +353,38 @@ export default async function HomePage() {
               return (
                 <Card
                   key={block.id}
-                  className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md hover:border-[#E84A0C]/40 transition-all duration-300"
+                  specMargin={true}
+                  className="flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-[#E84A0C]" />
+                    <div className="w-10 h-10 rounded-xl bg-[#0A0F1D] border border-[#1E293B] flex items-center justify-center">
+                      <Sparkles className="w-5 h-5 text-[#D49B4B]" />
                     </div>
                     {block.subtitle && (
-                      <span className="text-[11px] font-mono text-[#E84A0C] block">
+                      <span className="text-[11px] font-mono text-[#D49B4B] block">
                         {block.subtitle}
                       </span>
                     )}
-                    <h3 className="font-display text-lg font-bold text-white">
+                    <h3 className="font-serif text-lg font-bold text-[#F8FAFC]">
                       {block.title}
                     </h3>
                     {block.content && (
-                      <p className="text-xs text-[#6B7280] leading-relaxed">
+                      <p className="text-xs text-[#94A3B8] leading-relaxed font-sans">
                         {block.content}
                       </p>
                     )}
                   </div>
 
                   {block.target_url && (
-                    <div className="pt-4 border-t border-[#6B7280]/20">
+                    <div className="pt-4 border-t border-[#1E293B]">
                       <Link href={block.target_url}>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="w-full gap-2 text-xs rounded-xl border-[#6B7280]/30 text-white hover:text-[#E84A0C]"
+                          className="w-full gap-2 text-xs rounded-xl border-[#1E293B] bg-[#0A0F1D] text-[#F8FAFC] hover:text-[#D49B4B]"
                         >
                           <span>عرض التفاصيل</span>
-                          <ArrowLeft className="w-3.5 h-3.5 text-[#E84A0C]" />
+                          <ArrowLeft className="w-3.5 h-3.5 text-[#D49B4B]" />
                         </Button>
                       </Link>
                     </div>
@@ -346,15 +408,21 @@ export default async function HomePage() {
           {pillars.map((pillar) => (
             <Card
               key={pillar.id}
-              className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-sm hover:shadow-md transition-all duration-300"
+              specMargin={true}
+              className="space-y-4"
             >
-              <div className="w-12 h-12 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 flex items-center justify-center">
-                {getPillarIcon(pillar.icon)}
+              <div className="flex items-center justify-between border-b border-[#1E293B] pb-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0A0F1D] border border-[#1E293B] flex items-center justify-center">
+                  {getPillarIcon(pillar.icon)}
+                </div>
+                <span className="text-[10px] font-mono text-[#94A3B8]">
+                  {pillar.specCode}
+                </span>
               </div>
-              <h3 className="font-display text-lg font-bold text-white">
+              <h3 className="font-serif text-lg font-bold text-[#F8FAFC]">
                 {pillar.title}
               </h3>
-              <p className="text-xs sm:text-sm text-[#6B7280] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed font-sans">
                 {pillar.description}
               </p>
             </Card>
@@ -364,20 +432,20 @@ export default async function HomePage() {
 
       {/* 5. BRAND IDENTITY & ETHOS */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl">
-        <Card className="p-8 sm:p-12 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-8 relative overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+        <Card specMargin={true} className="p-8 sm:p-12 space-y-8 relative overflow-hidden">
           <div className="max-w-3xl space-y-6">
-            <Badge variant="accent">{identity.badge}</Badge>
-            <h2 className="font-display text-2xl sm:text-4xl font-bold text-white leading-tight">
+            <Badge variant="amber">{identity.badge}</Badge>
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-[#F8FAFC] leading-tight">
               {identity.title}
             </h2>
-            <blockquote className="text-[#6B7280] italic text-base sm:text-lg border-r-2 border-[#E84A0C] pr-4 font-sans leading-relaxed">
+            <blockquote className="text-[#94A3B8] italic text-base sm:text-lg border-r-4 border-[#D49B4B] pr-4 font-sans leading-relaxed bg-[#0A0F1D]/50 p-4 rounded-l-xl">
               "{identity.quote}"
             </blockquote>
 
             <div className="pt-2 space-y-3">
               {identity.points.map((pt, index) => (
-                <div key={index} className="flex items-center gap-3 text-xs sm:text-sm text-[#6B7280]">
-                  <CheckCircle2 className="w-4 h-4 text-[#E84A0C] shrink-0" />
+                <div key={index} className="flex items-center gap-3 text-xs sm:text-sm text-[#94A3B8] font-sans">
+                  <CheckCircle2 className="w-4 h-4 text-[#D49B4B] shrink-0" />
                   <span>{pt}</span>
                 </div>
               ))}
@@ -396,37 +464,37 @@ export default async function HomePage() {
               description="مجموعة مختارة من المقالات المنهجية والأبحاث الأكاديمية المصاغة بأسلوب رصين."
             />
             <Link href="/articles" className="shrink-0">
-              <Button variant="outline" size="sm" className="gap-2 text-xs rounded-xl border-[#6B7280]/30 text-white">
+              <Button variant="outline" size="sm" className="gap-2 text-xs rounded-xl border-[#1E293B] bg-[#141C2F] text-[#F8FAFC] hover:border-[#D49B4B]/50 hover:text-[#D49B4B]">
                 <span>جميع المقالات</span>
-                <ArrowLeft className="w-4 h-4 text-[#E84A0C]" />
+                <ArrowLeft className="w-4 h-4 text-[#D49B4B]" />
               </Button>
             </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {featuredArticles.map((article: any) => (
-              <Card key={article.id} className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl flex flex-col justify-between space-y-4 shadow-sm hover:shadow-md transition-all duration-300">
+              <Card key={article.id} specMargin={true} className="flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Badge variant="accent">{article.category}</Badge>
-                    <span className="text-[11px] font-mono text-[#6B7280]">{article.publishedAt}</span>
+                    <Badge variant="amber">{article.category}</Badge>
+                    <span className="text-[11px] font-mono text-[#94A3B8]">{article.publishedAt}</span>
                   </div>
 
-                  <h3 className="font-display text-lg font-bold text-white hover:text-[#E84A0C] transition-all duration-300">
+                  <h3 className="font-serif text-lg font-bold text-[#F8FAFC] hover:text-[#D49B4B] transition-all duration-300">
                     <Link href={`/articles/${article.slug}`}>
                       {article.title}
                     </Link>
                   </h3>
 
-                  <p className="text-xs text-[#6B7280] line-clamp-3 leading-relaxed">
+                  <p className="text-xs text-[#94A3B8] line-clamp-3 leading-relaxed font-sans">
                     {article.excerpt}
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-[#6B7280]/20 flex items-center justify-between text-xs font-mono text-[#6B7280]">
+                <div className="pt-4 border-t border-[#1E293B] flex items-center justify-between text-xs font-mono text-[#94A3B8]">
                   <span>{article.author.name}</span>
                   <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5" />
+                    <Clock className="w-3.5 h-3.5 text-[#D49B4B]" />
                     {article.readTime}
                   </span>
                 </div>
@@ -449,9 +517,9 @@ export default async function HomePage() {
             {partners.map((partner: any) => (
               <Card
                 key={partner.id}
-                className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl flex flex-col items-center justify-center space-y-3 hover:border-[#E84A0C]/40 shadow-sm hover:shadow-md transition-all duration-300 group text-center"
+                className="p-6 bg-[#141C2F] border border-[#1E293B] rounded-2xl flex flex-col items-center justify-center space-y-3 hover:border-[#D49B4B]/50 shadow-sm transition-all duration-300 group text-center"
               >
-                <div className="w-16 h-16 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 p-2 flex items-center justify-center group-hover:scale-105 transition-all duration-300">
+                <div className="w-16 h-16 rounded-xl bg-[#0A0F1D] border border-[#1E293B] p-2 flex items-center justify-center group-hover:scale-105 transition-all duration-300">
                   <img
                     src={partner.logoUrl}
                     alt={partner.name}
@@ -459,14 +527,14 @@ export default async function HomePage() {
                   />
                 </div>
 
-                <p className="font-bold text-white text-xs sm:text-sm font-sans">{partner.name}</p>
+                <p className="font-bold text-[#F8FAFC] text-xs sm:text-sm font-sans">{partner.name}</p>
 
                 {partner.websiteUrl && (
                   <a
                     href={partner.websiteUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] font-mono text-[#E84A0C] hover:underline inline-flex items-center gap-1"
+                    className="text-[11px] font-mono text-[#D49B4B] hover:underline inline-flex items-center gap-1"
                   >
                     <span>زيارة الموقع</span>
                     <ExternalLink className="w-3 h-3" />
@@ -480,18 +548,18 @@ export default async function HomePage() {
 
       {/* 8. CALL TO ACTION / JOIN US */}
       <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-4xl text-center space-y-6">
-        <div className="p-10 rounded-2xl border border-[#6B7280]/20 bg-[#0D0D0D] space-y-6 shadow-md transition-all duration-300">
-          <Badge variant="accent" className="mx-auto">انضم إلينا اليوم</Badge>
-          <h2 className="font-display text-2xl sm:text-4xl font-bold text-white">
+        <div className="p-10 rounded-2xl border border-[#1E293B] border-r-4 border-r-[#D49B4B] bg-[#141C2F] space-y-6 shadow-xl transition-all duration-300">
+          <Badge variant="amber" className="mx-auto">انضم إلينا اليوم</Badge>
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-[#F8FAFC]">
             هل ترغب في المساهمة بجهدك التطوعي؟
           </h2>
-          <p className="text-xs sm:text-sm text-[#6B7280] max-w-xl mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#94A3B8] max-w-xl mx-auto leading-relaxed font-sans">
             نرحب بالمطورين والباحثين والمترجمين الشباب الراغبين في الانضمام لأقسام الفريق والمساهمة في تقديم معرفة حقيقية للمجتمع.
           </p>
 
           <div className="pt-2 flex justify-center">
             <Link href="/join-us">
-              <Button size="lg" className="gap-2 text-sm bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md transition-all duration-300">
+              <Button size="lg" className="gap-2 text-sm bg-[#D49B4B] hover:bg-[#b8823b] text-[#0A0F1D] font-bold rounded-xl shadow-lg transition-all duration-300">
                 <span>تقديم طلب انضمام</span>
                 <ArrowLeft className="w-4 h-4" />
               </Button>
