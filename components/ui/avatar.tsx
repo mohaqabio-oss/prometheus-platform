@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export function getInitials(name?: string | null): string {
   if (!name || !name.trim()) return "P";
   const words = name.trim().split(/\s+/);
   if (words.length === 1) {
-    return words[0].charAt(0);
+    return words[0].charAt(0).toUpperCase();
   }
-  const first = words[0].charAt(0);
-  const last = words[words.length - 1].charAt(0);
+  const first = words[0].charAt(0).toUpperCase();
+  const last = words[words.length - 1].charAt(0).toUpperCase();
   return `${first} ${last}`;
 }
 
@@ -41,21 +41,30 @@ export function Avatar({
   className,
 }: AvatarProps) {
   const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [src]);
+
   const initials = getInitials(name);
-  const hasValidSrc = src && src.trim() !== "" && !imageError;
+  const isValidUrl =
+    typeof src === "string" &&
+    src.trim() !== "" &&
+    !src.startsWith("blob:") &&
+    !imageError;
 
   const shapeClasses = shape === "circle" ? "rounded-full" : "rounded-2xl";
   const variantSizeClass = sizeVariants[size];
 
-  if (!hasValidSrc) {
+  if (!isValidUrl) {
     return (
       <div
         dir="rtl"
         aria-label={alt || name || "User Avatar"}
         className={cn(
-          "bg-gradient-to-br from-brand-dark-900 via-brand-dark-850 to-brand-dark-950",
-          "border border-brand-orange/40 text-brand-orange",
-          "font-display font-bold flex items-center justify-center select-none shadow-md shrink-0",
+          "bg-gradient-to-br from-[#141C2F] via-[#1A253B] to-[#0A0F1D]",
+          "border border-[#D49B4B]/40 text-[#D49B4B]",
+          "font-mono font-bold flex items-center justify-center select-none shadow-md shrink-0",
           shapeClasses,
           variantSizeClass,
           className
@@ -69,7 +78,7 @@ export function Avatar({
   return (
     <div
       className={cn(
-        "relative overflow-hidden bg-brand-dark-850 border border-brand-dark-700 shrink-0 shadow-md",
+        "relative overflow-hidden bg-[#141C2F] border border-[#1E293B] shrink-0 shadow-md",
         shapeClasses,
         variantSizeClass,
         className

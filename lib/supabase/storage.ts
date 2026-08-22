@@ -38,21 +38,21 @@ export async function uploadImageToSupabase(
 
     if (error) {
       console.warn(`Supabase Storage upload warning (${bucket}):`, error.message);
-      // Fallback: Construct fully qualified public URL directly from Supabase project bucket URL
-      return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filePath}`;
     }
+
+    const targetPath = data?.path || filePath;
 
     const { data: publicUrlData } = supabase.storage
       .from(bucket)
-      .getPublicUrl(filePath);
+      .getPublicUrl(targetPath);
 
     if (publicUrlData?.publicUrl && !publicUrlData.publicUrl.startsWith("blob:")) {
       return publicUrlData.publicUrl;
     }
 
-    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filePath}`;
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${targetPath}`;
   } catch (e: any) {
     console.error("Supabase Storage error:", e);
-    return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80";
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/default.jpg`;
   }
 }
