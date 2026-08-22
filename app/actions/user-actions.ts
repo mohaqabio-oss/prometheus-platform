@@ -47,7 +47,7 @@ export async function getAdminUsersList(): Promise<AdminUserItem[]> {
       return {
         id: u.id,
         email: u.email,
-        fullName: u.member?.fullName || u.email.split("@")[0],
+        fullName: u.fullName || u.member?.fullName || u.email.split("@")[0],
         roles: roles.length > 0 ? roles : ["MEMBER" as RoleType],
         createdAt: u.createdAt.toISOString(),
       };
@@ -57,7 +57,7 @@ export async function getAdminUsersList(): Promise<AdminUserItem[]> {
   }
 }
 
-// 2. Create New User Account (Master Admin Only)
+// 2. Create New User Account (Master Admin Only) - DECOUPLED FROM PUBLIC MEMBER DIRECTORY
 export async function createUserAction(prevState: any, formData: FormData) {
   await requireMasterAdmin();
 
@@ -75,7 +75,7 @@ export async function createUserAction(prevState: any, formData: FormData) {
   }
 
   try {
-    // Check if email exists
+    // Check if email exists in User table
     const existing = await prisma.user.findUnique({
       where: { email },
     });
@@ -96,28 +96,21 @@ export async function createUserAction(prevState: any, formData: FormData) {
       },
     });
 
-    // Create User, UserRole, and Member
-    const user = await prisma.user.create({
+    // Create User & UserRole ONLY (Does NOT create a public Member record)
+    await prisma.user.create({
       data: {
         email,
+        fullName,
         passwordHash: hashedPassword,
         userRoles: {
           create: {
             roleId: roleRecord.id,
           },
         },
-        member: {
-          create: {
-            fullName,
-            title: roleType === "ADMIN" ? "مدير النظام" : roleType === "HR_EDITOR" ? "محرر موارد بشرية" : roleType === "POST_EDITOR" ? "رئيس تحرير" : roleType === "AUTHOR" ? "كاتب محتوى" : "عضو متطوع",
-            departmentName: roleType === "HR_EDITOR" ? "الموارد البشرية" : roleType === "AUTHOR" ? "التحرير والنشر" : "العامة",
-          },
-        },
       },
     });
 
     revalidatePath("/admin/users");
-    revalidatePath("/admin/members");
     return { success: true };
   } catch (err: any) {
     return { error: err.message || "Failed to create user account." };
@@ -141,7 +134,6 @@ export async function deleteUserAction(userId: string) {
   }
 
   revalidatePath("/admin/users");
-  revalidatePath("/admin/members");
   return { success: true };
 }
 

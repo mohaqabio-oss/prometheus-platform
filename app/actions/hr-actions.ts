@@ -55,7 +55,12 @@ export async function createMemberAction(prevState: any, formData: FormData) {
   const title = formData.get("title")?.toString().trim() || "Voluntary Contributor";
   const departmentName = formData.get("departmentName")?.toString() || "Technology";
   const initialHours = parseFloat(formData.get("initialHours")?.toString() || "0");
-  const profileImage = formData.get("profileImage")?.toString() || null;
+  let profileImage = formData.get("profileImage")?.toString() || null;
+
+  if (profileImage && profileImage.startsWith("blob:")) {
+    profileImage = null;
+  }
+
   const customSectionsJson = formData.get("customSections")?.toString();
   let customSections: any = null;
   if (customSectionsJson) {
@@ -64,8 +69,8 @@ export async function createMemberAction(prevState: any, formData: FormData) {
     } catch (e) {}
   }
 
-  if (!fullName || !email) {
-    return { error: "Full Name and Email address are required." };
+  if (!fullName) {
+    return { error: "Full Name is required." };
   }
 
   try {
@@ -79,12 +84,6 @@ export async function createMemberAction(prevState: any, formData: FormData) {
         profileImage: profileImage || undefined,
         departmentName: departmentName || "General",
         customSections: customSections || undefined,
-        user: {
-          connectOrCreate: {
-            where: { email },
-            create: { email },
-          },
-        },
       },
     });
   } catch (err: any) {
@@ -106,7 +105,12 @@ export async function updateMemberAction(prevState: any, formData: FormData) {
   const departmentName = formData.get("departmentName")?.toString();
   const volunteerHours = parseFloat(formData.get("volunteerHours")?.toString() || "0");
   const status = (formData.get("status")?.toString() || "ACTIVE") as any;
-  const profileImage = formData.get("profileImage")?.toString() || null;
+  let profileImage = formData.get("profileImage")?.toString() || null;
+
+  if (profileImage && profileImage.startsWith("blob:")) {
+    profileImage = null;
+  }
+
   const customSectionsJson = formData.get("customSections")?.toString();
   let customSections: any = null;
   if (customSectionsJson) {

@@ -11,15 +11,20 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
  */
 export async function uploadImageToSupabase(
   file: File | string,
-  bucket: "avatars" | "magazine" = "magazine"
+  bucket: "avatars" | "magazine" = "avatars"
 ): Promise<string> {
   try {
+    // If already a valid public HTTP URL and not a blob URL, return directly
+    if (typeof file === "string" && file.startsWith("http") && !file.startsWith("blob:")) {
+      return file;
+    }
+
     const fileExt = file instanceof File ? file.name.split(".").pop() : "jpg";
     const fileName = `${bucket}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
     const filePath = `${fileName}`;
 
     let fileData: any = file;
-    if (typeof file === "string" && file.startsWith("data:image")) {
+    if (typeof file === "string" && (file.startsWith("data:image") || file.startsWith("blob:"))) {
       const res = await fetch(file);
       fileData = await res.blob();
     }
@@ -33,7 +38,7 @@ export async function uploadImageToSupabase(
 
     if (error) {
       console.warn(`Supabase Storage upload warning (${bucket}):`, error.message);
-      // Fallback: Construct public URL directly from Supabase project bucket URL
+      // Fallback: Construct fully qualified public URL directly from Supabase project bucket URL
       return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filePath}`;
     }
 
@@ -41,7 +46,11 @@ export async function uploadImageToSupabase(
       .from(bucket)
       .getPublicUrl(filePath);
 
-    return publicUrlData.publicUrl;
+    if (publicUrlData?.publicUrl && !publicUrlData.publicUrl.startsWith("blob:")) {
+      return publicUrlData.publicUrl;
+    }
+
+    return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filePath}`;
   } catch (e: any) {
     console.error("Supabase Storage error:", e);
     return "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80";

@@ -60,6 +60,7 @@ enum ProjectStatus {
 model User {
   id            String     @id @default(uuid())
   email         String     @unique
+  fullName      String?
   passwordHash  String?
   emailVerified DateTime?
   image         String?
