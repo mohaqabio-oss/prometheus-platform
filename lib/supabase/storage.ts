@@ -6,11 +6,8 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGci
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
- * Client-Side Upload Utility (Browser Environment)
- * Completely ignores file.name to prevent parsing errors.
- * Hardcodes strict alphanumeric path formats:
- * - 'avatars' bucket -> 'avatar-' + Date.now() + '.png'
- * - 'magazine' bucket -> 'article-' + Date.now() + '.png'
+ * Ultra-simple Client-Side Upload Utility (Browser Environment)
+ * Uses exact raw string timestamp path: String(Date.now())
  */
 export async function uploadImageClientSide(
   file: File,
@@ -20,38 +17,32 @@ export async function uploadImageClientSide(
     throw new Error("لم يتم اختيار أي ملف للرفع.");
   }
 
-  const prefix = bucket === "magazine" ? "article" : "avatar";
-  const finalPath = `${prefix}-${Date.now()}.png`;
+  const rawPath = String(Date.now());
 
-  console.log(`[CLIENT-SIDE SUPABASE UPLOAD] Uploading to Bucket '${bucket}' with path '${finalPath}'`);
+  console.log(`[CLIENT-SIDE SUPABASE UPLOAD] Uploading to bucket '${bucket}' with rawPath '${rawPath}'`);
 
   const { data, error } = await supabase.storage
     .from(bucket)
-    .upload(finalPath, file, {
-      upsert: true,
-    });
+    .upload(rawPath, file, { cacheControl: "3600", upsert: true });
 
   if (error) {
     console.error("[CLIENT-SIDE SUPABASE UPLOAD ERROR]:", {
       bucket,
-      finalPath,
+      rawPath,
       error,
       message: error.message,
     });
     throw new Error(`فشل رفع الصورة إلى Supabase (${bucket}): ${error.message}`);
   }
 
-  const targetPath = data?.path || finalPath;
-  const { data: publicUrlData } = supabase.storage
-    .from(bucket)
-    .getPublicUrl(targetPath);
+  const publicUrl = supabase.storage.from(bucket).getPublicUrl(rawPath).data.publicUrl;
 
-  if (!publicUrlData?.publicUrl) {
+  if (!publicUrl) {
     throw new Error("تعذر الحصول على رابط الصورة المرفوعة من Supabase.");
   }
 
-  console.log(`[CLIENT-SIDE SUPABASE UPLOAD SUCCESS] URL: ${publicUrlData.publicUrl}`);
-  return publicUrlData.publicUrl;
+  console.log(`[CLIENT-SIDE SUPABASE UPLOAD SUCCESS] URL: ${publicUrl}`);
+  return publicUrl;
 }
 
 /**
