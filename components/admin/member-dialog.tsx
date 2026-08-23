@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useActionState } from "react";
+import React, { useState, useActionState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { createMemberAction, updateMemberAction } from "@/app/actions/hr-actions";
 import { uploadImageToSupabase } from "@/lib/supabase/storage";
@@ -30,9 +30,14 @@ export interface MemberDialogProps {
 export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
   const [open, setOpen] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>(
     member?.profileImage || member?.avatarUrl || ""
   );
+
+  useEffect(() => {
+    setImageError(false);
+  }, [imageUrl]);
 
   const initialSections: CustomSectionItem[] = Array.isArray(member?.customSections)
     ? member.customSections
@@ -41,7 +46,7 @@ export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
 
   const actionFn = mode === "edit" ? updateMemberAction : createMemberAction;
   const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
-    if (imageUrl) {
+    if (imageUrl && !imageUrl.startsWith("blob:")) {
       formData.set("profileImage", imageUrl);
     }
     formData.set("customSections", JSON.stringify(customSections));
@@ -57,9 +62,12 @@ export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
     if (!file) return;
 
     setUploadingImage(true);
+    setImageError(false);
     try {
       const publicUrl = await uploadImageToSupabase(file, "avatars");
-      setImageUrl(publicUrl);
+      if (publicUrl && !publicUrl.startsWith("blob:")) {
+        setImageUrl(publicUrl);
+      }
     } catch (err) {
       console.error("Image upload failed:", err);
     } finally {
@@ -139,9 +147,14 @@ export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
                   الصورة الشخصية (Profile Picture / Avatar)
                 </label>
                 <div className="flex items-center gap-4">
-                  {imageUrl ? (
+                  {imageUrl && !imageError ? (
                     <div className="relative w-14 h-14 rounded-2xl overflow-hidden border border-[#6B7280]/30 shrink-0">
-                      <img src={imageUrl} alt="Avatar" className="w-full h-full object-cover" />
+                      <img
+                        src={imageUrl}
+                        alt="Avatar"
+                        onError={() => setImageError(true)}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   ) : (
                     <div className="w-14 h-14 rounded-2xl bg-[#1A2B4A] border border-[#6B7280]/30 flex items-center justify-center text-[#6B7280] shrink-0 font-mono text-xs">
