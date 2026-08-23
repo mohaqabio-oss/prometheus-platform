@@ -7,8 +7,10 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
  * Client-Side Upload Utility (Browser Environment)
- * Directly uploads a File object from an HTML <input type="file"> to Supabase Storage.
- * Generates a strict alphanumeric safe file path (no raw file names, spaces, or non-ASCII characters).
+ * Completely ignores file.name to prevent parsing errors.
+ * Hardcodes strict alphanumeric path formats:
+ * - 'avatars' bucket -> 'avatar-' + Date.now() + '.png'
+ * - 'magazine' bucket -> 'article-' + Date.now() + '.png'
  */
 export async function uploadImageClientSide(
   file: File,
@@ -18,33 +20,28 @@ export async function uploadImageClientSide(
     throw new Error("لم يتم اختيار أي ملف للرفع.");
   }
 
-  // 1. Strict, safe extension extraction
-  const rawExt = file.name ? file.name.split(".").pop() || "jpg" : "jpg";
-  const fileExt = rawExt.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const prefix = bucket === "magazine" ? "article" : "avatar";
+  const finalPath = `${prefix}-${Date.now()}.png`;
 
-  // 2. Strict alphanumeric safe path without raw file names, spaces, or leading slashes
-  const safeFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
-
-  console.log(`[CLIENT-SIDE SUPABASE UPLOAD] Starting upload for file (${file.name || 'unnamed'}) -> Bucket: ${bucket}, SafePath: ${safeFileName}`);
+  console.log(`[CLIENT-SIDE SUPABASE UPLOAD] Uploading to Bucket '${bucket}' with path '${finalPath}'`);
 
   const { data, error } = await supabase.storage
     .from(bucket)
-    .upload(safeFileName, file, {
-      cacheControl: "3600",
+    .upload(finalPath, file, {
       upsert: true,
     });
 
   if (error) {
     console.error("[CLIENT-SIDE SUPABASE UPLOAD ERROR]:", {
       bucket,
-      safeFileName,
+      finalPath,
       error,
       message: error.message,
     });
     throw new Error(`فشل رفع الصورة إلى Supabase (${bucket}): ${error.message}`);
   }
 
-  const targetPath = data?.path || safeFileName;
+  const targetPath = data?.path || finalPath;
   const { data: publicUrlData } = supabase.storage
     .from(bucket)
     .getPublicUrl(targetPath);
