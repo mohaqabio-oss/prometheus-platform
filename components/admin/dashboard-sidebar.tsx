@@ -19,6 +19,7 @@ import {
   X,
   ArrowRight,
   Award,
+  BookOpen,
 } from "lucide-react";
 
 interface NavItem {
@@ -54,7 +55,7 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
           title: "نظرة عامة",
           href: "/admin/dashboard",
           icon: <LayoutDashboard className="w-4 h-4" />,
-          rolesAllowed: ["ADMIN", "HR_EDITOR", "POST_EDITOR", "AUTHOR", "MEMBER"],
+          rolesAllowed: ["ADMIN", "HR_EDITOR", "MEMBER"],
         },
         {
           title: "الموقع العام",
@@ -71,13 +72,19 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
           title: "المقالات والمنشورات",
           href: "/admin/articles",
           icon: <FileText className="w-4 h-4" />,
-          rolesAllowed: ["ADMIN", "POST_EDITOR", "AUTHOR"],
+          rolesAllowed: ["ADMIN", "WRITER"],
         },
         {
           title: "المجموعات والسلاسل",
           href: "/admin/collections",
           icon: <Layers className="w-4 h-4" />,
-          rolesAllowed: ["ADMIN", "POST_EDITOR"],
+          rolesAllowed: ["ADMIN"],
+        },
+        {
+          title: "هيئة التحرير الأكاديمية",
+          href: "/admin/editorial-members",
+          icon: <BookOpen className="w-4 h-4" />,
+          rolesAllowed: ["ADMIN", "HR_EDITOR"],
         },
       ],
     },

@@ -82,6 +82,26 @@ model Certificate {
 }
 
 // ==========================================
+// EDITORIAL BOARD MODELS
+// ==========================================
+
+model EditorialMember {
+  id           String   @id @default(uuid())
+  fullName     String
+  academicRank String?
+  university   String?
+  specialty    String?
+  bio          String?
+  avatarUrl    String?
+  orcidUrl     String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("editorial_members")
+}
+
+// ==========================================
 // ARTICLE EDITOR & JOURNAL PUBLISHING MODELS
 // ==========================================
 
