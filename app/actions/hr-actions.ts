@@ -276,7 +276,6 @@ export async function getAdminMembersList(): Promise<LocalMemberRecord[]> {
   try {
     const dbMembers = await prisma.member.findMany({
       include: {
-        user: true,
         certificates: true,
       },
       orderBy: { createdAt: "desc" },
@@ -286,7 +285,7 @@ export async function getAdminMembersList(): Promise<LocalMemberRecord[]> {
       return dbMembers.map((m) => ({
         id: m.id,
         fullName: m.fullName,
-        email: m.user?.email || "n/a",
+        email: "n/a",
         title: m.title || "Member",
         departmentName: m.departmentName || "General",
         volunteerHours: m.volunteerHours,
@@ -315,9 +314,9 @@ export async function getAdminCertificatesList(): Promise<LocalCertificateRecord
         id: c.id,
         certificateCode: c.certificateCode,
         title: c.title,
-        description: c.description || "",
+        description: c.description,
         issuedAt: c.issuedAt.toISOString(),
-        memberName: c.member?.fullName || "عضو",
+        memberName: c.member?.fullName || "Non-system Member",
         memberDepartment: c.member?.departmentName || "General",
         memberRole: c.member?.title || "Member",
         volunteerHours: c.member?.volunteerHours || 0,
@@ -327,69 +326,3 @@ export async function getAdminCertificatesList(): Promise<LocalCertificateRecord
 
   return MOCK_HR_CERTIFICATES;
 }
-
-// Public Certificate Verification Helper (No auth required)
-export async function verifyCertificateCode(code: string): Promise<LocalCertificateRecord | null> {
-  const normalizedCode = code.trim().toUpperCase();
-
-  try {
-    const dbCert = await prisma.certificate.findUnique({
-      where: { certificateCode: normalizedCode },
-      include: {
-        member: true,
-      },
-    });
-
-    if (dbCert) {
-      return {
-        id: dbCert.id,
-        certificateCode: dbCert.certificateCode,
-        title: dbCert.title,
-        description: dbCert.description || "",
-        issuedAt: dbCert.issuedAt.toISOString(),
-        memberName: dbCert.member?.fullName || "عضو",
-        memberDepartment: dbCert.member?.departmentName || "General",
-        memberRole: dbCert.member?.title || "Member",
-        volunteerHours: dbCert.member?.volunteerHours || 0,
-      };
-    }
-  } catch (e) {}
-
-  const match = MOCK_HR_CERTIFICATES.find(
-    (c) => c.certificateCode.toUpperCase() === normalizedCode
-  );
-  return match || null;
-}
-
-// Get Public Active Members for Public Members Directory Page
-export async function getPublicMembersAction() {
-  try {
-    const dbMembers = await prisma.member.findMany({
-      where: { status: "ACTIVE" },
-      orderBy: { volunteerHours: "desc" },
-    });
-
-    if (dbMembers.length > 0) {
-      return dbMembers.map((m) => ({
-        id: m.id,
-        name: m.fullName,
-        role: m.title || "عضو متطوع",
-        department: m.departmentName || "عام",
-        avatarUrl: m.avatarUrl,
-        photoUrl: m.avatarUrl,
-        volunteerHours: m.volunteerHours,
-      }));
-    }
-  } catch (e) {}
-
-  return MOCK_HR_MEMBERS.map((m) => ({
-    id: m.id,
-    name: m.fullName,
-    role: m.title,
-    department: m.departmentName,
-    avatarUrl: null,
-    photoUrl: null,
-    volunteerHours: m.volunteerHours,
-  }));
-}
-

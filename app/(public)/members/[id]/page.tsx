@@ -13,16 +13,7 @@ import {
   BookOpen,
   FolderGit2,
   Microscope,
-  ShieldCheck,
-  Award,
   Calendar,
-  ExternalLink,
-  Github,
-  Linkedin,
-  Send,
-  Twitter,
-  UserCheck,
-  ChevronRight,
 } from "lucide-react";
 
 interface MemberProfilePageProps {
@@ -60,7 +51,6 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
       where: { id },
       include: {
         certificates: true,
-        socialLinks: true,
       },
     });
   } catch (e) {}
@@ -68,21 +58,6 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
   if (!member) {
     notFound();
   }
-
-  const getSocialIcon = (platform: string) => {
-    switch (platform) {
-      case "GitHub":
-        return <Github className="w-4 h-4" />;
-      case "LinkedIn":
-        return <Linkedin className="w-4 h-4" />;
-      case "Telegram":
-        return <Send className="w-4 h-4" />;
-      case "Twitter":
-        return <Twitter className="w-4 h-4" />;
-      default:
-        return <ExternalLink className="w-4 h-4" />;
-    }
-  };
 
   return (
     <div className="py-12 sm:py-20 bg-[#1A2B4A] min-h-screen text-white animate-fade-in">
@@ -103,7 +78,7 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
           <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
             
             <Avatar
-              src={member.avatarUrl}
+              src={member.avatarUrl || member.profileImage}
               name={member.fullName}
               size="xl"
               shape="rounded"
@@ -131,25 +106,6 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
                   Joined {new Date(member.joinDate || member.createdAt).toLocaleDateString("ar-EG")}
                 </span>
               </div>
-
-              {/* Social Links */}
-              {member.socialLinks && member.socialLinks.length > 0 && (
-                <div className="pt-2 flex items-center gap-3">
-                  {member.socialLinks.map((s: any) => (
-                    <a
-                      key={s.platform}
-                      href={s.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 text-[#6B7280] hover:text-[#E84A0C] transition-colors"
-                      aria-label={s.platform}
-                      title={s.platform}
-                    >
-                      {getSocialIcon(s.platform)}
-                    </a>
-                  ))}
-                </div>
-              )}
             </div>
 
           </div>
