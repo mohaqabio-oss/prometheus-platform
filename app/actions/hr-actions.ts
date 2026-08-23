@@ -87,6 +87,7 @@ export async function createMemberAction(prevState: any, formData: FormData) {
       },
     });
   } catch (err: any) {
+    console.error("Member creation DB error:", err);
     return { error: err.message || "Failed to create member." };
   }
 
@@ -138,6 +139,7 @@ export async function updateMemberAction(prevState: any, formData: FormData) {
       },
     });
   } catch (err: any) {
+    console.error("Member update DB error:", err);
     return { error: err.message || "Failed to update member." };
   }
 
@@ -155,6 +157,7 @@ export async function deleteMemberAction(memberId: string) {
       where: { id: memberId },
     });
   } catch (err: any) {
+    console.error("Member delete DB error:", err);
     return { error: err.message || "Failed to delete member." };
   }
 
@@ -271,7 +274,34 @@ export async function issueCertificateAction(prevState: any, formData: FormData)
   return { success: true, certificateCode };
 }
 
-// Helper to fetch list of members
+// Fetch public members list for website
+export async function getPublicMembersAction() {
+  try {
+    const dbMembers = await prisma.member.findMany({
+      where: { status: "ACTIVE" },
+      orderBy: { joinDate: "desc" },
+    });
+
+    return dbMembers.map((m) => ({
+      id: m.id,
+      fullName: m.fullName,
+      name: m.fullName,
+      title: m.title || "عضو متطوع",
+      role: m.title || "عضو متطوع",
+      departmentName: m.departmentName || "عام",
+      department: m.departmentName || "عام",
+      avatarUrl: m.avatarUrl || m.profileImage,
+      photoUrl: m.avatarUrl || m.profileImage,
+      volunteerHours: m.volunteerHours || 0,
+      status: m.status,
+    }));
+  } catch (e: any) {
+    console.error("Error fetching public members:", e);
+    return [];
+  }
+}
+
+// Helper to fetch list of members for Admin
 export async function getAdminMembersList(): Promise<LocalMemberRecord[]> {
   try {
     const dbMembers = await prisma.member.findMany({

@@ -157,16 +157,20 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     return await saveAction(prevState, formData);
   }, null);
 
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploadingCover(true);
+    setUploadError(null);
     try {
       const publicUrl = await uploadImageToSupabase(file, "magazine");
       setCoverImageUrl(publicUrl);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("[ARTICLE COVER UPLOAD ERROR]:", err);
+      setUploadError(err.message || "Failed to upload cover image.");
     } finally {
       setUploadingCover(false);
     }
@@ -177,11 +181,13 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     if (!file || !editor) return;
 
     setUploadingInlineImg(true);
+    setUploadError(null);
     try {
       const publicUrl = await uploadImageToSupabase(file, "magazine");
       editor.chain().focus().setImage({ src: publicUrl }).run();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      console.error("[ARTICLE INLINE IMAGE UPLOAD ERROR]:", err);
+      setUploadError(err.message || "Failed to upload image into article.");
     } finally {
       setUploadingInlineImg(false);
     }
@@ -193,10 +199,10 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
       <input type="hidden" name="authorIds" value={JSON.stringify(selectedAuthorIds)} />
 
       {/* Error Banner */}
-      {state?.error && (
+      {(state?.error || uploadError) && (
         <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2 font-sans mb-4">
           <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-          <span>{state.error}</span>
+          <span>{uploadError || state?.error}</span>
         </div>
       )}
 

@@ -1,10 +1,19 @@
 "use client";
 
-import React, { useState, useActionState, useEffect } from "react";
+import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { createMemberAction, updateMemberAction } from "@/app/actions/hr-actions";
 import { uploadImageToSupabase } from "@/lib/supabase/storage";
-import { UserPlus, Edit3, X, AlertCircle, Upload, Plus, Trash2, Loader2 } from "lucide-react";
+import {
+  UserPlus,
+  Edit3,
+  X,
+  Upload,
+  AlertCircle,
+  Loader2,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 export interface CustomSectionItem {
   title: string;
@@ -12,32 +21,34 @@ export interface CustomSectionItem {
 }
 
 export interface MemberDialogProps {
+  mode: "create" | "edit";
   member?: {
     id: string;
     fullName: string;
-    email?: string;
     title?: string | null;
     departmentName?: string | null;
     volunteerHours?: number;
     status?: string;
-    avatarUrl?: string | null;
     profileImage?: string | null;
+    avatarUrl?: string | null;
     customSections?: any;
   } | null;
-  mode?: "create" | "edit";
 }
 
-export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
+export function MemberDialog({ mode, member }: MemberDialogProps) {
   const [open, setOpen] = useState(false);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>(
     member?.profileImage || member?.avatarUrl || ""
   );
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [uploadErrorMessage, setUploadErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    setImageUrl(member?.profileImage || member?.avatarUrl || "");
     setImageError(false);
-  }, [imageUrl]);
+    setUploadErrorMessage(null);
+  }, [member]);
 
   const initialSections: CustomSectionItem[] = Array.isArray(member?.customSections)
     ? member.customSections
@@ -63,13 +74,16 @@ export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
 
     setUploadingImage(true);
     setImageError(false);
+    setUploadErrorMessage(null);
     try {
       const publicUrl = await uploadImageToSupabase(file, "avatars");
       if (publicUrl && !publicUrl.startsWith("blob:")) {
         setImageUrl(publicUrl);
       }
-    } catch (err) {
-      console.error("Image upload failed:", err);
+    } catch (err: any) {
+      console.error("[MEMBER DIALOG UPLOAD ERROR]:", err);
+      setImageError(true);
+      setUploadErrorMessage(err.message || "فشل رفع الصورة إلى Supabase");
     } finally {
       setUploadingImage(false);
     }
@@ -95,7 +109,7 @@ export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
         <Button
           onClick={() => setOpen(true)}
           size="sm"
-          className="gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md"
+          className="gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md font-sans"
         >
           <UserPlus className="w-4 h-4" />
           <span>إضافة عضو جديد</span>
@@ -130,10 +144,10 @@ export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
             </div>
 
             {/* Error Message */}
-            {state?.error && (
+            {(state?.error || uploadErrorMessage) && (
               <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2 font-sans">
                 <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-                <span>{state.error}</span>
+                <span>{uploadErrorMessage || state?.error}</span>
               </div>
             )}
 
@@ -185,162 +199,144 @@ export function MemberDialog({ member, mode = "create" }: MemberDialogProps) {
                 </div>
               </div>
 
-              {/* Basic Fields */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1">
-                    الاسم الكامل (Full Name) *
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    defaultValue={member?.fullName || ""}
-                    required
-                    placeholder="مثال: أحمد حسن"
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
-
-                {mode === "create" && (
-                  <div>
-                    <label className="block text-[#6B7280] font-medium mb-1">
-                      البريد الإلكتروني (Email Address) *
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      defaultValue={member?.email || ""}
-                      required
-                      placeholder="user@prometheus-voluntary.org"
-                      className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white font-mono focus:outline-none focus:border-[#E84A0C]"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1">
-                    المسمى الوظيفي (Title / Role)
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    defaultValue={member?.title || ""}
-                    placeholder="مثال: Software Engineer"
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1">
-                    القسم التخصصي (Department)
-                  </label>
-                  <input
-                    type="text"
-                    name="departmentName"
-                    defaultValue={member?.departmentName || ""}
-                    placeholder="اكتب اسم القسم (مثال: الهندسة البرمجية)"
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1">
-                    ساعات التطوع الموثقة (Logged Hours)
-                  </label>
-                  <input
-                    type="number"
-                    name={mode === "edit" ? "volunteerHours" : "initialHours"}
-                    defaultValue={member?.volunteerHours || 0}
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white font-mono focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
-
-                {mode === "edit" && (
-                  <div>
-                    <label className="block text-[#6B7280] font-medium mb-1">
-                      حالة العضو (Status)
-                    </label>
-                    <select
-                      name="status"
-                      defaultValue={member?.status || "ACTIVE"}
-                      className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
-                    >
-                      <option value="ACTIVE">ACTIVE (عضو فاعل)</option>
-                      <option value="INACTIVE">INACTIVE (غير نشط)</option>
-                      <option value="ALUMNI">ALUMNI (خريج كادر)</option>
-                      <option value="ON_LEAVE">ON_LEAVE (إجازة مؤقتة)</option>
-                    </select>
-                  </div>
-                )}
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <label className="block text-[#6B7280] font-medium">
+                  الاسم الكامل <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  defaultValue={member?.fullName || ""}
+                  required
+                  placeholder="مثال: د. محمد علي"
+                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                />
               </div>
 
-              {/* Dynamic Custom Sections (Custom Titled Text Details) */}
-              <div className="pt-4 border-t border-[#6B7280]/20 space-y-3">
+              {/* Title / Role */}
+              <div className="space-y-1.5">
+                <label className="block text-[#6B7280] font-medium">المسمى الوظيفي / الدور التطوعي</label>
+                <input
+                  type="text"
+                  name="title"
+                  defaultValue={member?.title || ""}
+                  placeholder="مثال: قائد فريق البرمجيات / باحث أكاديمي"
+                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                />
+              </div>
+
+              {/* Department */}
+              <div className="space-y-1.5">
+                <label className="block text-[#6B7280] font-medium">القسم التشغيلي</label>
+                <select
+                  name="departmentName"
+                  defaultValue={member?.departmentName || "الهندسة البرمجية"}
+                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                >
+                  <option value="الهندسة البرمجية">الهندسة البرمجية (Software Engineering)</option>
+                  <option value="البحث العلمي">البحث العلمي (Scientific Research)</option>
+                  <option value="التعليم والتطوير">التعليم والتطوير (Education)</option>
+                  <option value="الموارد البشرية والعمليات">الموارد البشرية (HR & Operations)</option>
+                  <option value="عام">عام (General)</option>
+                </select>
+              </div>
+
+              {/* Hours & Status Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[#6B7280] font-medium">
+                    {mode === "edit" ? "الساعات التطوعية" : "الساعات الأولية"}
+                  </label>
+                  <input
+                    type={mode === "edit" ? "number" : "number"}
+                    name={mode === "edit" ? "volunteerHours" : "initialHours"}
+                    defaultValue={member?.volunteerHours || 0}
+                    min="0"
+                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[#6B7280] font-medium">حالة العضوية</label>
+                  <select
+                    name="status"
+                    defaultValue={member?.status || "ACTIVE"}
+                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                  >
+                    <option value="ACTIVE">نشط (ACTIVE)</option>
+                    <option value="INACTIVE">غير نشط (INACTIVE)</option>
+                    <option value="ALUMNI">خريج متطوع (ALUMNI)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Dynamic Custom Sections */}
+              <div className="space-y-3 pt-3 border-t border-[#6B7280]/20">
                 <div className="flex items-center justify-between">
-                  <label className="block text-white font-bold">
-                    الأقسام والخبرات المخصصة (Dynamic Custom Sections)
+                  <label className="block text-[#6B7280] font-medium">
+                    أقسام مخصصة إضافية (Custom Profile Sections)
                   </label>
                   <Button
                     type="button"
+                    onClick={addCustomSection}
                     variant="outline"
                     size="sm"
-                    onClick={addCustomSection}
-                    className="gap-1 text-xs h-7 px-2 rounded-xl border-[#6B7280]/30 text-[#E84A0C]"
+                    className="h-7 text-[11px] gap-1 border-[#6B7280]/30 text-[#E84A0C] hover:bg-[#E84A0C]/10"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    <span>إضافة قسم مخصص</span>
+                    <span>إضافة قسم</span>
                   </Button>
                 </div>
 
                 {customSections.map((sec, idx) => (
-                  <div key={idx} className="p-3 bg-[#1A2B4A] border border-[#6B7280]/20 rounded-xl space-y-2 relative">
-                    <div className="flex items-center justify-between gap-2">
+                  <div key={idx} className="p-3 rounded-xl bg-[#1A2B4A]/50 border border-[#6B7280]/20 space-y-2">
+                    <div className="flex items-center gap-2">
                       <input
                         type="text"
                         placeholder="عنوان القسم (مثال: الإنجازات الأكاديمية)"
                         value={sec.title}
                         onChange={(e) => updateCustomSection(idx, "title", e.target.value)}
-                        className="w-full h-8 px-2.5 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-lg text-white font-bold focus:outline-none focus:border-[#E84A0C]"
+                        className="flex-1 h-8 px-2.5 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-lg text-white text-xs focus:outline-none focus:border-[#E84A0C]"
                       />
-                      <button
+                      <Button
                         type="button"
                         onClick={() => removeCustomSection(idx)}
-                        className="p-1 text-[#6B7280] hover:text-rose-400"
-                        title="حذف هذا القسم"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
                     <textarea
                       rows={2}
-                      placeholder="تفاصيل ومحتوى هذا القسم المخصص..."
+                      placeholder="محتوى القسم التفصيلي..."
                       value={sec.content}
                       onChange={(e) => updateCustomSection(idx, "content", e.target.value)}
-                      className="w-full p-2 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-lg text-white focus:outline-none focus:border-[#E84A0C] font-sans text-xs"
+                      className="w-full p-2.5 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-lg text-white text-xs focus:outline-none focus:border-[#E84A0C]"
                     />
                   </div>
                 ))}
               </div>
 
-              {/* Action Buttons */}
+              {/* Submit Buttons */}
               <div className="pt-4 flex items-center justify-end gap-3 border-t border-[#6B7280]/20">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => setOpen(false)}
-                  className="rounded-xl border-[#6B7280]/30 text-white"
+                  variant="ghost"
+                  className="text-[#6B7280] hover:text-white"
                 >
                   إلغاء
                 </Button>
-
                 <Button
                   type="submit"
-                  size="sm"
                   disabled={isPending || uploadingImage}
-                  className="bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md"
+                  className="bg-[#E84A0C] hover:bg-[#D03E06] text-white gap-2 rounded-xl"
                 >
-                  {isPending ? "جاري الحفظ..." : mode === "edit" ? "تحديث بيانات العضو" : "تأكيد وإضافة العضو"}
+                  {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>{mode === "edit" ? "حفظ التغييرات" : "إضافة العضو"}</span>
                 </Button>
               </div>
 

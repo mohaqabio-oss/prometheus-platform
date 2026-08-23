@@ -9,6 +9,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { prisma } from "@/lib/db/prisma";
 import { ShieldCheck, BookOpen, UserCheck, Award, GraduationCap, Globe, ExternalLink } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const ed = settings.pageHeaders.editorialBoard;

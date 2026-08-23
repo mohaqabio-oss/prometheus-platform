@@ -1,29 +1,45 @@
 "use client";
 
-import React, { useState, useActionState, useEffect } from "react";
+import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  createEditorialMemberAction,
-  updateEditorialMemberAction,
-  EditorialMemberRecord,
-} from "@/app/actions/editorial-actions";
+import { createEditorialMemberAction, updateEditorialMemberAction } from "@/app/actions/editorial-actions";
 import { uploadImageToSupabase } from "@/lib/supabase/storage";
-import { UserPlus, Edit3, X, AlertCircle, Upload, Loader2, Award, GraduationCap, Globe } from "lucide-react";
+import {
+  UserPlus,
+  Edit3,
+  X,
+  Upload,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 
 export interface EditorialMemberDialogProps {
-  member?: EditorialMemberRecord | null;
-  mode?: "create" | "edit";
+  mode: "create" | "edit";
+  member?: {
+    id: string;
+    fullName: string;
+    academicRank?: string | null;
+    university?: string | null;
+    specialty?: string | null;
+    bio?: string | null;
+    avatarUrl?: string | null;
+    orcidUrl?: string | null;
+    order?: number;
+  } | null;
 }
 
-export function EditorialMemberDialog({ member, mode = "create" }: EditorialMemberDialogProps) {
+export function EditorialMemberDialog({ mode, member }: EditorialMemberDialogProps) {
   const [open, setOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string>(member?.avatarUrl || "");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string>(member?.avatarUrl || "");
+  const [uploadErrorMessage, setUploadErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    setAvatarUrl(member?.avatarUrl || "");
     setImageError(false);
-  }, [avatarUrl]);
+    setUploadErrorMessage(null);
+  }, [member]);
 
   const actionFn = mode === "edit" ? updateEditorialMemberAction : createEditorialMemberAction;
   const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
@@ -43,13 +59,16 @@ export function EditorialMemberDialog({ member, mode = "create" }: EditorialMemb
 
     setUploadingImage(true);
     setImageError(false);
+    setUploadErrorMessage(null);
     try {
       const publicUrl = await uploadImageToSupabase(file, "avatars");
       if (publicUrl && !publicUrl.startsWith("blob:")) {
         setAvatarUrl(publicUrl);
       }
-    } catch (err) {
-      console.error("Editorial avatar upload failed:", err);
+    } catch (err: any) {
+      console.error("[EDITORIAL AVATAR UPLOAD ERROR]:", err);
+      setImageError(true);
+      setUploadErrorMessage(err.message || "فشل رفع الصورة إلى Supabase");
     } finally {
       setUploadingImage(false);
     }
@@ -79,13 +98,13 @@ export function EditorialMemberDialog({ member, mode = "create" }: EditorialMemb
       )}
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fade-in overflow-y-auto">
-          <div className="w-full max-w-lg bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl p-6 shadow-2xl space-y-6 text-white max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in overflow-y-auto">
+          <div className="w-full max-w-xl bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl p-6 shadow-2xl space-y-6 text-white max-h-[90vh] overflow-y-auto">
             
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-4">
               <h3 className="font-display font-bold text-white text-lg">
-                {mode === "edit" ? `تعديل المحرر: ${member?.fullName}` : "إضافة عضو جديد لهيئة التحرير"}
+                {mode === "edit" ? `تعديل المحكم الأكاديمي: ${member?.fullName}` : "إضافة عضو جديد لهيئة التحرير الأكاديمية"}
               </h3>
               <button
                 onClick={() => setOpen(false)}
@@ -95,11 +114,11 @@ export function EditorialMemberDialog({ member, mode = "create" }: EditorialMemb
               </button>
             </div>
 
-            {/* Error Banner */}
-            {state?.error && (
+            {/* Error Message */}
+            {(state?.error || uploadErrorMessage) && (
               <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2 font-sans">
                 <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
-                <span>{state.error}</span>
+                <span>{uploadErrorMessage || state?.error}</span>
               </div>
             )}
 
@@ -110,7 +129,7 @@ export function EditorialMemberDialog({ member, mode = "create" }: EditorialMemb
               {/* Avatar Upload */}
               <div className="space-y-2">
                 <label className="block text-[#6B7280] font-medium">
-                  الصورة الشخصية (Academic Avatar)
+                  الصورة الشخصية الأكاديمية (Avatar)
                 </label>
                 <div className="flex items-center gap-4">
                   {avatarUrl && !imageError ? (
@@ -132,7 +151,7 @@ export function EditorialMemberDialog({ member, mode = "create" }: EditorialMemb
                     {uploadingImage ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin text-[#E84A0C]" />
-                        <span>جاري الرفع إلى Supabase...</span>
+                        <span>جاري الرفع...</span>
                       </>
                     ) : (
                       <>
@@ -151,26 +170,25 @@ export function EditorialMemberDialog({ member, mode = "create" }: EditorialMemb
                 </div>
               </div>
 
-              {/* Full Name & Academic Rank */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1">
-                    الاسم الكامل (Full Name) *
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    defaultValue={member?.fullName || ""}
-                    required
-                    placeholder="مثال: د. محمد علي الحكيم"
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <label className="block text-[#6B7280] font-medium">
+                  الاسم الثلاثي والألقاب الأكاديمية <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  defaultValue={member?.fullName || ""}
+                  required
+                  placeholder="مثال: أ.د. عبد الله الشمري"
+                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1">
-                    الرتبة الأكاديمية (Academic Rank)
-                  </label>
+              {/* Academic Rank & University Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[#6B7280] font-medium">الرتبة الأكاديمية</label>
                   <input
                     type="text"
                     name="academicRank"
@@ -179,102 +197,84 @@ export function EditorialMemberDialog({ member, mode = "create" }: EditorialMemb
                     className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                   />
                 </div>
-              </div>
 
-              {/* University & Specialty */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1 flex items-center gap-1">
-                    <GraduationCap className="w-3.5 h-3.5 text-[#E84A0C]" />
-                    <span>الجامعة / المؤسسة (University/Institution)</span>
-                  </label>
+                <div className="space-y-1.5">
+                  <label className="block text-[#6B7280] font-medium">الجامعة / المؤسسة</label>
                   <input
                     type="text"
                     name="university"
                     defaultValue={member?.university || ""}
-                    placeholder="مثال: جامعة بغداد"
+                    placeholder="مثال: جامعة الملك سعود / Oxford"
                     className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1 flex items-center gap-1">
-                    <Award className="w-3.5 h-3.5 text-[#E84A0C]" />
-                    <span>التخصص (Specialty/Field)</span>
-                  </label>
+              {/* Specialty & ORCID Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="block text-[#6B7280] font-medium">التخصص الدقيق</label>
                   <input
                     type="text"
                     name="specialty"
                     defaultValue={member?.specialty || ""}
-                    placeholder="مثال: معالجة اللغات الطبيعية"
+                    placeholder="مثال: الذكاء الاصطناعي والأمن السيبراني"
+                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-[#6B7280] font-medium">رابط الملف الأكاديمي (ORCID)</label>
+                  <input
+                    type="url"
+                    name="orcidUrl"
+                    defaultValue={member?.orcidUrl || ""}
+                    placeholder="https://orcid.org/0000-0002-1825-0097"
                     className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                   />
                 </div>
               </div>
 
-              {/* ORCID & Display Order */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1 flex items-center gap-1">
-                    <Globe className="w-3.5 h-3.5 text-[#E84A0C]" />
-                    <span>معرف ORCID (أو رابط الملف الأكاديمي)</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="orcidUrl"
-                    defaultValue={member?.orcidUrl || ""}
-                    placeholder="https://orcid.org/0000-0002-1825-0097"
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white font-mono focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#6B7280] font-medium mb-1">
-                    ترتيب الظهور (Display Order)
-                  </label>
-                  <input
-                    type="number"
-                    name="order"
-                    defaultValue={member?.order ?? 0}
-                    placeholder="0"
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white font-mono focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
+              {/* Order */}
+              <div className="space-y-1.5">
+                <label className="block text-[#6B7280] font-medium">ترتيب الظهور (Order)</label>
+                <input
+                  type="number"
+                  name="order"
+                  defaultValue={member?.order || 0}
+                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                />
               </div>
 
               {/* Bio */}
-              <div>
-                <label className="block text-[#6B7280] font-medium mb-1">
-                  السيرة الذاتية والأبحاث (Academic Bio)
-                </label>
+              <div className="space-y-1.5">
+                <label className="block text-[#6B7280] font-medium">النبذة التعريفية والتسلسل الأكاديمي</label>
                 <textarea
                   name="bio"
                   rows={3}
                   defaultValue={member?.bio || ""}
-                  placeholder="نبذة عن الأبحاث المنشورة والخبرات الأكاديمية..."
+                  placeholder="موجز عن المسيرة الأكاديمية والاهتمامات البحثية..."
                   className="w-full p-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                 />
               </div>
 
-              {/* Action Buttons */}
+              {/* Submit Buttons */}
               <div className="pt-4 flex items-center justify-end gap-3 border-t border-[#6B7280]/20">
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
                   onClick={() => setOpen(false)}
-                  className="rounded-xl border-[#6B7280]/30 text-white"
+                  variant="ghost"
+                  className="text-[#6B7280] hover:text-white"
                 >
                   إلغاء
                 </Button>
-
                 <Button
                   type="submit"
-                  size="sm"
                   disabled={isPending || uploadingImage}
-                  className="bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md font-sans"
+                  className="bg-[#E84A0C] hover:bg-[#D03E06] text-white gap-2 rounded-xl"
                 >
-                  {isPending ? "جاري الحفظ..." : mode === "edit" ? "تحديث المحرر" : "حفظ إضافة المحرر"}
+                  {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>{mode === "edit" ? "حفظ التغييرات" : "إضافة العضو"}</span>
                 </Button>
               </div>
 
