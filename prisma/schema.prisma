@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ==========================================
@@ -19,18 +20,20 @@ enum RoleType {
   WRITER
   HR_EDITOR
   MEMBER
+  POST_EDITOR
+  AUTHOR
 }
 
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   fullName  String?
-  password  String
+  password  String   @default("")
   image     String?
   role      RoleType @default(MEMBER)
   roles     RoleType[] @default([MEMBER])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt @default(now())
 
   articles Article[]
 
@@ -60,7 +63,7 @@ model Member {
   joinDate       DateTime     @default(now())
   customSections Json?
   createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  updatedAt      DateTime     @updatedAt @default(now())
 
   certificates Certificate[]
 
@@ -76,7 +79,7 @@ model Certificate {
   memberId        String
   member          Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  updatedAt       DateTime @updatedAt @default(now())
 
   @@map("certificates")
 }
@@ -96,7 +99,7 @@ model EditorialMember {
   orcidUrl     String?
   order        Int      @default(0)
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @updatedAt @default(now())
 
   @@map("editorial_members")
 }
@@ -117,7 +120,7 @@ model Category {
   slug        String    @unique
   description String?
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  updatedAt   DateTime  @updatedAt @default(now())
   articles    Article[]
 
   @@map("categories")
@@ -132,13 +135,13 @@ model Article {
   coverImage  String?
   status      ArticleStatus @default(DRAFT)
   publishedAt DateTime?
-  authorId    String
-  author      User          @relation(fields: [authorId], references: [id])
+  authorId    String?
+  author      User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
   categoryId  String?
   category    Category?     @relation(fields: [categoryId], references: [id])
   authors     ArticleAuthors[]
   createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  updatedAt   DateTime      @updatedAt @default(now())
 
   @@map("articles")
 }
@@ -166,7 +169,7 @@ model SiteSetting {
   pageHeaders    Json?
   homeBlocks     Json?
   academicSpecs  Json?
-  updatedAt      DateTime @updatedAt
+  updatedAt      DateTime @updatedAt @default(now())
 
   @@map("site_settings")
 }
@@ -178,7 +181,7 @@ model Partner {
   websiteUrl String?
   order      Int      @default(0)
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime @updatedAt @default(now())
 
   @@map("partners")
 }
