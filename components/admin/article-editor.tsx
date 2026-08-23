@@ -12,7 +12,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import ImageResize from "tiptap-extension-resize-image";
 import { FontSize } from "@/lib/tiptap/font-size";
 import { Button } from "@/components/ui/button";
-import { uploadImageToSupabase } from "@/lib/supabase/storage";
+import { uploadImageClientSide } from "@/lib/supabase/storage";
 import { getMembersForSelectAction, ArticleAuthor } from "@/app/actions/article-actions";
 import {
   Bold,
@@ -166,7 +166,7 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     setUploadingCover(true);
     setUploadError(null);
     try {
-      const publicUrl = await uploadImageToSupabase(file, "magazine");
+      const publicUrl = await uploadImageClientSide(file, "magazine");
       setCoverImageUrl(publicUrl);
     } catch (err: any) {
       console.error("[ARTICLE COVER UPLOAD ERROR]:", err);
@@ -183,7 +183,7 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     setUploadingInlineImg(true);
     setUploadError(null);
     try {
-      const publicUrl = await uploadImageToSupabase(file, "magazine");
+      const publicUrl = await uploadImageClientSide(file, "magazine");
       editor.chain().focus().setImage({ src: publicUrl }).run();
     } catch (err: any) {
       console.error("[ARTICLE INLINE IMAGE UPLOAD ERROR]:", err);

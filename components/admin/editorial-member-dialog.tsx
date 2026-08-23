@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { createEditorialMemberAction, updateEditorialMemberAction } from "@/app/actions/editorial-actions";
-import { uploadImageToSupabase } from "@/lib/supabase/storage";
+import { uploadImageClientSide } from "@/lib/supabase/storage";
 import {
   UserPlus,
   Edit3,
@@ -61,7 +61,7 @@ export function EditorialMemberDialog({ mode, member }: EditorialMemberDialogPro
     setImageError(false);
     setUploadErrorMessage(null);
     try {
-      const publicUrl = await uploadImageToSupabase(file, "avatars");
+      const publicUrl = await uploadImageClientSide(file, "avatars");
       if (publicUrl && !publicUrl.startsWith("blob:")) {
         setAvatarUrl(publicUrl);
       }

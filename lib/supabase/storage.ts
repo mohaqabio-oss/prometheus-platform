@@ -6,68 +6,68 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGci
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
- * Uploads a base64 or File image to a public Supabase Storage bucket ('avatars' or 'magazine')
- * and returns the fully-qualified public URL (getPublicUrl).
- * Throws explicit detailed errors on upload failure.
+ * Client-Side Upload Utility (Browser Environment)
+ * Directly uploads a File object from an HTML <input type="file"> to Supabase Storage.
+ * Completely bypasses Next.js server action payload limits.
  */
-export async function uploadImageToSupabase(
-  file: File | string,
+export async function uploadImageClientSide(
+  file: File,
   bucket: "avatars" | "magazine" = "avatars"
 ): Promise<string> {
-  // If already a valid public HTTP URL and not a blob URL, return directly
-  if (typeof file === "string" && file.startsWith("http") && !file.startsWith("blob:")) {
-    return file;
+  if (!file) {
+    throw new Error("لم يتم اختيار أي ملف للرفع.");
   }
 
-  const fileExt = file instanceof File ? file.name.split(".").pop() : "jpg";
-  const fileName = `${bucket}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
+  // Generate unique filename to avoid collision
+  const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
+  const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}-${cleanName}`;
   const filePath = `${fileName}`;
 
-  let fileData: any = file;
-  if (typeof file === "string" && (file.startsWith("data:image") || file.startsWith("blob:"))) {
-    try {
-      const res = await fetch(file);
-      fileData = await res.blob();
-    } catch (fetchErr: any) {
-      console.error("[SUPABASE UPLOAD FETCH BLOB ERROR]:", fetchErr);
-      throw new Error(`Failed to process local image file: ${fetchErr.message}`);
-    }
-  }
-
-  console.log(`[SUPABASE UPLOAD START] Bucket: ${bucket}, FilePath: ${filePath}`);
+  console.log(`[CLIENT-SIDE SUPABASE UPLOAD] Starting upload for file: ${file.name} -> Bucket: ${bucket}, Path: ${filePath}`);
 
   const { data, error } = await supabase.storage
     .from(bucket)
-    .upload(filePath, fileData, {
+    .upload(filePath, file, {
       cacheControl: "3600",
       upsert: true,
     });
 
   if (error) {
-    console.error("[SUPABASE STORAGE UPLOAD FAILED DETAILS]:", {
+    console.error("[CLIENT-SIDE SUPABASE UPLOAD ERROR]:", {
       bucket,
       filePath,
-      errorMessage: error.message,
-      name: error.name,
-      cause: (error as any).cause,
-      status: (error as any).statusCode || (error as any).status,
-      supabaseUrl: SUPABASE_URL,
+      error,
+      message: error.message,
     });
-    throw new Error(`Supabase Upload Failed (${bucket}): ${error.message}`);
+    throw new Error(`فشل رفع الصورة إلى Supabase (${bucket}): ${error.message}`);
   }
 
   const targetPath = data?.path || filePath;
-
   const { data: publicUrlData } = supabase.storage
     .from(bucket)
     .getPublicUrl(targetPath);
 
-  if (publicUrlData?.publicUrl && !publicUrlData.publicUrl.startsWith("blob:")) {
-    console.log(`[SUPABASE UPLOAD SUCCESS] Public URL: ${publicUrlData.publicUrl}`);
-    return publicUrlData.publicUrl;
+  if (!publicUrlData?.publicUrl) {
+    throw new Error("تعذر الحصول على رابط الصورة المرفوعة من Supabase.");
   }
 
-  const fallbackUrl = `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${targetPath}`;
-  console.log(`[SUPABASE UPLOAD FALLBACK URL]: ${fallbackUrl}`);
-  return fallbackUrl;
+  console.log(`[CLIENT-SIDE SUPABASE UPLOAD SUCCESS] URL: ${publicUrlData.publicUrl}`);
+  return publicUrlData.publicUrl;
+}
+
+/**
+ * Compatibility wrapper
+ */
+export async function uploadImageToSupabase(
+  file: File | string,
+  bucket: "avatars" | "magazine" = "avatars"
+): Promise<string> {
+  if (typeof file === "string") {
+    if (file.startsWith("http") && !file.startsWith("blob:")) {
+      return file;
+    }
+    throw new Error("Invalid image format.");
+  }
+
+  return uploadImageClientSide(file, bucket);
 }

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { createMemberAction, updateMemberAction } from "@/app/actions/hr-actions";
-import { uploadImageToSupabase } from "@/lib/supabase/storage";
+import { uploadImageClientSide } from "@/lib/supabase/storage";
 import {
   UserPlus,
   Edit3,
@@ -76,7 +76,7 @@ export function MemberDialog({ mode, member }: MemberDialogProps) {
     setImageError(false);
     setUploadErrorMessage(null);
     try {
-      const publicUrl = await uploadImageToSupabase(file, "avatars");
+      const publicUrl = await uploadImageClientSide(file, "avatars");
       if (publicUrl && !publicUrl.startsWith("blob:")) {
         setImageUrl(publicUrl);
       }
