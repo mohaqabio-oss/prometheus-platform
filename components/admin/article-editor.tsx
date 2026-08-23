@@ -12,7 +12,7 @@ import TextAlign from "@tiptap/extension-text-align";
 import ImageResize from "tiptap-extension-resize-image";
 import { FontSize } from "@/lib/tiptap/font-size";
 import { Button } from "@/components/ui/button";
-import { uploadImageClientSide } from "@/lib/supabase/storage";
+import { convertImageToBase64 } from "@/lib/utils/image-converter";
 import { getMembersForSelectAction, ArticleAuthor } from "@/app/actions/article-actions";
 import {
   Bold,
@@ -166,11 +166,11 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     setUploadingCover(true);
     setUploadError(null);
     try {
-      const publicUrl = await uploadImageClientSide(file, "magazine");
-      setCoverImageUrl(publicUrl);
+      const base64Data = await convertImageToBase64(file, 1200, 800, 0.85);
+      setCoverImageUrl(base64Data);
     } catch (err: any) {
       console.error("[ARTICLE COVER UPLOAD ERROR]:", err);
-      setUploadError(err.message || "Failed to upload cover image.");
+      setUploadError(err.message || "فشل معالجة صورة الغلاف في المتصفح.");
     } finally {
       setUploadingCover(false);
     }
@@ -183,11 +183,11 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     setUploadingInlineImg(true);
     setUploadError(null);
     try {
-      const publicUrl = await uploadImageClientSide(file, "magazine");
-      editor.chain().focus().setImage({ src: publicUrl }).run();
+      const base64Data = await convertImageToBase64(file, 1000, 1000, 0.85);
+      editor.chain().focus().setImage({ src: base64Data }).run();
     } catch (err: any) {
       console.error("[ARTICLE INLINE IMAGE UPLOAD ERROR]:", err);
-      setUploadError(err.message || "Failed to upload image into article.");
+      setUploadError(err.message || "فشل معالجة الصورة في المتصفح.");
     } finally {
       setUploadingInlineImg(false);
     }

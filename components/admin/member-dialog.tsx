@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { createMemberAction, updateMemberAction } from "@/app/actions/hr-actions";
-import { uploadImageClientSide } from "@/lib/supabase/storage";
+import { convertImageToBase64 } from "@/lib/utils/image-converter";
 import {
   UserPlus,
   Edit3,
@@ -76,14 +76,12 @@ export function MemberDialog({ mode, member }: MemberDialogProps) {
     setImageError(false);
     setUploadErrorMessage(null);
     try {
-      const publicUrl = await uploadImageClientSide(file, "avatars");
-      if (publicUrl && !publicUrl.startsWith("blob:")) {
-        setImageUrl(publicUrl);
-      }
+      const base64Data = await convertImageToBase64(file);
+      setImageUrl(base64Data);
     } catch (err: any) {
-      console.error("[MEMBER DIALOG UPLOAD ERROR]:", err);
+      console.error("[MEMBER DIALOG BASE64 ERROR]:", err);
       setImageError(true);
-      setUploadErrorMessage(err.message || "فشل رفع الصورة إلى Supabase");
+      setUploadErrorMessage(err.message || "فشل معالجة الصورة في المتصفح.");
     } finally {
       setUploadingImage(false);
     }

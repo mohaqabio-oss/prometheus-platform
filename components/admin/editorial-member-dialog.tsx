@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { createEditorialMemberAction, updateEditorialMemberAction } from "@/app/actions/editorial-actions";
-import { uploadImageClientSide } from "@/lib/supabase/storage";
+import { convertImageToBase64 } from "@/lib/utils/image-converter";
 import {
   UserPlus,
   Edit3,
@@ -61,14 +61,12 @@ export function EditorialMemberDialog({ mode, member }: EditorialMemberDialogPro
     setImageError(false);
     setUploadErrorMessage(null);
     try {
-      const publicUrl = await uploadImageClientSide(file, "avatars");
-      if (publicUrl && !publicUrl.startsWith("blob:")) {
-        setAvatarUrl(publicUrl);
-      }
+      const base64Data = await convertImageToBase64(file);
+      setAvatarUrl(base64Data);
     } catch (err: any) {
-      console.error("[EDITORIAL AVATAR UPLOAD ERROR]:", err);
+      console.error("[EDITORIAL AVATAR BASE64 ERROR]:", err);
       setImageError(true);
-      setUploadErrorMessage(err.message || "فشل رفع الصورة إلى Supabase");
+      setUploadErrorMessage(err.message || "فشل معالجة الصورة في المتصفح.");
     } finally {
       setUploadingImage(false);
     }
