@@ -43,9 +43,8 @@ export function Navbar() {
             <span className="font-display text-base sm:text-lg font-extrabold tracking-widest text-white leading-none">
               بروميثيوس
             </span>
-            {/* Branding Slogan with Modern Gradient */}
-            <span className="text-[9px] sm:text-[10.5px] font-mono tracking-wide bg-gradient-to-r from-amber-200 via-orange-400 to-amber-500 bg-clip-text text-transparent font-semibold mt-1">
-              Prometheus, the vision of youth, the mindset of scientists
+            <span className="text-[10px] font-mono tracking-wider text-[#E84A0C] uppercase mt-1 font-semibold">
+              فريق تطوعي
             </span>
           </div>
         </Link>

@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getPublicWebsiteData } from "@/app/actions/website-actions";
+import { HeroSection } from "@/components/public/hero-section";
 import {
   ArrowLeft,
   BookOpen,
@@ -114,132 +115,14 @@ export default async function HomePage() {
   return (
     <div className="space-y-20 pb-20 bg-[#0A0F1D] text-[#F8FAFC]">
       
-      {/* 1. HERO SECTION — DUAL-PANE / SINGLE PANE DYNAMIC THESIS */}
-      <section className="relative pt-12 pb-16 md:pt-24 md:pb-28 overflow-hidden bg-grid-pattern radial-glow-amber border-b border-[#1E293B]">
-        
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-7xl relative z-10">
-          <div
-            className={
-              isSpecsEnabled
-                ? "grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
-                : "max-w-4xl mx-auto text-center space-y-8"
-            }
-          >
-            
-            {/* Hero Main Intro Content */}
-            <div
-              className={
-                isSpecsEnabled
-                  ? "lg:col-span-7 space-y-8 text-right"
-                  : "space-y-8 text-center"
-              }
-            >
-              
-              <div className="inline-flex items-center gap-2 rounded-xl border border-[#D49B4B]/35 bg-[#D49B4B]/10 px-4 py-1.5 text-xs font-mono text-[#D49B4B] backdrop-blur-md animate-fade-in">
-                <span className="w-2 h-2 rounded-full bg-[#D49B4B] animate-pulse" />
-                <span>{heroBadge}</span>
-              </div>
-
-              <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold text-[#F8FAFC] tracking-tight leading-[1.15]">
-                {heroTitle}
-              </h1>
-
-              <p
-                className={`text-base sm:text-xl text-[#94A3B8] leading-relaxed font-sans font-normal ${
-                  isSpecsEnabled ? "max-w-2xl" : "max-w-2xl mx-auto"
-                }`}
-              >
-                {heroSubtitle}
-              </p>
-
-              <div
-                className={`pt-2 flex flex-col sm:flex-row items-center gap-4 ${
-                  isSpecsEnabled ? "justify-start" : "justify-center"
-                }`}
-              >
-                <Link href="/articles">
-                  <Button size="lg" className="w-full sm:w-auto gap-2 text-sm font-bold bg-[#D49B4B] hover:bg-[#b8823b] text-[#0A0F1D] rounded-xl shadow-lg transition-all duration-300">
-                    <span>تصفح منشورات بروميثيوس</span>
-                    <ArrowLeft className="w-4 h-4" />
-                  </Button>
-                </Link>
-
-                <Link href="/join-us">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="w-full sm:w-auto text-sm font-medium border-[#1E293B] bg-[#141C2F]/80 text-[#F8FAFC] hover:text-[#D49B4B] hover:border-[#D49B4B]/50 rounded-xl transition-all duration-300"
-                  >
-                    <span>تقديم طلب انضمام</span>
-                  </Button>
-                </Link>
-              </div>
-
-            </div>
-
-            {/* Rendered ONLY IF academicSpecs.enabled IS TRUE */}
-            {isSpecsEnabled && (
-              <div className="lg:col-span-5">
-                <div className="relative p-6 sm:p-8 bg-gradient-to-br from-[#141C2F] via-[#1A253B] to-[#0A0F1D] border border-[#1E293B] border-r-4 border-r-[#D49B4B] rounded-2xl shadow-[0_12px_36px_-8px_rgba(212,155,75,0.18)] space-y-6 backdrop-blur-md hover:border-[#D49B4B]/60 transition-all duration-300">
-                  
-                  {/* Spec Title Tag */}
-                  <div className="flex items-center justify-between border-b border-[#1E293B] pb-4">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-5 h-5 text-[#D49B4B]" />
-                      <span className="font-mono text-xs font-bold text-[#F8FAFC] uppercase tracking-wider">
-                        {academicSpecs.volumeTitle || "SPEC REGISTRY"}
-                      </span>
-                    </div>
-                    <Badge variant="cyan" className="text-[10px]">
-                      ● VERIFIED
-                    </Badge>
-                  </div>
-
-                  {/* Dynamic Spec Metadata Lines */}
-                  <div className="space-y-3 font-mono text-xs text-[#94A3B8]">
-                    
-                    {academicSpecs.peerReviewType && (
-                      <div className="flex items-center justify-between p-3 bg-[#0A0F1D]/90 rounded-xl border border-[#1E293B]">
-                        <span className="text-[#94A3B8]">المعيار التحريري:</span>
-                        <span className="text-[#D49B4B] font-bold">
-                          {academicSpecs.peerReviewType}
-                        </span>
-                      </div>
-                    )}
-
-                    {academicSpecs.licenseType && (
-                      <div className="flex items-center justify-between p-3 bg-[#0A0F1D]/90 rounded-xl border border-[#1E293B]">
-                        <span className="text-[#94A3B8]">الوصول والترخيص:</span>
-                        <span className="text-[#0284C7] font-bold">
-                          {academicSpecs.licenseType}
-                        </span>
-                      </div>
-                    )}
-
-                    {academicSpecs.repositoryStatus && (
-                      <div className="flex items-center justify-between p-3 bg-[#0A0F1D]/90 rounded-xl border border-[#1E293B]">
-                        <span className="text-[#94A3B8]">حالة المستودع:</span>
-                        <span className="text-[#F8FAFC] font-bold">
-                          {academicSpecs.repositoryStatus}
-                        </span>
-                      </div>
-                    )}
-
-                  </div>
-
-                  {/* Bottom Verification Note */}
-                  <div className="pt-2 flex items-center gap-3 text-xs text-[#94A3B8] font-sans border-t border-[#1E293B]">
-                    <FileCheck className="w-4 h-4 text-[#D49B4B] shrink-0" />
-                    <span>توثيق البيانات الأكاديمية المعتمدة رسمياً عبر لوحة التحكم.</span>
-                  </div>
-
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      </section>
+      {/* 1. HERO SECTION — MASSIVE 3D GLASSMORPHISM SLOGAN */}
+      <HeroSection
+        heroBadge={heroBadge}
+        heroTitle={heroTitle}
+        heroSubtitle={heroSubtitle}
+        isSpecsEnabled={isSpecsEnabled}
+        academicSpecs={academicSpecs}
+      />
 
       {/* 2. ABOUT THE TEAM SECTION — ARCHIVAL STATS GRID */}
       <section id="about" className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl">
