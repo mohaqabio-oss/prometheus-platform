@@ -163,12 +163,14 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
         </div>
 
         {/* BIOGRAPHY SECTION */}
-        <section className="mb-10 space-y-3">
-          <h2 className="font-display text-xl font-bold text-white">Member Biography</h2>
-          <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl leading-relaxed text-[#6B7280] text-sm sm:text-base">
-            {member.bio || "لا تتوفر نبذة تعريفية خاصة بالعضو حالياً."}
-          </Card>
-        </section>
+        {(member.bio || (member as any).biography) && (member.bio || (member as any).biography).trim() !== "" && (
+          <section className="mb-10 space-y-3">
+            <h2 className="font-display text-xl font-bold text-white">Member Biography</h2>
+            <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl leading-relaxed text-[#6B7280] text-sm sm:text-base">
+              {member.bio || (member as any).biography}
+            </Card>
+          </section>
+        )}
 
       </div>
     </div>

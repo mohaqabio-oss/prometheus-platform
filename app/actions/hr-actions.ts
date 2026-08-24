@@ -54,6 +54,7 @@ export async function createMemberAction(prevState: any, formData: FormData) {
   const email = formData.get("email")?.toString().trim().toLowerCase();
   const title = formData.get("title")?.toString().trim() || "Voluntary Contributor";
   const departmentName = formData.get("departmentName")?.toString() || "Technology";
+  const bio = formData.get("bio")?.toString().trim() || formData.get("biography")?.toString().trim() || null;
   const initialHours = parseFloat(formData.get("initialHours")?.toString() || "0");
   let profileImage = formData.get("profileImage")?.toString() || null;
 
@@ -79,6 +80,7 @@ export async function createMemberAction(prevState: any, formData: FormData) {
         fullName,
         title,
         status: "ACTIVE",
+        bio: bio || undefined,
         volunteerHours: Math.max(0, Math.floor(initialHours)),
         avatarUrl: profileImage || undefined,
         profileImage: profileImage || undefined,
@@ -104,6 +106,7 @@ export async function updateMemberAction(prevState: any, formData: FormData) {
   const fullName = formData.get("fullName")?.toString().trim();
   const title = formData.get("title")?.toString().trim();
   const departmentName = formData.get("departmentName")?.toString();
+  const bio = formData.get("bio")?.toString().trim() || formData.get("biography")?.toString().trim() || null;
   const volunteerHours = parseFloat(formData.get("volunteerHours")?.toString() || "0");
   const status = (formData.get("status")?.toString() || "ACTIVE") as any;
   let profileImage = formData.get("profileImage")?.toString() || null;
@@ -131,6 +134,7 @@ export async function updateMemberAction(prevState: any, formData: FormData) {
         fullName,
         title,
         status,
+        bio: bio !== null ? bio : undefined,
         volunteerHours: Math.max(0, Math.floor(volunteerHours)),
         avatarUrl: profileImage || undefined,
         profileImage: profileImage || undefined,

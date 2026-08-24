@@ -27,6 +27,8 @@ export interface MemberDialogProps {
     fullName: string;
     title?: string | null;
     departmentName?: string | null;
+    bio?: string | null;
+    biography?: string | null;
     volunteerHours?: number;
     status?: string;
     profileImage?: string | null;
@@ -238,6 +240,18 @@ export function MemberDialog({ mode, member }: MemberDialogProps) {
                   <option value="الموارد البشرية والعمليات">الموارد البشرية (HR & Operations)</option>
                   <option value="عام">عام (General)</option>
                 </select>
+              </div>
+
+              {/* Biography / Bio */}
+              <div className="space-y-1.5">
+                <label className="block text-[#6B7280] font-medium">النبذة التعريفية (Biography / Bio)</label>
+                <textarea
+                  name="bio"
+                  rows={3}
+                  defaultValue={member?.bio || (member as any)?.biography || ""}
+                  placeholder="موجز عن المسيرة الأكاديمية أو الخبرات التقنية والتطوعية للعضو..."
+                  className="w-full p-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                />
               </div>
 
               {/* Hours & Status Grid */}
