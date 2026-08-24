@@ -34,8 +34,12 @@ export function MembersClientPage({ initialMembers, headerConfig }: MembersClien
   });
 
   return (
-    <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-16">
+    <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-16 relative">
       
+      {/* Ambient Glowing Background Orbs */}
+      <div className="absolute top-10 left-10 w-96 h-96 bg-[#E84A0C]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
       {/* Dynamic Header */}
       <SectionHeader
         badgeText={headerConfig?.badge || "دليل أعضاء الفريق"}
@@ -44,21 +48,21 @@ export function MembersClientPage({ initialMembers, headerConfig }: MembersClien
       />
 
       {/* Search & Department Filters */}
-      <div className="space-y-6">
+      <div className="space-y-6 relative z-10">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute start-3.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
+            <Search className="w-4 h-4 absolute start-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
             <input
               type="text"
               placeholder="ابحث باسم العضو أو المسمى الوظيفي..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-11 ps-10 pe-4 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans transition-all duration-300"
+              className="w-full h-11 ps-10 pe-4 bg-[#0D1322]/80 backdrop-blur-xl border border-white/10 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] font-sans transition-all duration-300 shadow-lg"
             />
           </div>
 
-          <div className="text-xs font-mono text-[#6B7280]">
+          <div className="text-xs font-mono text-stone-400">
             عدد الأعضاء المعروضين: <strong className="text-white">{filteredMembers.length} أعضاء</strong>
           </div>
 
@@ -70,10 +74,10 @@ export function MembersClientPage({ initialMembers, headerConfig }: MembersClien
             <button
               key={dept}
               onClick={() => setSelectedDept(dept)}
-              className={`px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap cursor-pointer ${
+              className={`px-4 py-2 rounded-xl text-xs font-mono transition-all whitespace-nowrap cursor-pointer backdrop-blur-md ${
                 selectedDept === dept
-                  ? "bg-[#E84A0C] text-white font-bold shadow-md"
-                  : "bg-[#0D0D0D] text-[#6B7280] hover:text-white border border-[#6B7280]/30"
+                  ? "bg-[#E84A0C] text-white font-bold shadow-lg"
+                  : "bg-white/5 text-stone-400 hover:text-white border border-white/10"
               }`}
             >
               {dept}
@@ -82,9 +86,9 @@ export function MembersClientPage({ initialMembers, headerConfig }: MembersClien
         </div>
       </div>
 
-      {/* Member Cards Grid or Clean Empty State */}
+      {/* Member Cards Grid */}
       {filteredMembers.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
           {filteredMembers.map((member) => (
             <MemberCard
               key={member.id}
@@ -102,12 +106,12 @@ export function MembersClientPage({ initialMembers, headerConfig }: MembersClien
           ))}
         </div>
       ) : (
-        <Card className="p-12 text-center border border-dashed border-[#6B7280]/30 bg-[#0D0D0D] space-y-3">
-          <Users className="w-10 h-10 text-[#6B7280] mx-auto" />
+        <Card className="p-12 text-center border border-dashed border-white/15 bg-[#0D1322]/80 backdrop-blur-xl space-y-3">
+          <Users className="w-10 h-10 text-stone-400 mx-auto" />
           <h3 className="font-display text-base font-bold text-white">
             لا يوجد أعضاء حالياً
           </h3>
-          <p className="text-xs text-[#6B7280] max-w-md mx-auto">
+          <p className="text-xs text-stone-400 max-w-md mx-auto">
             سيتم عرض دليل أعضاء الفريق الكادر فور اعتماد وتسجيل بيانات الأعضاء في القاعدة.
           </p>
         </Card>
