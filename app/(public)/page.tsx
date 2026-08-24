@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SectionHeader } from "@/components/ui/section-header";
 import { getPublicWebsiteData } from "@/app/actions/website-actions";
-import { HeroSection } from "@/components/public/hero-section";
+import { PrometheusHero } from "@/components/ui/horizon-hero-section";
 import {
   ArrowLeft,
   BookOpen,
@@ -115,13 +115,10 @@ export default async function HomePage() {
   return (
     <div className="space-y-20 pb-20 bg-[#0A0F1D] text-[#F8FAFC]">
       
-      {/* 1. HERO SECTION — MASSIVE 3D GLASSMORPHISM SLOGAN */}
-      <HeroSection
+      {/* 1. THREE.JS & GSAP 3D HERO SECTION — PROMETHEUS BRANDING */}
+      <PrometheusHero
         heroBadge={heroBadge}
-        heroTitle={heroTitle}
         heroSubtitle={heroSubtitle}
-        isSpecsEnabled={isSpecsEnabled}
-        academicSpecs={academicSpecs}
       />
 
       {/* 2. ABOUT THE TEAM SECTION — ARCHIVAL STATS GRID */}
