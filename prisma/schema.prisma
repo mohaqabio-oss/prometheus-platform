@@ -187,3 +187,21 @@ model Partner {
 
   @@map("partners")
 }
+
+model JoinRequest {
+  id              String   @id @default(uuid())
+  nameAr          String
+  nameEn          String
+  contactInfo     String
+  department      String
+  education       String
+  experience      String
+  aboutPrometheus String
+  reasonToJoin    String
+  portfolioLink   String?
+  status          String   @default("PENDING")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt @default(now())
+
+  @@map("join_requests")
+}

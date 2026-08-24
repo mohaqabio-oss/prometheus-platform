@@ -2,7 +2,8 @@
 
 import React, { useState, useActionState } from "react";
 import Link from "next/link";
-import { submitApplicationAction } from "@/app/actions/application-actions";
+import { motion } from "framer-motion";
+import { submitJoinRequestAction } from "@/app/actions/application-actions";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,12 +15,19 @@ import {
   Loader2,
   ArrowRight,
   ShieldCheck,
+  Sparkles,
+  User,
+  Mail,
+  GraduationCap,
+  Briefcase,
+  Globe,
+  Heart,
 } from "lucide-react";
 
 export default function JoinUsPage() {
   const [submitted, setSubmitted] = useState(false);
   const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
-    const res = await submitApplicationAction(prevState, formData);
+    const res = await submitJoinRequestAction(prevState, formData);
     if (res.success) {
       setSubmitted(true);
     }
@@ -27,244 +35,281 @@ export default function JoinUsPage() {
   }, null);
 
   return (
-    <div className="py-12 sm:py-20 px-4 max-w-4xl mx-auto space-y-12 transition-all duration-300">
+    <div className="py-12 sm:py-20 px-4 max-w-4xl mx-auto space-y-12 transition-all duration-300 relative">
       
+      {/* Ambient Glowing Background Orbs */}
+      <div className="absolute top-10 left-10 w-96 h-96 bg-[#E84A0C]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
       {/* Header */}
       <SectionHeader
-        badgeText="Voluntary Team Recruitment"
-        title="Ignite Your Potential —"
-        highlightedTitle="Join Prometheus"
-        description="We do not accept open public registration. Instead, passionate engineers, researchers, and educators apply to join our structured voluntary departments."
+        badgeText="تقديم طلب انضمام للكادر التطوعي"
+        title="انضم إلى عائلة بروميثيوس —"
+        highlightedTitle="رؤية الشباب بعقلية العلماء"
+        description="نرحب بالكوادر البرمجية، الباحثين الأكاديميين، وصناع المحتوى الراغبين في الانضمام لأقسام الفريق والمساهمة في بناء المنصات الأكاديمية والبحثية."
       />
 
       {/* Success State View */}
       {submitted ? (
-        <Card className="p-8 sm:p-12 bg-[#0D0D0D] border border-emerald-500/30 text-center space-y-6 shadow-md rounded-2xl transition-all duration-300">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-10 h-10" />
-          </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card className="p-8 sm:p-12 bg-[#0D1322]/90 backdrop-blur-xl border border-emerald-500/40 text-center space-y-6 shadow-2xl rounded-2xl">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-lg">
+              <CheckCircle2 className="w-10 h-10" />
+            </div>
 
-          <div className="space-y-2">
-            <Badge variant="dark" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 font-mono text-xs">
-              APPLICATION SUBMITTED SUCCESSFULLY
-            </Badge>
-            <h2 className="font-display text-2xl font-bold text-white">
-              Thank You for Applying
-            </h2>
-            <p className="text-sm text-[#6B7280] max-w-lg mx-auto leading-relaxed">
-              Your voluntary application has been registered in the Prometheus HR review queue. Our HR & Operations team will review your application and contact you via email regarding the next interview steps.
-            </p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 text-xs font-mono text-[#6B7280] max-w-md mx-auto space-y-1">
-            <p className="text-white font-bold">What Happens Next?</p>
-            <p>1. Preliminary HR Review (24–48 hours)</p>
-            <p>2. Departmental Interview & Skill Assessment</p>
-            <p>3. Onboarding & Official Member Registration</p>
-          </div>
-
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/members">
-              <Button variant="outline" size="sm" className="gap-2 text-xs rounded-xl border-[#6B7280]/30 text-white">
-                <span>Browse Current Members Directory</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-            </Link>
-            <Link href="/articles">
-              <Button size="sm" className="gap-2 text-xs bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md">
-                <span>Read Prometheus Post Publications</span>
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      ) : (
-        /* Application Form */
-        <Card className="p-6 sm:p-10 bg-[#0D0D0D] border border-[#6B7280]/20 space-y-8 shadow-md rounded-2xl transition-all duration-300">
-          
-          <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-4">
-            <div>
-              <h2 className="font-display text-xl font-bold text-white">
-                Candidate Application Form
+            <div className="space-y-2">
+              <Badge variant="dark" className="bg-emerald-500/20 text-emerald-400 border-emerald-500/40 font-mono text-xs">
+                تم استلام طلبك بنجاح
+              </Badge>
+              <h2 className="font-display text-2xl font-bold text-white">
+                شكراً لتقديمك طلب الانضمام!
               </h2>
-              <p className="text-xs text-[#6B7280] mt-0.5">
-                All fields marked with an asterisk (*) are required.
+              <p className="text-sm text-stone-300 max-w-lg mx-auto leading-relaxed">
+                تم تسجيل طلبك في قائمة المراجعة لدى قسم الموارد البشرية والعمليات بفريق بروميثيوس. سيقوم مسؤول التوظيف بمراجعة بياناتك والتواصل معك عبر وسائل الاتصال المسجلة.
               </p>
             </div>
-            <div className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-[#E84A0C] bg-[#E84A0C]/10 px-3 py-1.5 rounded-xl border border-[#E84A0C]/20">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Verified HR Pipeline</span>
-            </div>
-          </div>
 
-          {state?.error && (
-            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-mono flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{state.error}</span>
+            <div className="p-4 rounded-xl bg-white/5 border border-white/10 text-xs font-mono text-stone-400 max-w-md mx-auto space-y-1.5 text-right">
+              <p className="text-white font-bold flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <span>الخطوات القادمة:</span>
+              </p>
+              <p>1. المراجعة الأولية وتصنيف البيانات (خلال 24-48 ساعة)</p>
+              <p>2. التواصل المباشر وتحديد موعد المقابلة الأكاديمية</p>
+              <p>3. اعتماد العضوية وإدراج البيانات في دليل الأعضاء</p>
             </div>
-          )}
 
-          <form action={formAction} className="space-y-6">
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/members">
+                <Button variant="outline" size="sm" className="gap-2 text-xs rounded-xl border-white/15 text-white bg-white/5 hover:bg-[#E84A0C]">
+                  <span>تصفح دليل الأعضاء حالياً</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Button>
+              </Link>
+              <Link href="/articles">
+                <Button size="sm" className="gap-2 text-xs bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md">
+                  <span>تصفح منشورات بروميثيوس</span>
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </motion.div>
+      ) : (
+        /* Application Form */
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Card className="p-6 sm:p-10 bg-[#0D1322]/85 backdrop-blur-xl border border-white/10 space-y-8 shadow-2xl rounded-2xl relative">
             
-            {/* Full Name & Email Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  name="fullName"
-                  required
-                  placeholder="e.g. Layla Hassan"
-                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans shadow-sm transition-all duration-300"
-                />
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <h2 className="font-display text-xl font-bold text-white flex items-center gap-2">
+                  <User className="w-5 h-5 text-[#E84A0C]" />
+                  <span>استمارة طلب الانضمام للكادر</span>
+                </h2>
+                <p className="text-xs text-stone-400 mt-1">
+                  يرجى ملء كافة الحقول بدقة لضمان معالجة طلبك وسرعة التواصل.
+                </p>
               </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  placeholder="layla.hassan@example.com"
-                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-mono shadow-sm transition-all duration-300"
-                />
+              <div className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-[#E84A0C] bg-[#E84A0C]/10 px-3 py-1.5 rounded-xl border border-[#E84A0C]/30 backdrop-blur-md">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>استمارة معتمدة للتوظيف</span>
               </div>
-
             </div>
 
-            {/* Phone, Age & Education Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {state?.error && (
+              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{state.error}</span>
+              </div>
+            )}
+
+            <form action={formAction} className="space-y-6 text-right font-sans">
               
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="+964 770 000 0000"
-                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-mono shadow-sm transition-all duration-300"
-                />
+              {/* Names Row (Arabic & English) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                    <span>الاسم الثلاثي باللغة العربية</span>
+                    <span className="text-[#E84A0C]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="nameAr"
+                    required
+                    placeholder="مثال: د. محمد علي الحسني"
+                    className="w-full h-11 px-4 bg-[#1A253B] border border-white/10 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                    <span>Full Name in English</span>
+                    <span className="text-[#E84A0C]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="nameEn"
+                    required
+                    placeholder="e.g. Dr. Mohammed Ali Al-Hassani"
+                    className="w-full h-11 px-4 bg-[#1A253B] border border-white/10 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] font-mono shadow-sm transition-all duration-300"
+                  />
+                </div>
+
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                  Age
-                </label>
-                <input
-                  type="text"
-                  name="age"
-                  placeholder="e.g. 23"
-                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-mono shadow-sm transition-all duration-300"
-                />
+              {/* Contact Info & Department Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-[#E84A0C]" />
+                    <span>معلومات الاتصال (البريد الإلكتروني / رقم الهاتف)</span>
+                    <span className="text-[#E84A0C]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="contactInfo"
+                    required
+                    placeholder="مثال: name@domain.com / 07700000000"
+                    className="w-full h-11 px-4 bg-[#1A253B] border border-white/10 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] font-mono shadow-sm transition-all duration-300"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                    <Briefcase className="w-3.5 h-3.5 text-[#E84A0C]" />
+                    <span>القسم المطلوب الانضمام إليه</span>
+                    <span className="text-[#E84A0C]">*</span>
+                  </label>
+                  <select
+                    name="department"
+                    required
+                    className="w-full h-11 px-3 bg-[#1A253B] border border-white/10 rounded-xl text-xs font-sans text-white focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
+                  >
+                    <option value="الهندسة البرمجية">قسم الهندسة البرمجية والتطوير (Software Engineering)</option>
+                    <option value="البحث العلمي">قسم البحث العلمي والتحليل (Scientific Research)</option>
+                    <option value="التعليم والتطوير">قسم التعليم وصناعة المحتوى (Education & Content)</option>
+                    <option value="الموارد البشرية والعمليات">قسم الموارد البشرية والعمليات (HR & Operations)</option>
+                  </select>
+                </div>
+
               </div>
 
+              {/* Education Background */}
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                  Target Department *
-                </label>
-                <select
-                  name="departmentName"
-                  required
-                  className="w-full h-11 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs font-mono text-white focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
-                >
-                  <option value="Technology">Technology</option>
-                  <option value="Research">Research</option>
-                  <option value="Education">Education</option>
-                  <option value="HR & Operations">HR & Operations</option>
-                </select>
-              </div>
-
-            </div>
-
-            {/* Academic Background & Skills */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                  Academic Background / Major
+                <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                  <GraduationCap className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <span>التحصيل الأكاديمي والجامعة/التخصص</span>
+                  <span className="text-[#E84A0C]">*</span>
                 </label>
                 <input
                   type="text"
                   name="education"
-                  placeholder="e.g. B.Sc. Computer Engineering (Final Year)"
-                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans shadow-sm transition-all duration-300"
+                  required
+                  placeholder="مثال: بكالوريوس علوم حاسوب - جامعة بغداد / مرحلة رابعة"
+                  className="w-full h-11 px-4 bg-[#1A253B] border border-white/10 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
                 />
               </div>
 
+              {/* Previous Experience */}
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                  Skills & Core Expertise
+                <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                  <Briefcase className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <span>الخبرات السابقة والمهارات العملية</span>
+                  <span className="text-[#E84A0C]">*</span>
+                </label>
+                <textarea
+                  name="experience"
+                  required
+                  rows={3}
+                  placeholder="اكتب نبذة عن خبراتك التقنية أو البحثية، اللغات البرمجية التي تتقنها، أو المشاريع السابقة..."
+                  className="w-full p-4 bg-[#1A253B] border border-white/10 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] leading-relaxed shadow-sm transition-all duration-300"
+                />
+              </div>
+
+              {/* What do you know about Prometheus */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                  <Heart className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <span>ماذا تعرف عن فريق بروميثيوس ورسالته؟</span>
+                  <span className="text-[#E84A0C]">*</span>
+                </label>
+                <textarea
+                  name="aboutPrometheus"
+                  required
+                  rows={3}
+                  placeholder="اكتب ما تعرفه عن رؤية الفريق وأهدافه الأكاديمية..."
+                  className="w-full p-4 bg-[#1A253B] border border-white/10 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] leading-relaxed shadow-sm transition-all duration-300"
+                />
+              </div>
+
+              {/* Reason to join */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <span>سبب الرغبة في الانضمام والأهداف الشخصية</span>
+                  <span className="text-[#E84A0C]">*</span>
+                </label>
+                <textarea
+                  name="reasonToJoin"
+                  required
+                  rows={3}
+                  placeholder="كيف تنوي المساهمة في الفريق وما هي الأهداف التي ترغب بتحقيقها من خلال التطوع معنا؟"
+                  className="w-full p-4 bg-[#1A253B] border border-white/10 rounded-xl text-sm text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] leading-relaxed shadow-sm transition-all duration-300"
+                />
+              </div>
+
+              {/* Portfolio / Link (Optional) */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-stone-300 flex items-center gap-1">
+                  <Globe className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <span>رابط معرض الأعمال / GitHub / LinkedIn / CV (اختياري)</span>
                 </label>
                 <input
-                  type="text"
-                  name="skills"
-                  placeholder="e.g. React, Next.js, Python, Scientific Writing"
-                  className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans shadow-sm transition-all duration-300"
+                  type="url"
+                  name="portfolioLink"
+                  placeholder="https://github.com/your-username or https://linkedin.com/in/username"
+                  className="w-full h-11 px-4 bg-[#1A253B] border border-white/10 rounded-xl text-xs font-mono text-white placeholder:text-stone-500 focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
                 />
               </div>
 
-            </div>
+              {/* Submit Button */}
+              <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                <span className="text-[11px] font-mono text-stone-400 hidden sm:inline">
+                  سياسة التوظيف المعتمدة لعام 2026
+                </span>
 
-            {/* Portfolio / Resume URL */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                Portfolio / GitHub / LinkedIn URL (Optional)
-              </label>
-              <input
-                type="url"
-                name="portfolioUrl"
-                placeholder="https://github.com/your-username"
-                className="w-full h-11 px-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs font-mono text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
-              />
-            </div>
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className="gap-2 px-8 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-lg transition-all duration-300"
+                >
+                  {isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>جاري إرسال الطلب...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>إرسال طلب الانضمام</span>
+                    </>
+                  )}
+                </Button>
+              </div>
 
-            {/* Motivation Textarea */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono font-medium text-[#6B7280] block">
-                Why do you want to join Prometheus Voluntary Team? *
-              </label>
-              <textarea
-                name="motivation"
-                required
-                rows={5}
-                placeholder="Tell us about your drive, voluntary goals, and how you want to contribute..."
-                className="w-full p-4 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-sm text-white placeholder:text-[#6B7280] focus:outline-none focus:border-[#E84A0C] font-sans leading-relaxed shadow-sm transition-all duration-300"
-              />
-            </div>
+            </form>
 
-            {/* Submit Action */}
-            <div className="pt-4 border-t border-[#6B7280]/20 flex items-center justify-between">
-              <span className="text-[11px] font-mono text-[#6B7280] hidden sm:inline">
-                Prometheus HR Recruitment Policy
-              </span>
-
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="gap-2 px-8 bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md transition-all duration-300"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Submitting Application...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    <span>Submit Volunteer Application</span>
-                  </>
-                )}
-              </Button>
-            </div>
-
-          </form>
-
-        </Card>
+          </Card>
+        </motion.div>
       )}
 
     </div>
