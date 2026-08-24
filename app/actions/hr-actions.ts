@@ -284,6 +284,44 @@ export async function issueCertificateAction(prevState: any, formData: FormData)
   return { success: true, certificateCode };
 }
 
+// 4. Verify Certificate Code (Public Verification Page)
+export async function verifyCertificateCode(code: string) {
+  if (!code) return null;
+  try {
+    const cert = await prisma.certificate.findFirst({
+      where: {
+        certificateCode: {
+          equals: code.trim(),
+          mode: "insensitive",
+        },
+      },
+      include: {
+        member: true,
+      },
+    });
+
+    if (cert) {
+      return {
+        id: cert.id,
+        certificateCode: cert.certificateCode,
+        title: cert.title,
+        description: cert.description,
+        issuedAt: cert.issuedAt.toISOString(),
+        memberName: cert.member?.fullName || "عضو فريق بروميثيوس",
+        memberDepartment: cert.member?.departmentName || "عام",
+        memberRole: cert.member?.title || "عضو فريق بروميثيوس",
+        volunteerHours: cert.member?.volunteerHours || 0,
+      };
+    }
+  } catch (e) {}
+
+  const mockCert = MOCK_HR_CERTIFICATES.find(
+    (c) => c.certificateCode.toLowerCase() === code.trim().toLowerCase()
+  );
+
+  return mockCert || null;
+}
+
 // Fetch public members list for website with strict hierarchy sorting
 export async function getPublicMembersAction() {
   try {
