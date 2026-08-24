@@ -58,6 +58,8 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
         authors: true,
         sources: true,
       },
+    });
+
     if (article) {
       // Fire-and-forget view count increment
       incrementArticleViewCount(article.id).catch(() => {});
