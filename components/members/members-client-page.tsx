@@ -93,6 +93,7 @@ export function MembersClientPage({ initialMembers, headerConfig }: MembersClien
                 name: member.name || member.fullName,
                 role: member.role || member.title || "عضو متطوع",
                 department: member.department || member.departmentName || "عام",
+                leadershipTier: member.leadershipTier || "Regular",
                 avatarUrl: member.avatarUrl || member.photoUrl,
                 photoUrl: member.photoUrl || member.avatarUrl,
                 volunteerHours: member.volunteerHours || 0,

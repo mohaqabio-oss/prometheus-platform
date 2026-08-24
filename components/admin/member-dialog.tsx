@@ -226,6 +226,20 @@ export function MemberDialog({ mode, member }: MemberDialogProps) {
                 />
               </div>
 
+              {/* Hierarchy Leadership Tier */}
+              <div className="space-y-1.5">
+                <label className="block text-[#6B7280] font-medium">المرتبة الهيكلية (Leadership Tier Tag)</label>
+                <select
+                  name="leadershipTier"
+                  defaultValue={(member as any)?.leadershipTier || "Regular"}
+                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
+                >
+                  <option value="Founder & Leader">مؤسس وقائد الفريق (Founder & Leader)</option>
+                  <option value="Department Leader">قائد قسم / نائب قائد (Department Leader)</option>
+                  <option value="Regular">عضو فريق (Regular Member)</option>
+                </select>
+              </div>
+
               {/* Department */}
               <div className="space-y-1.5">
                 <label className="block text-[#6B7280] font-medium">القسم التشغيلي</label>

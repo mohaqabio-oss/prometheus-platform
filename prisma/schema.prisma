@@ -60,6 +60,7 @@ model Member {
   avatarUrl      String?
   volunteerHours Int          @default(0)
   status         MemberStatus @default(ACTIVE)
+  leadershipTier String       @default("Regular")
   joinDate       DateTime     @default(now())
   customSections Json?
   createdAt      DateTime     @default(now())

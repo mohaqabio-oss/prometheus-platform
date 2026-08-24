@@ -21,43 +21,35 @@ export interface AdminUserItem {
   id: string;
   email: string;
   fullName: string;
+  role: RoleType;
   roles: RoleType[];
   createdAt: string;
 }
 
-// 1. Get List of Users for Master Admin Panel
+// 1. Get List of System Users (Master Admin Only)
 export async function getAdminUsersList(): Promise<AdminUserItem[]> {
   await requireMasterAdmin();
 
   try {
     const users = await prisma.user.findMany({
-      include: {
-        userRoles: {
-          include: {
-            role: true,
-          },
-        },
-        member: true,
-      },
       orderBy: { createdAt: "desc" },
     });
 
-    return users.map((u) => {
-      const roles = u.userRoles.map((ur) => ur.role.name);
-      return {
-        id: u.id,
-        email: u.email,
-        fullName: u.fullName || u.member?.fullName || u.email.split("@")[0],
-        roles: roles.length > 0 ? roles : ["MEMBER" as RoleType],
-        createdAt: u.createdAt.toISOString(),
-      };
-    });
-  } catch (e) {
+    return users.map((u) => ({
+      id: u.id,
+      email: u.email,
+      fullName: u.fullName || u.email.split("@")[0],
+      role: u.role || "MEMBER",
+      roles: u.roles && u.roles.length > 0 ? u.roles : [u.role || "MEMBER"],
+      createdAt: u.createdAt.toISOString(),
+    }));
+  } catch (e: any) {
+    console.error("Error fetching system users:", e);
     return [];
   }
 }
 
-// 2. Create New User Account (Master Admin Only) - DECOUPLED FROM PUBLIC MEMBER DIRECTORY
+// 2. Create New System User Account (Master Admin Only) - DECOUPLED FROM PUBLIC MEMBER DIRECTORY
 export async function createUserAction(prevState: any, formData: FormData) {
   await requireMasterAdmin();
 
@@ -75,7 +67,6 @@ export async function createUserAction(prevState: any, formData: FormData) {
   }
 
   try {
-    // Check if email exists in User table
     const existing = await prisma.user.findUnique({
       where: { email },
     });
@@ -83,33 +74,19 @@ export async function createUserAction(prevState: any, formData: FormData) {
       return { error: "An account with this email address already exists." };
     }
 
-    // Securely hash password
     const hashedPassword = await hashPassword(password);
 
-    // Get or create Role record
-    const roleRecord = await prisma.role.upsert({
-      where: { name: roleType },
-      update: {},
-      create: {
-        name: roleType,
-        description: `${roleType} Role`,
-      },
-    });
-
-    // Create User & UserRole ONLY (Does NOT create a public Member record)
     await prisma.user.create({
       data: {
         email,
         fullName,
-        passwordHash: hashedPassword,
-        userRoles: {
-          create: {
-            roleId: roleRecord.id,
-          },
-        },
+        password: hashedPassword,
+        role: roleType,
+        roles: [roleType],
       },
     });
 
+    revalidatePath("/admin/system-users");
     revalidatePath("/admin/users");
     return { success: true };
   } catch (err: any) {
@@ -133,6 +110,7 @@ export async function deleteUserAction(userId: string) {
     return { error: err.message || "Failed to delete user account." };
   }
 
+  revalidatePath("/admin/system-users");
   revalidatePath("/admin/users");
   return { success: true };
 }
@@ -142,30 +120,41 @@ export async function updateUserRoleAction(userId: string, newRole: RoleType) {
   await requireMasterAdmin();
 
   try {
-    const roleRecord = await prisma.role.upsert({
-      where: { name: newRole },
-      update: {},
-      create: {
-        name: newRole,
-        description: `${newRole} Role`,
-      },
-    });
-
-    // Remove existing roles and assign new role
-    await prisma.userRole.deleteMany({
-      where: { userId },
-    });
-
-    await prisma.userRole.create({
+    await prisma.user.update({
+      where: { id: userId },
       data: {
-        userId,
-        roleId: roleRecord.id,
+        role: newRole,
+        roles: [newRole],
       },
     });
 
+    revalidatePath("/admin/system-users");
     revalidatePath("/admin/users");
     return { success: true };
   } catch (err: any) {
     throw new Error(err.message || "Failed to update user role.");
+  }
+}
+
+// 5. Reset User Password Action (Master Admin Only)
+export async function resetUserPasswordAction(userId: string, newPassword?: string) {
+  await requireMasterAdmin();
+
+  if (!newPassword || newPassword.length < 6) {
+    return { error: "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل." };
+  }
+
+  try {
+    const hashedPassword = await hashPassword(newPassword);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    revalidatePath("/admin/system-users");
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message || "فشل إعادة تعيين كلمة المرور." };
   }
 }

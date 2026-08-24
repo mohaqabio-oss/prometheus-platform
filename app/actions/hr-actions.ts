@@ -23,10 +23,12 @@ export interface LocalMemberRecord {
   email: string;
   title: string;
   departmentName: string;
+  leadershipTier: string;
   volunteerHours: number;
   status: string;
   certificateCode?: string;
   createdAt: string;
+  bio?: string | null;
 }
 
 let MOCK_HR_MEMBERS: LocalMemberRecord[] = [];
@@ -54,6 +56,7 @@ export async function createMemberAction(prevState: any, formData: FormData) {
   const email = formData.get("email")?.toString().trim().toLowerCase();
   const title = formData.get("title")?.toString().trim() || "Voluntary Contributor";
   const departmentName = formData.get("departmentName")?.toString() || "Technology";
+  const leadershipTier = formData.get("leadershipTier")?.toString().trim() || "Regular";
   const bio = formData.get("bio")?.toString().trim() || formData.get("biography")?.toString().trim() || null;
   const initialHours = parseFloat(formData.get("initialHours")?.toString() || "0");
   let profileImage = formData.get("profileImage")?.toString() || null;
@@ -80,6 +83,7 @@ export async function createMemberAction(prevState: any, formData: FormData) {
         fullName,
         title,
         status: "ACTIVE",
+        leadershipTier,
         bio: bio || undefined,
         volunteerHours: Math.max(0, Math.floor(initialHours)),
         avatarUrl: profileImage || undefined,
@@ -106,6 +110,7 @@ export async function updateMemberAction(prevState: any, formData: FormData) {
   const fullName = formData.get("fullName")?.toString().trim();
   const title = formData.get("title")?.toString().trim();
   const departmentName = formData.get("departmentName")?.toString();
+  const leadershipTier = formData.get("leadershipTier")?.toString().trim();
   const bio = formData.get("bio")?.toString().trim() || formData.get("biography")?.toString().trim() || null;
   const volunteerHours = parseFloat(formData.get("volunteerHours")?.toString() || "0");
   const status = (formData.get("status")?.toString() || "ACTIVE") as any;
@@ -134,6 +139,7 @@ export async function updateMemberAction(prevState: any, formData: FormData) {
         fullName,
         title,
         status,
+        leadershipTier: leadershipTier || undefined,
         bio: bio !== null ? bio : undefined,
         volunteerHours: Math.max(0, Math.floor(volunteerHours)),
         avatarUrl: profileImage || undefined,
@@ -278,7 +284,7 @@ export async function issueCertificateAction(prevState: any, formData: FormData)
   return { success: true, certificateCode };
 }
 
-// Fetch public members list for website
+// Fetch public members list for website with strict hierarchy sorting
 export async function getPublicMembersAction() {
   try {
     const dbMembers = await prisma.member.findMany({
@@ -286,7 +292,20 @@ export async function getPublicMembersAction() {
       orderBy: { joinDate: "desc" },
     });
 
-    return dbMembers.map((m) => ({
+    const tierPriority = (tier?: string | null) => {
+      if (tier === "Founder & Leader") return 1;
+      if (tier === "Department Leader") return 2;
+      return 3;
+    };
+
+    const sortedMembers = dbMembers.sort((a, b) => {
+      const pA = tierPriority(a.leadershipTier);
+      const pB = tierPriority(b.leadershipTier);
+      if (pA !== pB) return pA - pB;
+      return new Date(b.joinDate).getTime() - new Date(a.joinDate).getTime();
+    });
+
+    return sortedMembers.map((m) => ({
       id: m.id,
       fullName: m.fullName,
       name: m.fullName,
@@ -294,10 +313,12 @@ export async function getPublicMembersAction() {
       role: m.title || "عضو متطوع",
       departmentName: m.departmentName || "عام",
       department: m.departmentName || "عام",
+      leadershipTier: m.leadershipTier || "Regular",
       avatarUrl: m.avatarUrl || m.profileImage,
       photoUrl: m.avatarUrl || m.profileImage,
       volunteerHours: m.volunteerHours || 0,
       status: m.status,
+      bio: m.bio,
     }));
   } catch (e: any) {
     console.error("Error fetching public members:", e);
@@ -322,8 +343,10 @@ export async function getAdminMembersList(): Promise<LocalMemberRecord[]> {
         email: "n/a",
         title: m.title || "Member",
         departmentName: m.departmentName || "General",
+        leadershipTier: m.leadershipTier || "Regular",
         volunteerHours: m.volunteerHours,
         status: m.status,
+        bio: m.bio,
         certificateCode: m.certificates[0]?.certificateCode,
         createdAt: m.createdAt.toISOString(),
       }));

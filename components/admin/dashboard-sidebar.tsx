@@ -121,6 +121,12 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
           rolesAllowed: ["ADMIN"],
         },
         {
+          title: "حسابات النظام (System Users)",
+          href: "/admin/system-users",
+          icon: <UserCog className="w-4 h-4 text-emerald-400" />,
+          rolesAllowed: ["ADMIN"],
+        },
+        {
           title: "إعدادات النظام",
           href: "/admin/settings",
           icon: <Settings className="w-4 h-4" />,
