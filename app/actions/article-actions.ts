@@ -483,3 +483,105 @@ export async function deleteArticleAction(articleId: string) {
   revalidatePath("/articles");
   return { success: true };
 }
+
+// 8. Increment Article View Count
+export async function incrementArticleViewCount(articleId: string) {
+  if (!articleId) return;
+  try {
+    await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        viewCount: {
+          increment: 1,
+        },
+      },
+    });
+  } catch (e) {
+    console.error("Error incrementing article view count:", e);
+  }
+}
+
+// 9. Dashboard Analytics Data for All Logged-in System Roles
+export interface AnalyticsData {
+  totalViews: number;
+  totalArticles: number;
+  publishedArticlesCount: number;
+  draftArticlesCount: number;
+  activeMembersCount: number;
+  certificatesIssuedCount: number;
+  topArticles: {
+    id: string;
+    title: string;
+    slug: string;
+    viewCount: number;
+    categoryName: string;
+    publishedAt: string | null;
+  }[];
+}
+
+export async function getDashboardAnalyticsData(): Promise<AnalyticsData> {
+  const session = await getSession();
+  if (!session) {
+    throw new Error("Authentication required.");
+  }
+
+  try {
+    const [
+      articles,
+      publishedCount,
+      draftCount,
+      membersCount,
+      certificatesCount,
+      topArticlesList,
+    ] = await Promise.all([
+      prisma.article.findMany({ select: { viewCount: true } }),
+      prisma.article.count({ where: { status: "PUBLISHED" } }),
+      prisma.article.count({ where: { status: "DRAFT" } }),
+      prisma.member.count({ where: { status: "ACTIVE" } }),
+      prisma.certificate.count(),
+      prisma.article.findMany({
+        where: { status: "PUBLISHED" },
+        take: 5,
+        orderBy: { viewCount: "desc" },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          viewCount: true,
+          categoryName: true,
+          publishedAt: true,
+        },
+      }),
+    ]);
+
+    const totalViews = articles.reduce((acc, curr) => acc + (curr.viewCount || 0), 0);
+
+    return {
+      totalViews,
+      totalArticles: articles.length,
+      publishedArticlesCount: publishedCount,
+      draftArticlesCount: draftCount,
+      activeMembersCount: membersCount,
+      certificatesIssuedCount: certificatesCount,
+      topArticles: topArticlesList.map((a) => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        viewCount: a.viewCount || 0,
+        categoryName: a.categoryName || "عام",
+        publishedAt: a.publishedAt ? a.publishedAt.toISOString() : null,
+      })),
+    };
+  } catch (e: any) {
+    console.error("Error loading analytics data:", e);
+    return {
+      totalViews: 0,
+      totalArticles: 0,
+      publishedArticlesCount: 0,
+      draftArticlesCount: 0,
+      activeMembersCount: 0,
+      certificatesIssuedCount: 0,
+      topArticles: [],
+    };
+  }
+}

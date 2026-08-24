@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { prisma } from "@/lib/db/prisma";
+import { incrementArticleViewCount } from "@/app/actions/article-actions";
 import {
   ArrowLeft,
   Clock,
@@ -57,7 +58,10 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
         authors: true,
         sources: true,
       },
-    });
+    if (article) {
+      // Fire-and-forget view count increment
+      incrementArticleViewCount(article.id).catch(() => {});
+    }
 
     latestArticles = await prisma.article.findMany({
       where: {

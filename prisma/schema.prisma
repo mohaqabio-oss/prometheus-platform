@@ -135,6 +135,7 @@ model Article {
   content     String
   coverImage  String?
   status      ArticleStatus @default(DRAFT)
+  viewCount   Int           @default(0)
   publishedAt DateTime?
   authorId    String?
   author      User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
