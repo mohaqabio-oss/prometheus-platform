@@ -21,6 +21,7 @@ import {
   Award,
   BookOpen,
   BarChart3,
+  Building2,
 } from "lucide-react";
 
 interface NavItem {
@@ -102,6 +103,12 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
           title: "دليل الأعضاء",
           href: "/admin/members",
           icon: <Users className="w-4 h-4" />,
+          rolesAllowed: ["ADMIN", "HR_EDITOR"],
+        },
+        {
+          title: "الأقسام التشغيلية",
+          href: "/admin/departments",
+          icon: <Building2 className="w-4 h-4 text-[#E84A0C]" />,
           rolesAllowed: ["ADMIN", "HR_EDITOR"],
         },
         {

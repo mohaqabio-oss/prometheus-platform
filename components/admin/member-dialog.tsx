@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { createMemberAction, updateMemberAction } from "@/app/actions/hr-actions";
+import { getDepartmentsAction, DepartmentRecord } from "@/app/actions/department-actions";
 import { convertImageToBase64 } from "@/lib/utils/image-converter";
 import {
   UserPlus,
@@ -39,6 +40,18 @@ export interface MemberDialogProps {
 
 export function MemberDialog({ mode, member }: MemberDialogProps) {
   const [open, setOpen] = useState(false);
+  const [departments, setDepartments] = useState<DepartmentRecord[]>([]);
+
+  useEffect(() => {
+    async function loadDepts() {
+      try {
+        const depts = await getDepartmentsAction();
+        setDepartments(depts);
+      } catch (e) {}
+    }
+    loadDepts();
+  }, []);
+
   const [imageUrl, setImageUrl] = useState<string>(
     member?.profileImage || member?.avatarUrl || ""
   );
@@ -248,11 +261,21 @@ export function MemberDialog({ mode, member }: MemberDialogProps) {
                   defaultValue={member?.departmentName || "الهندسة البرمجية"}
                   className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                 >
-                  <option value="الهندسة البرمجية">الهندسة البرمجية (Software Engineering)</option>
-                  <option value="البحث العلمي">البحث العلمي (Scientific Research)</option>
-                  <option value="التعليم والتطوير">التعليم والتطوير (Education)</option>
-                  <option value="الموارد البشرية والعمليات">الموارد البشرية (HR & Operations)</option>
-                  <option value="عام">عام (General)</option>
+                  {departments.length > 0 ? (
+                    departments.map((d) => (
+                      <option key={d.id} value={d.nameAr}>
+                        {d.nameAr} ({d.nameEn})
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="الهندسة البرمجية">الهندسة البرمجية (Software Engineering)</option>
+                      <option value="البحث العلمي">البحث العلمي (Scientific Research)</option>
+                      <option value="التعليم والتطوير">التعليم والتطوير (Education)</option>
+                      <option value="الموارد البشرية والعمليات">الموارد البشرية (HR & Operations)</option>
+                      <option value="عام">عام (General)</option>
+                    </>
+                  )}
                 </select>
               </div>
 

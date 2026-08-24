@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useActionState } from "react";
+import React, { useState, useEffect, useActionState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { submitJoinRequestAction } from "@/app/actions/application-actions";
+import { getDepartmentsAction, DepartmentRecord } from "@/app/actions/department-actions";
 import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,18 @@ import {
 
 export default function JoinUsPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [departments, setDepartments] = useState<DepartmentRecord[]>([]);
+
+  useEffect(() => {
+    async function loadDepts() {
+      try {
+        const depts = await getDepartmentsAction();
+        setDepartments(depts);
+      } catch (e) {}
+    }
+    loadDepts();
+  }, []);
+
   const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
     const res = await submitJoinRequestAction(prevState, formData);
     if (res.success) {
@@ -194,10 +207,20 @@ export default function JoinUsPage() {
                     required
                     className="w-full h-11 px-3 bg-[#1A253B] border border-white/10 rounded-xl text-xs font-sans text-white focus:outline-none focus:border-[#E84A0C] shadow-sm transition-all duration-300"
                   >
-                    <option value="الهندسة البرمجية">قسم الهندسة البرمجية والتطوير (Software Engineering)</option>
-                    <option value="البحث العلمي">قسم البحث العلمي والتحليل (Scientific Research)</option>
-                    <option value="التعليم والتطوير">قسم التعليم وصناعة المحتوى (Education & Content)</option>
-                    <option value="الموارد البشرية والعمليات">قسم الموارد البشرية والعمليات (HR & Operations)</option>
+                    {departments.length > 0 ? (
+                      departments.map((d) => (
+                        <option key={d.id} value={d.nameAr}>
+                          {d.nameAr} ({d.nameEn})
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="الهندسة البرمجية">قسم الهندسة البرمجية والتطوير (Software Engineering)</option>
+                        <option value="البحث العلمي">قسم البحث العلمي والتحليل (Scientific Research)</option>
+                        <option value="التعليم والتطوير">قسم التعليم وصناعة المحتوى (Education & Content)</option>
+                        <option value="الموارد البشرية والعمليات">قسم الموارد البشرية والعمليات (HR & Operations)</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
