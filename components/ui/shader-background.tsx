@@ -288,10 +288,10 @@ export default function ShaderBackground() {
       const time = (Date.now() - startTime) / 1000;
 
       gl.uniform3fv(uColors, colors);
-      gl.uniform4f(uScene, canvas.width, canvas.height, time * 0.25, 6.0);
+      gl.uniform4f(uScene, canvas.width, canvas.height, time * 0.57, 6.0);
       gl.uniform4f(uShape, 1.26, 0.35, 0.28, 0.0);
-      gl.uniform4f(uSurface, 1.82, 0.45, 0.5, 0.5);
-      gl.uniform4f(uFinish, 0.0, 0.0, 0.0, 0.12);
+      gl.uniform4f(uSurface, 1.82, 1.0, 0.0, 1.0);
+      gl.uniform4f(uFinish, 0.0, 0.0, 0.0, 0.04);
       gl.uniform4f(uTransform, 1.0, 0.0, 0.0, 1.0);
       gl.uniform4f(uSpace, 0.0, 0.0, 0.0, 0.0);
       gl.uniform4f(uCursor, 0.0, 2.0, 0.65, 0.46);
