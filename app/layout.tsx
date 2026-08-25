@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Tajawal } from "next/font/google";
 import "./globals.css";
 import { getSiteSettings } from "@/app/actions/website-actions";
+import ShaderBackground from "@/components/ui/shader-background";
 
 const tajawal = Tajawal({
   subsets: ["arabic"],
@@ -110,6 +111,7 @@ export default async function RootLayout({
         ` }} />
       </head>
       <body className="min-h-full flex flex-col bg-[#0A0F1D] text-[#F8FAFC] font-sans selection:bg-[#D49B4B] selection:text-[#0A0F1D]">
+        <ShaderBackground />
         {children}
       </body>
     </html>
