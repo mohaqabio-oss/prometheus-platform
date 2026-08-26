@@ -55,27 +55,20 @@ export async function loginAction(prevState: any, formData: FormData) {
     try {
       const dbUser = await prisma.user.findUnique({
         where: { email },
-        include: {
-          userRoles: {
-            include: {
-              role: true,
-            },
-          },
-          member: true,
-        },
       });
 
-      if (dbUser && dbUser.passwordHash) {
-        const isValid = await comparePassword(password, dbUser.passwordHash);
+      if (dbUser && dbUser.password) {
+        const isValid = await comparePassword(password, dbUser.password);
         if (isValid) {
           userFound = true;
           userId = dbUser.id;
           userEmail = dbUser.email;
-          fullName = dbUser.member?.fullName || dbUser.email.split("@")[0];
-          userRoles = dbUser.userRoles.map((ur) => ur.role.name);
+          fullName = dbUser.fullName || dbUser.email.split("@")[0];
+          userRoles = dbUser.roles && dbUser.roles.length > 0 ? dbUser.roles : [dbUser.role];
         }
       }
     } catch (dbErr) {
+      console.error("Database error during login:", dbErr);
       // Prisma DB connection fallback
     }
 
