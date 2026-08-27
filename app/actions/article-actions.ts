@@ -64,7 +64,7 @@ export async function getMembersForSelectAction(): Promise<ArticleAuthor[]> {
         bio: m.bio || undefined,
       }));
     }
-  } catch (e) {}
+  } catch (e) { }
 
   return [
     {
@@ -83,7 +83,6 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
   const title = formData.get("title")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim() || "";
   const content = formData.get("content")?.toString().trim();
-  const categoryName = formData.get("categoryName")?.toString() || "Technology";
   const coverImage = formData.get("coverImage")?.toString() || "";
   const rawAuthorIds = formData.get("authorIds")?.toString() || "";
 
@@ -107,7 +106,6 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
 
   try {
     try {
-      // Find or create current logged in user's Member record as primary author
       let currentMember = await prisma.member.findFirst({
         where: { userId: session.userId },
       });
@@ -123,55 +121,33 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
         });
       }
 
-      // Merge primary author with selected co-authors
       const allAuthorIds = Array.from(
         new Set([currentMember.id, ...selectedAuthorIds])
       );
 
-      const article = await prisma.article.create({
+      await prisma.article.create({
         data: {
           title,
           slug,
           excerpt,
           content,
           coverImage,
-          categoryName: categoryName || "عام",
           status: "DRAFT",
           author: {
             connect: { id: currentMember.id },
           },
-          authors: {
-            connect: allAuthorIds.map((id) => ({ id })),
-          },
+          ...(allAuthorIds.length > 0 ? {
+            authors: {
+              connect: allAuthorIds.map((id) => ({ id })),
+            }
+          } : {})
         },
       });
       revalidatePath("/admin/articles");
       redirect("/admin/articles");
     } catch (dbErr: any) {
       if (dbErr.message === "NEXT_REDIRECT") throw dbErr;
-
-      const newArticle: LocalArticleRecord = {
-        id: `art-${Date.now()}`,
-        title,
-        slug,
-        excerpt,
-        content,
-        categoryName,
-        coverImage,
-        status: "DRAFT",
-        authorId: session.userId,
-        authorName: session.fullName,
-        authors: [
-          {
-            id: session.userId,
-            name: session.fullName,
-            title: "محرر بروميثيوس",
-            department: "البحث والتحرير",
-          },
-        ],
-        createdAt: new Date().toISOString(),
-      };
-      MOCK_DB_ARTICLES.unshift(newArticle);
+      console.error("Prisma Create Error:", dbErr);
     }
   } catch (err: any) {
     if (err.message === "NEXT_REDIRECT") throw err;
@@ -185,19 +161,12 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
 // 2. Submit Article for Review
 export async function submitArticleAction(articleId: string) {
   await requireAuth(["AUTHOR", "POST_EDITOR", "ADMIN"]);
-
-  const art = MOCK_DB_ARTICLES.find((a) => a.id === articleId);
-  if (art) {
-    art.status = "SUBMITTED";
-  }
-
   try {
     await prisma.article.update({
       where: { id: articleId },
       data: { status: "SUBMITTED" },
     });
-  } catch (e) {}
-
+  } catch (e) { }
   revalidatePath("/admin/articles");
   return { success: true };
 }
@@ -205,19 +174,12 @@ export async function submitArticleAction(articleId: string) {
 // 3. Mark Article as Under Review
 export async function reviewArticleAction(articleId: string) {
   await requireAuth(["POST_EDITOR", "ADMIN"]);
-
-  const art = MOCK_DB_ARTICLES.find((a) => a.id === articleId);
-  if (art) {
-    art.status = "IN_REVIEW";
-  }
-
   try {
     await prisma.article.update({
       where: { id: articleId },
       data: { status: "IN_REVIEW" },
     });
-  } catch (e) {}
-
+  } catch (e) { }
   revalidatePath("/admin/articles");
   return { success: true };
 }
@@ -225,13 +187,6 @@ export async function reviewArticleAction(articleId: string) {
 // 4. Request Changes with Editor Notes
 export async function requestArticleChangesAction(articleId: string, editorNotes: string) {
   await requireAuth(["POST_EDITOR", "ADMIN"]);
-
-  const art = MOCK_DB_ARTICLES.find((a) => a.id === articleId);
-  if (art) {
-    art.status = "CHANGES_REQUESTED";
-    art.editorNotes = editorNotes;
-  }
-
   try {
     await prisma.article.update({
       where: { id: articleId },
@@ -240,8 +195,7 @@ export async function requestArticleChangesAction(articleId: string, editorNotes
         editorNotes,
       },
     });
-  } catch (e) {}
-
+  } catch (e) { }
   revalidatePath("/admin/articles");
   return { success: true };
 }
@@ -249,16 +203,6 @@ export async function requestArticleChangesAction(articleId: string, editorNotes
 // 5. Publish Article - STRICT SECURITY: Authors cannot publish their own articles!
 export async function publishArticleAction(articleId: string) {
   const session = await requireAuth(["POST_EDITOR", "ADMIN"]);
-
-  const art = MOCK_DB_ARTICLES.find((a) => a.id === articleId);
-  if (art) {
-    if (art.authorId === session.userId && !session.roles.includes("ADMIN")) {
-      throw new Error("Security Violation: Authors cannot approve or publish their own articles.");
-    }
-    art.status = "PUBLISHED";
-    art.publishedAt = new Date().toISOString();
-  }
-
   try {
     const dbArt = await prisma.article.findUnique({
       where: { id: articleId },
@@ -279,7 +223,6 @@ export async function publishArticleAction(articleId: string) {
   } catch (e: any) {
     if (e.message?.includes("Security Violation")) throw e;
   }
-
   revalidatePath("/admin/articles");
   revalidatePath("/articles");
   return { success: true };
@@ -309,22 +252,22 @@ export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
         const authorsList: ArticleAuthor[] =
           a.authors && a.authors.length > 0
             ? a.authors.map((m) => ({
-                id: m.id,
-                name: m.fullName,
-                avatarUrl: m.avatarUrl || m.profileImage || undefined,
-                title: m.title || "عضو فريق بروميثيوس",
-                department: m.departmentName || "عام",
-                bio: m.bio || undefined,
-              }))
+              id: m.id,
+              name: m.fullName,
+              avatarUrl: m.avatarUrl || m.profileImage || undefined,
+              title: m.title || "عضو فريق بروميثيوس",
+              department: m.departmentName || "عام",
+              bio: m.bio || undefined,
+            }))
             : [
-                {
-                  id: a.author?.id || a.authorId,
-                  name: a.author?.fullName || "محرر بروميثيوس",
-                  avatarUrl: a.author?.avatarUrl || undefined,
-                  title: a.author?.title || "عضو فريق بروميثيوس",
-                  department: a.author?.departmentName || "عام",
-                },
-              ];
+              {
+                id: a.author?.id || a.authorId || "unknown",
+                name: a.author?.fullName || "محرر بروميثيوس",
+                avatarUrl: a.author?.image || undefined,
+                title: "عضو فريق بروميثيوس",
+                department: "عام",
+              },
+            ];
 
         return {
           id: a.id,
@@ -333,10 +276,10 @@ export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
           excerpt: a.excerpt || "",
           content: a.content,
           coverImage: a.coverImage || undefined,
-          categoryName: a.categoryName || "General",
+          categoryName: (a as any).category?.name || "عام",
           status: a.status,
           editorNotes: a.editorNotes || undefined,
-          authorId: a.author?.userId || a.authorId,
+          authorId: a.author?.userId || a.authorId || "unknown",
           authorName: authorsList.map((au) => au.name).join("، "),
           authors: authorsList,
           publishedAt: a.publishedAt?.toISOString(),
@@ -344,14 +287,9 @@ export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
         };
       });
     }
-  } catch (e) {}
+  } catch (e) { }
 
-  let filtered = MOCK_DB_ARTICLES;
-  if (session.roles.includes("AUTHOR") && !session.roles.includes("POST_EDITOR") && !session.roles.includes("ADMIN")) {
-    filtered = MOCK_DB_ARTICLES.filter((a) => a.authorId === session.userId);
-  }
-
-  return filtered;
+  return [];
 }
 
 // Get Public Published Articles for Public Articles Page
@@ -371,22 +309,22 @@ export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
         const authorsList: ArticleAuthor[] =
           a.authors && a.authors.length > 0
             ? a.authors.map((m) => ({
-                id: m.id,
-                name: m.fullName,
-                avatarUrl: m.avatarUrl || m.profileImage || undefined,
-                title: m.title || "عضو فريق بروميثيوس",
-                department: m.departmentName || "عام",
-                bio: m.bio || undefined,
-              }))
+              id: m.id,
+              name: m.fullName,
+              avatarUrl: m.avatarUrl || m.profileImage || undefined,
+              title: m.title || "عضو فريق بروميثيوس",
+              department: m.departmentName || "عام",
+              bio: m.bio || undefined,
+            }))
             : [
-                {
-                  id: a.author?.id || a.authorId,
-                  name: a.author?.fullName || "محرر بروميثيوس",
-                  avatarUrl: a.author?.avatarUrl || undefined,
-                  title: a.author?.title || "عضو فريق بروميثيوس",
-                  department: a.author?.departmentName || "عام",
-                },
-              ];
+              {
+                id: a.author?.id || a.authorId || "unknown",
+                name: a.author?.fullName || "محرر بروميثيوس",
+                avatarUrl: a.author?.image || undefined,
+                title: "عضو فريق بروميثيوس",
+                department: "عام",
+              },
+            ];
 
         return {
           id: a.id,
@@ -395,10 +333,10 @@ export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
           excerpt: a.excerpt || "",
           content: a.content,
           coverImage: a.coverImage || undefined,
-          categoryName: a.categoryName || "عام",
+          categoryName: (a as any).category?.name || "عام",
           status: a.status,
           editorNotes: a.editorNotes || undefined,
-          authorId: a.author?.userId || a.authorId,
+          authorId: a.author?.userId || a.authorId || "unknown",
           authorName: authorsList.map((au) => au.name).join("، "),
           authors: authorsList,
           publishedAt: a.publishedAt?.toISOString(),
@@ -406,9 +344,9 @@ export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
         };
       });
     }
-  } catch (e) {}
+  } catch (e) { }
 
-  return MOCK_DB_ARTICLES;
+  return [];
 }
 
 // 6. Update Article
@@ -419,7 +357,6 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
   const title = formData.get("title")?.toString().trim();
   const excerpt = formData.get("excerpt")?.toString().trim() || "";
   const content = formData.get("content")?.toString().trim();
-  const categoryName = formData.get("categoryName")?.toString() || "Technology";
   const coverImage = formData.get("coverImage")?.toString() || "";
   const status = (formData.get("status")?.toString() || "DRAFT") as ArticleStatus;
   const rawAuthorIds = formData.get("authorIds")?.toString() || "";
@@ -445,20 +382,20 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
         excerpt,
         content,
         coverImage,
-        categoryName: categoryName || undefined,
         status,
         ...(status === "PUBLISHED" ? { publishedAt: new Date() } : {}),
         ...(selectedAuthorIds.length > 0
           ? {
-              authors: {
-                set: selectedAuthorIds.map((authorId) => ({ id: authorId })),
-              },
-            }
+            authors: {
+              set: selectedAuthorIds.map((authorId) => ({ id: authorId })),
+            },
+          }
           : {}),
       },
     });
   } catch (err: any) {
     if (err.message === "NEXT_REDIRECT") throw err;
+    console.error("Prisma Update Error:", err);
     return { error: err.message || "Failed to update article." };
   }
 
@@ -470,7 +407,6 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
 // 7. Delete Article
 export async function deleteArticleAction(articleId: string) {
   await requireAuth(["POST_EDITOR", "ADMIN"]);
-
   try {
     await prisma.article.delete({
       where: { id: articleId },
@@ -478,7 +414,6 @@ export async function deleteArticleAction(articleId: string) {
   } catch (err: any) {
     return { error: err.message || "Failed to delete article." };
   }
-
   revalidatePath("/admin/articles");
   revalidatePath("/articles");
   return { success: true };
@@ -496,12 +431,10 @@ export async function incrementArticleViewCount(articleId: string) {
         },
       },
     });
-  } catch (e) {
-    console.error("Error incrementing article view count:", e);
-  }
+  } catch (e) { }
 }
 
-// 9. Dashboard Analytics Data for All Logged-in System Roles
+// 9. Dashboard Analytics Data
 export interface AnalyticsData {
   totalViews: number;
   totalArticles: number;
@@ -548,7 +481,6 @@ export async function getDashboardAnalyticsData(): Promise<AnalyticsData> {
           title: true,
           slug: true,
           viewCount: true,
-          categoryName: true,
           publishedAt: true,
         },
       }),
@@ -568,12 +500,11 @@ export async function getDashboardAnalyticsData(): Promise<AnalyticsData> {
         title: a.title,
         slug: a.slug,
         viewCount: a.viewCount || 0,
-        categoryName: a.categoryName || "عام",
+        categoryName: (a as any).category?.name || "عام",
         publishedAt: a.publishedAt ? a.publishedAt.toISOString() : null,
       })),
     };
   } catch (e: any) {
-    console.error("Error loading analytics data:", e);
     return {
       totalViews: 0,
       totalArticles: 0,
