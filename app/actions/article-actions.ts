@@ -97,9 +97,11 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
     }
   }
 
+  // دعم اللغة العربية في الروابط (Slug) بشكل كامل
   const slug = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
+    .trim()
+    .replace(/\s+/g, "-") // تحويل المسافات إلى شواخص
+    .replace(/[^a-zA-Z0-9\u0621-\u064A\u0660-\u0669\-]+/g, "") // إبقاء العربي والإنجليزي والأرقام
     .replace(/(^-|-$)+/g, "") + "-" + Date.now().toString().slice(-4);
 
   try {
@@ -139,7 +141,7 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
     return { error: err.message || "Failed to create draft article." };
   }
 
-  revalidatePath("/admin/articles");
+  revalidatePath("/", "layout");
   redirect("/admin/articles");
 }
 
@@ -149,10 +151,10 @@ export async function submitArticleAction(articleId: string) {
   try {
     await prisma.article.update({
       where: { id: articleId },
-      data: { status: "DRAFT" }, // Fixed TS Error 167
+      data: { status: "DRAFT" },
     });
   } catch (e) { }
-  revalidatePath("/admin/articles");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -162,10 +164,10 @@ export async function reviewArticleAction(articleId: string) {
   try {
     await prisma.article.update({
       where: { id: articleId },
-      data: { status: "DRAFT" }, // Fixed TS Error 180
+      data: { status: "DRAFT" },
     });
   } catch (e) { }
-  revalidatePath("/admin/articles");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -175,10 +177,10 @@ export async function requestArticleChangesAction(articleId: string, editorNotes
   try {
     await prisma.article.update({
       where: { id: articleId },
-      data: { status: "DRAFT" }, // Fixed TS Error 194
+      data: { status: "DRAFT" },
     });
   } catch (e) { }
-  revalidatePath("/admin/articles");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -205,8 +207,7 @@ export async function publishArticleAction(articleId: string) {
   } catch (e: any) {
     if (e.message?.includes("Security Violation")) throw e;
   }
-  revalidatePath("/admin/articles");
-  revalidatePath("/articles");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -235,15 +236,15 @@ export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
           a.authors && a.authors.length > 0
             ? a.authors.map((m: any) => ({
               id: m.id,
-              name: m.name, // Fixed TS Error
-              avatarUrl: undefined, // Fixed TS Error
-              title: m.role || "عضو فريق بروميثيوس", // Fixed TS Error
+              name: m.name,
+              avatarUrl: undefined,
+              title: m.role || "عضو فريق بروميثيوس",
               department: "عام",
               bio: undefined,
             }))
             : [
               {
-                id: a.author?.id || "unknown", // Fixed userId Error
+                id: a.author?.id || "unknown",
                 name: a.author?.fullName || "محرر بروميثيوس",
                 avatarUrl: a.author?.image || undefined,
                 title: "عضو فريق بروميثيوس",
@@ -260,7 +261,7 @@ export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
           coverImage: a.coverImage || undefined,
           categoryName: (a as any).category?.name || "عام",
           status: a.status,
-          editorNotes: undefined, // Fixed editorNotes Error
+          editorNotes: undefined,
           authorId: a.author?.id || "unknown",
           authorName: authorsList.map((au) => au.name).join("، "),
           authors: authorsList,
@@ -357,6 +358,13 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
     }
   }
 
+  // دعم تحديث الرابط (Slug) في حال تغير العنوان
+  const slug = title
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9\u0621-\u064A\u0660-\u0669\-]+/g, "")
+    .replace(/(^-|-$)+/g, "") + "-" + Date.now().toString().slice(-4);
+
   try {
     let coAuthorsData: { name: string; role: string }[] = [];
     if (selectedAuthorIds.length > 0) {
@@ -373,6 +381,7 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
       where: { id },
       data: {
         title,
+        slug, // تحديث الرابط ليتوافق مع العنوان الجديد
         excerpt,
         content,
         coverImage,
@@ -394,8 +403,7 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
     return { error: err.message || "Failed to update article." };
   }
 
-  revalidatePath("/admin/articles");
-  revalidatePath("/articles");
+  revalidatePath("/", "layout");
   redirect("/admin/articles");
 }
 
@@ -409,8 +417,7 @@ export async function deleteArticleAction(articleId: string) {
   } catch (err: any) {
     return { error: err.message || "Failed to delete article." };
   }
-  revalidatePath("/admin/articles");
-  revalidatePath("/articles");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
