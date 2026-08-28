@@ -28,9 +28,11 @@ interface ArticlePageProps {
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug); // فك التشفير هنا
+
   try {
     const article = await prisma.article.findUnique({
-      where: { slug },
+      where: { slug: decodedSlug },
     });
     if (article) {
       return {
@@ -38,7 +40,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
         description: article.excerpt || "",
       };
     }
-  } catch (e) {}
+  } catch (e) { }
 
   return {
     title: "The Prometheus Post | Academic Publications",
@@ -47,32 +49,33 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function SingleArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
+  const decodedSlug = decodeURIComponent(slug); // فك التشفير هنا
+
   let article: any = null;
   let latestArticles: any[] = [];
 
   try {
     article = await prisma.article.findUnique({
-      where: { slug },
+      where: { slug: decodedSlug },
       include: {
         author: true,
         authors: true,
-        sources: true,
       },
     });
 
     if (article) {
       // Fire-and-forget view count increment
-      incrementArticleViewCount(article.id).catch(() => {});
+      incrementArticleViewCount(article.id).catch(() => { });
     }
 
     latestArticles = await prisma.article.findMany({
       where: {
-        slug: { not: slug },
+        slug: { not: decodedSlug },
       },
       take: 5,
       orderBy: { createdAt: "desc" },
     });
-  } catch (e) {}
+  } catch (e) { }
 
   if (!article) {
     notFound();
@@ -83,8 +86,8 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
     article.authors && article.authors.length > 0
       ? article.authors
       : article.author
-      ? [article.author]
-      : [
+        ? [article.author]
+        : [
           {
             id: "default-author",
             fullName: "محرر بروميثيوس",
@@ -97,21 +100,21 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
 
   const currentDateFormatted = article.publishedAt
     ? new Date(article.publishedAt).toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : new Date().toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
   return (
     <article className="py-10 sm:py-16 bg-[#0A0F1D] min-h-screen text-stone-200 animate-fade-in font-sans">
-      
+
       {/* Import Google Serif Font Specifically For This Article Page */}
       <link
         rel="stylesheet"
@@ -119,7 +122,7 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
       />
 
       <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
-        
+
         {/* Back Navigation Bar */}
         <div className="mb-6 flex items-center justify-between">
           <Link href="/articles">
@@ -163,10 +166,10 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
 
         {/* 3. THE GRID LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          
+
           {/* 4. LEFT COLUMN (MAIN CONTENT - SPAN 8) */}
           <main className="lg:col-span-8 space-y-8">
-            
+
             {/* Category Red Highlight Tag */}
             <div>
               <span className="bg-red-700 text-white px-2.5 py-1 text-xs uppercase font-bold tracking-widest inline-block font-mono mb-3 shadow-sm">
@@ -327,9 +330,9 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
 
           {/* 5. RIGHT COLUMN (SIDEBAR - SPAN 4) */}
           <aside className="lg:col-span-4 space-y-8">
-            
+
             <div className="border-t-4 border-red-700 pt-3">
-              
+
               <div className="flex items-center justify-between mb-4 border-b border-stone-800 pb-2">
                 <h2 className="font-['Playfair_Display',serif] text-xl font-black uppercase tracking-wider text-stone-100 flex items-center gap-2">
                   <Flame className="w-4 h-4 text-red-700" />
