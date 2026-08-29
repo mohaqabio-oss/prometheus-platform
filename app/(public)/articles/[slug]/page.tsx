@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -12,10 +11,7 @@ import {
   ArrowLeft,
   Clock,
   Calendar,
-  ExternalLink,
-  BookOpen,
   Users,
-  Building2,
   Newspaper,
   Flame,
 } from "lucide-react";
@@ -28,7 +24,7 @@ interface ArticlePageProps {
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug); // فك التشفير هنا
+  const decodedSlug = decodeURIComponent(slug);
 
   try {
     const article = await prisma.article.findUnique({
@@ -49,7 +45,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function SingleArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug); // فك التشفير هنا
+  const decodedSlug = decodeURIComponent(slug);
 
   let article: any = null;
   let latestArticles: any[] = [];
@@ -60,17 +56,18 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
       include: {
         author: true,
         authors: true,
+        // تمت إزالة sources: true من هنا حتى ما يرجع الخطأ
       },
     });
 
     if (article) {
-      // Fire-and-forget view count increment
       incrementArticleViewCount(article.id).catch(() => { });
     }
 
     latestArticles = await prisma.article.findMany({
       where: {
         slug: { not: decodedSlug },
+        type: article?.type || "ACADEMIC",
       },
       take: 5,
       orderBy: { createdAt: "desc" },
@@ -81,7 +78,6 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  // Determine assigned authors list
   const authorsList =
     article.authors && article.authors.length > 0
       ? article.authors
@@ -112,10 +108,12 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
       day: "numeric",
     });
 
-  return (
-    <article className="py-10 sm:py-16 bg-[#0A0F1D] min-h-screen text-stone-200 animate-fade-in font-sans">
+  const backLink = article.type === "BLOG" ? "/blog" : "/articles";
+  const backLabel = article.type === "BLOG" ? "العودة إلى المدونة" : "العودة إلى المجلة الأكاديمية";
 
-      {/* Import Google Serif Font Specifically For This Article Page */}
+  return (
+    <article className="py-10 sm:py-16 bg-[#FCFBF9] min-h-screen text-stone-900 animate-fade-in font-sans selection:bg-red-200 selection:text-red-900">
+
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap"
@@ -123,12 +121,11 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
 
       <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
 
-        {/* Back Navigation Bar */}
-        <div className="mb-6 flex items-center justify-between">
-          <Link href="/articles">
-            <Button variant="ghost" size="sm" className="gap-2 text-stone-400 hover:text-white">
+        <div className="mb-8 flex items-center justify-between border-b border-stone-200 pb-4">
+          <Link href={backLink}>
+            <Button variant="ghost" size="sm" className="gap-2 text-stone-600 hover:text-black hover:bg-stone-200/50 transition-colors">
               <ArrowLeft className="w-4 h-4 text-[#E84A0C]" />
-              <span>العودة لجميع المقالات والمنشورات</span>
+              <span className="font-semibold">{backLabel}</span>
             </Button>
           </Link>
 
@@ -137,59 +134,49 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
           </span>
         </div>
 
-        {/* 2. THE NEWSPAPER HEADER (THE PROMETHEUS POST) */}
-        <header className="mb-10 text-center">
-          {/* Top Newspaper Metadata Bar */}
-          <div className="flex flex-wrap items-center justify-between text-[11px] font-mono uppercase tracking-widest text-stone-400 pb-2 border-b border-stone-800">
+        <header className="mb-12 text-center">
+          <div className="flex flex-wrap items-center justify-between text-[11px] font-mono uppercase tracking-widest text-stone-500 pb-2 border-b-2 border-black">
             <span>VOL. IV • NO. 2026</span>
             <span>{currentDateFormatted}</span>
             <span>INTERNATIONAL EDITION • FREE OPEN ACCESS</span>
           </div>
 
-          {/* Centered Massive Serif Header */}
-          <div className="border-y-2 border-stone-700 py-6 my-3 bg-[#0D1322]">
-            <h1 className="font-['Playfair_Display',serif] text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-stone-100 select-none drop-shadow-md">
+          <div className="py-8 my-1 bg-transparent">
+            <h1 className="font-['Playfair_Display',serif] text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight text-black select-none">
               THE PROMETHEUS POST
             </h1>
-            <p className="text-xs font-mono tracking-widest text-[#E84A0C] uppercase mt-2 font-semibold">
+            <p className="text-xs font-mono tracking-widest text-red-800 uppercase mt-3 font-bold">
               The Official Academic Journal & Technology Chronicle of Prometheus Platform
             </p>
           </div>
 
-          {/* Bottom Sub-Bar */}
-          <div className="flex flex-wrap items-center justify-between text-[10px] font-mono uppercase tracking-widest text-stone-500 pt-1 border-t border-stone-800">
+          <div className="flex flex-wrap items-center justify-between text-[10px] font-mono uppercase tracking-widest text-stone-500 pt-2 border-t-2 border-black">
             <span>PEER-REVIEWED RESEARCH</span>
             <span>ATHENS & RIYADH</span>
             <span>ISSN 2026-7890</span>
           </div>
         </header>
 
-        {/* 3. THE GRID LAYOUT */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
 
-          {/* 4. LEFT COLUMN (MAIN CONTENT - SPAN 8) */}
-          <main className="lg:col-span-8 space-y-8">
+          <main className="lg:col-span-8 space-y-10">
 
-            {/* Category Red Highlight Tag */}
-            <div>
-              <span className="bg-red-700 text-white px-2.5 py-1 text-xs uppercase font-bold tracking-widest inline-block font-mono mb-3 shadow-sm">
-                {article.categoryName || "FEATURED JOURNAL"}
+            <div className="border-b border-stone-300 pb-8">
+              <span className="bg-red-800 text-white px-3 py-1 text-[11px] uppercase font-bold tracking-widest inline-block font-mono mb-6 shadow-sm">
+                {article.categoryName || (article.type === "BLOG" ? "PROMETHEUS BLOG" : "FEATURED JOURNAL")}
               </span>
 
-              {/* Dynamic Article Title in Massive Serif Font */}
-              <h1 className="font-['Playfair_Display',serif] text-3xl sm:text-5xl lg:text-6xl uppercase leading-tight font-black text-stone-100 tracking-tight mb-6">
+              <h1 className="font-['Playfair_Display',serif] text-3xl sm:text-5xl lg:text-6xl leading-[1.15] font-black text-black tracking-tight mb-6">
                 {article.title}
               </h1>
 
-              {/* Excerpt in Editorial Serif Style */}
               {article.excerpt && (
-                <p className="font-['Merriweather',serif] italic text-base sm:text-xl text-stone-300 leading-relaxed border-l-4 border-red-700 pl-4 py-1 mb-6 bg-[#0D1322]/60 p-3 rounded-r-lg">
+                <p className="font-['Merriweather',serif] italic text-lg sm:text-xl text-stone-700 leading-relaxed border-l-4 border-red-800 pl-5 py-2 mb-8 bg-stone-100/50">
                   {article.excerpt}
                 </p>
               )}
 
-              {/* Byline & Author Meta Bar */}
-              <div className="py-4 border-y border-stone-800 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-stone-400">
+              <div className="pt-4 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-stone-500">
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2 space-x-reverse overflow-hidden">
                     {authorsList.map((au: any, index: number) => (
@@ -198,97 +185,96 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
                         src={au.avatarUrl || au.profileImage}
                         name={au.fullName}
                         size="sm"
-                        className="ring-2 ring-[#0A0F1D]"
+                        className="ring-2 ring-[#FCFBF9]"
                       />
                     ))}
                   </div>
                   <div>
-                    <span className="text-stone-500">BY </span>
-                    <strong className="text-stone-200 font-semibold uppercase tracking-wider">
+                    <span>BY </span>
+                    <strong className="text-black font-bold uppercase tracking-wider">
                       {authorsList.map((au: any) => au.fullName).join(" & ")}
                     </strong>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-stone-400">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5 text-[#E84A0C]" />
+                <div className="flex items-center gap-5">
+                  <span className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-red-800" />
                     {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString("ar-SA") : "2026"}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <span className="flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-red-800" />
                     5 MIN READ
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Dynamic Article Image with Sharp Edges */}
             {article.coverImage && (
-              <div className="rounded-none overflow-hidden border border-stone-800 shadow-xl bg-black">
-                <img
-                  src={article.coverImage}
-                  alt={article.title}
-                  className="w-full h-auto max-h-[500px] object-cover rounded-none filter contrast-[1.05]"
-                />
-                <div className="p-2 bg-[#0D1322] border-t border-stone-800 text-[11px] font-mono text-stone-500 flex justify-between items-center">
+              <figure className="mb-10">
+                <div className="border border-stone-300 bg-white p-1 shadow-sm">
+                  <img
+                    src={article.coverImage}
+                    alt={article.title}
+                    className="w-full h-auto max-h-[550px] object-cover grayscale-[20%] contrast-[1.05]"
+                  />
+                </div>
+                <figcaption className="mt-3 text-[11px] font-mono text-stone-500 flex justify-between items-center border-b border-stone-200 pb-3">
                   <span>FIGURE 1.0 — OFFICIAL PUBLICATION GRAPHIC</span>
                   <span>PROMETHEUS MEDIA ARCHIVE</span>
-                </div>
-              </div>
+                </figcaption>
+              </figure>
             )}
 
-            {/* Article Content Body */}
-            <div className="bg-[#0D1322] border border-stone-800/80 p-6 sm:p-10 rounded-none shadow-xl">
+            <div className="article-body font-['Merriweather',serif] text-stone-800 leading-relaxed text-base sm:text-lg space-y-6">
               {article.content.includes("<") ? (
                 <div
-                  className="article-body font-['Merriweather',serif] text-stone-200 leading-relaxed text-base sm:text-lg space-y-6 prose prose-invert prose-stone max-w-none [&_p]:leading-loose [&_img]:rounded-none [&_img]:border [&_img]:border-stone-800 [&_img]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-red-700 [&_blockquote]:pl-4 [&_blockquote]:italic [&_blockquote]:font-serif [&_h2]:font-['Playfair_Display',serif] [&_h2]:uppercase [&_h2]:text-2xl [&_h3]:font-['Playfair_Display',serif] [&_h3]:uppercase [&_h3]:text-xl"
+                  className="prose prose-stone max-w-none prose-lg [&_p]:leading-[2.2] [&_img]:border [&_img]:border-stone-300 [&_img]:p-1 [&_img]:my-8 [&_blockquote]:border-l-4 [&_blockquote]:border-red-800 [&_blockquote]:pl-5 [&_blockquote]:italic [&_blockquote]:bg-stone-100/50 [&_blockquote]:py-2 [&_h2]:font-['Playfair_Display',serif] [&_h2]:text-black [&_h2]:text-3xl [&_h2]:mt-10 [&_h3]:font-['Playfair_Display',serif] [&_h3]:text-black [&_h3]:text-2xl"
                   dangerouslySetInnerHTML={{ __html: article.content }}
                 />
               ) : (
-                <div className="article-body font-['Merriweather',serif] text-stone-200 leading-relaxed text-base sm:text-lg space-y-6">
+                <div className="space-y-6">
                   {article.content.split("\n\n").map((paragraph: string, idx: number) => (
-                    <p key={idx} className="leading-loose">{paragraph}</p>
+                    <p key={idx} className="leading-[2.2] text-stone-800">{paragraph}</p>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Author Biographies Attribution Box */}
-            <div className="pt-6 border-t-2 border-stone-800 space-y-4">
-              <h3 className="font-['Playfair_Display',serif] text-lg font-black uppercase tracking-wider text-stone-100 flex items-center gap-2">
-                <Users className="w-4 h-4 text-red-700" />
+            <div className="pt-10 mt-10 border-t-4 border-black space-y-6">
+              <h3 className="font-['Playfair_Display',serif] text-2xl font-black uppercase tracking-wider text-black flex items-center gap-2">
+                <Users className="w-5 h-5 text-red-800" />
                 <span>ABOUT THE AUTHORS</span>
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {authorsList.map((author: any, index: number) => (
                   <Card
                     key={author.id || index}
-                    className="p-5 bg-[#0D1322] border border-stone-800 rounded-none space-y-3"
+                    className="p-6 bg-white border border-stone-300 rounded-none shadow-sm space-y-4"
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-4">
                       <Avatar
                         src={author.avatarUrl || author.profileImage}
                         name={author.fullName}
                         size="md"
-                        className="rounded-none border border-stone-700"
+                        className="rounded-none border border-stone-300"
                       />
                       <div className="space-y-1">
-                        <h4 className="font-['Playfair_Display',serif] text-base font-bold text-stone-100">
+                        <h4 className="font-['Playfair_Display',serif] text-lg font-bold text-black">
                           {author.fullName}
                         </h4>
-                        <p className="text-[11px] font-mono text-red-600 uppercase">
+                        <p className="text-[11px] font-mono text-red-800 uppercase font-bold">
                           {author.title || "PROMETHEUS CONTRIBUTOR"}
                         </p>
-                        <p className="text-[10px] font-mono text-stone-500">
+                        <p className="text-[11px] font-mono text-stone-500">
                           {author.departmentName || "General Department"}
                         </p>
                       </div>
                     </div>
 
                     {author.bio && (
-                      <p className="text-xs text-stone-400 leading-relaxed font-serif border-t border-stone-800/60 pt-2.5">
+                      <p className="text-sm text-stone-600 leading-relaxed font-serif border-t border-stone-100 pt-3">
                         {author.bio}
                       </p>
                     )}
@@ -297,126 +283,61 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
               </div>
             </div>
 
-            {/* Academic References */}
-            {article.sources && article.sources.length > 0 && (
-              <Card className="p-6 bg-[#0D1322] border border-stone-800 rounded-none space-y-3">
-                <h3 className="font-['Playfair_Display',serif] text-base font-black uppercase text-stone-100 flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-red-700" />
-                  <span>REFERENCES & CITATIONS</span>
-                </h3>
-
-                <ul className="space-y-2 text-xs font-serif text-stone-400">
-                  {article.sources.map((src: any) => (
-                    <li key={src.id} className="flex items-center justify-between gap-4 border-b border-stone-800/40 pb-2">
-                      <span>[{src.id.substring(0, 4)}] {src.title}</span>
-                      {src.url && (
-                        <a
-                          href={src.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-red-600 hover:underline font-mono text-[11px] shrink-0 inline-flex items-center gap-1"
-                        >
-                          <span>LINK</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </Card>
-            )}
-
           </main>
 
-          {/* 5. RIGHT COLUMN (SIDEBAR - SPAN 4) */}
-          <aside className="lg:col-span-4 space-y-8">
+          <aside className="lg:col-span-4 space-y-10">
 
-            <div className="border-t-4 border-red-700 pt-3">
-
-              <div className="flex items-center justify-between mb-4 border-b border-stone-800 pb-2">
-                <h2 className="font-['Playfair_Display',serif] text-xl font-black uppercase tracking-wider text-stone-100 flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-red-700" />
+            <div className="border-t-4 border-black pt-4">
+              <div className="flex items-center justify-between mb-6 border-b-2 border-stone-200 pb-3">
+                <h2 className="font-['Playfair_Display',serif] text-xl font-black uppercase tracking-wider text-black flex items-center gap-2">
+                  <Flame className="w-5 h-5 text-red-800" />
                   <span>THE LATEST</span>
                 </h2>
-                <span className="text-[10px] font-mono text-stone-500 uppercase">ARCHIVE</span>
+                <span className="text-[10px] font-mono text-stone-500 uppercase font-bold">ARCHIVE</span>
               </div>
 
-              {/* Vertical List of Latest Articles */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {latestArticles.length > 0 ? (
                   latestArticles.map((item: any) => (
-                    <article key={item.id} className="border-b border-stone-800 pb-4 space-y-2 group">
-                      <div className="flex items-center gap-2 text-[10px] font-mono text-stone-500 uppercase">
-                        <span className="text-red-600 font-bold">{item.categoryName || "ESSAY"}</span>
+                    <article key={item.id} className="border-b border-stone-200 pb-6 space-y-2 group">
+                      <div className="flex items-center gap-2 text-[10px] font-mono text-stone-500 uppercase font-bold">
+                        <span className="text-red-800">{item.categoryName || (item.type === "BLOG" ? "BLOG POST" : "ESSAY")}</span>
                         <span>•</span>
                         <span>{new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                       </div>
 
-                      <h3 className="font-['Playfair_Display',serif] text-base font-bold text-stone-200 group-hover:text-red-500 transition-colors leading-snug">
+                      <h3 className="font-['Playfair_Display',serif] text-lg font-bold text-black group-hover:text-red-800 transition-colors leading-snug">
                         <Link href={`/articles/${item.slug}`}>
                           {item.title}
                         </Link>
                       </h3>
 
                       {item.excerpt && (
-                        <p className="font-serif text-xs text-stone-400 line-clamp-2 leading-relaxed">
+                        <p className="font-serif text-sm text-stone-600 line-clamp-3 leading-relaxed">
                           {item.excerpt}
                         </p>
                       )}
                     </article>
                   ))
                 ) : (
-                  <>
-                    <article className="border-b border-stone-800 pb-4 space-y-2">
-                      <span className="text-red-600 font-mono text-[10px] uppercase font-bold">RESEARCH</span>
-                      <h3 className="font-['Playfair_Display',serif] text-base font-bold text-stone-200">
-                        Formalizing Open Access Standards in Modern Academic Networks
-                      </h3>
-                      <p className="font-serif text-xs text-stone-400 line-clamp-2">
-                        An analysis of peer-review methodologies and decentralized scholarly distribution.
-                      </p>
-                    </article>
-
-                    <article className="border-b border-stone-800 pb-4 space-y-2">
-                      <span className="text-red-600 font-mono text-[10px] uppercase font-bold">ENGINEERING</span>
-                      <h3 className="font-['Playfair_Display',serif] text-base font-bold text-stone-200">
-                        Scalable Architecture Patterns for High-Throughput Volunteer Teams
-                      </h3>
-                      <p className="font-serif text-xs text-stone-400 line-clamp-2">
-                        Building responsive digital systems for non-profit and community computing.
-                      </p>
-                    </article>
-
-                    <article className="border-b border-stone-800 pb-4 space-y-2">
-                      <span className="text-red-600 font-mono text-[10px] uppercase font-bold">ETHICS</span>
-                      <h3 className="font-['Playfair_Display',serif] text-base font-bold text-stone-200">
-                        Ethical Frameworks in Open Source AI & Algorithmic Transparency
-                      </h3>
-                      <p className="font-serif text-xs text-stone-400 line-clamp-2">
-                        Examining the impact of open weights and reproducible research models.
-                      </p>
-                    </article>
-                  </>
+                  <p className="text-sm font-serif text-stone-500 italic">No further publications available.</p>
                 )}
               </div>
-
             </div>
 
-            {/* Newspaper Journal Badge Box */}
-            <Card className="p-5 bg-[#0D1322] border border-stone-800 rounded-none text-center space-y-3">
-              <Newspaper className="w-8 h-8 text-red-700 mx-auto opacity-80" />
-              <h4 className="font-['Playfair_Display',serif] text-sm font-bold uppercase text-stone-100">
+            <Card className="p-6 bg-stone-100 border border-stone-300 rounded-none text-center space-y-4 shadow-sm">
+              <Newspaper className="w-10 h-10 text-red-800 mx-auto" />
+              <h4 className="font-['Playfair_Display',serif] text-base font-black uppercase text-black">
                 PROMETHEUS ACADEMIC PRESS
               </h4>
-              <p className="text-xs text-stone-400 font-serif leading-relaxed">
-                All articles published under Creative Commons Attribution licenses for open scholarly dissemination.
+              <p className="text-xs text-stone-600 font-serif leading-relaxed">
+                All articles published under Creative Commons Attribution licenses for open scholarly dissemination. Ensuring high-quality research accessibility.
               </p>
             </Card>
 
           </aside>
 
         </div>
-
       </div>
     </article>
   );

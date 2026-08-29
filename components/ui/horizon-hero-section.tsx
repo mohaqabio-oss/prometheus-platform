@@ -259,7 +259,7 @@ export function PrometheusHero() {
         mountain.position.z = layer.distance;
         mountain.position.y = layer.distance;
         mountain.userData = { baseZ: layer.distance, index };
-        refs.scene.add(mountain);
+        refs.scene?.add(mountain);
         refs.mountains.push(mountain);
       });
     };

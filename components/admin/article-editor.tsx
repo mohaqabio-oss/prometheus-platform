@@ -44,6 +44,7 @@ import {
   Users,
   Check,
   FileText,
+  BookOpen,
 } from "lucide-react";
 
 export interface ArticleEditorProps {
@@ -55,6 +56,7 @@ export interface ArticleEditorProps {
     categoryName?: string;
     coverImage?: string;
     status?: string;
+    type?: string;
     authors?: ArticleAuthor[];
   } | null;
   availableMembers?: ArticleAuthor[];
@@ -91,6 +93,9 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
 
   const [textColor, setTextColor] = useState("#FFFFFF");
   const [highlightColor, setHighlightColor] = useState("#E84A0C");
+  const [articleType, setArticleType] = useState<"BLOG" | "ACADEMIC">(
+    (article?.type as "BLOG" | "ACADEMIC") || "BLOG"
+  );
 
   // Multi-Author Selection State
   const [membersList, setMembersList] = useState<ArticleAuthor[]>(availableMembers);
@@ -153,6 +158,7 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     if (coverImageUrl) {
       formData.set("coverImage", coverImageUrl);
     }
+    formData.set("type", articleType);
     formData.set("authorIds", JSON.stringify(selectedAuthorIds));
     return await saveAction(prevState, formData);
   }, null);
@@ -196,6 +202,7 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
   return (
     <form action={formAction} className={`transition-all duration-300 text-white ${focusMode ? "fixed inset-0 z-50 bg-[#1A2B4A] p-4 sm:p-8 overflow-y-auto" : "max-w-7xl mx-auto space-y-6"}`}>
       {article?.id && <input type="hidden" name="id" value={article.id} />}
+      <input type="hidden" name="type" value={articleType} />
       <input type="hidden" name="authorIds" value={JSON.stringify(selectedAuthorIds)} />
 
       {/* Error Banner */}
@@ -558,6 +565,66 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
         {/* Sidebar Controls (Hidden in Focus Mode) */}
         {!focusMode && (
           <div className="lg:col-span-4 space-y-6">
+
+            {/* PUBLICATION TYPE SELECTOR (BLOG VS ACADEMIC JOURNAL) */}
+            <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
+              <div className="flex items-center gap-2 border-b border-[#6B7280]/20 pb-3">
+                <BookOpen className="w-4 h-4 text-[#E84A0C]" />
+                <h3 className="font-display font-bold text-white text-base">
+                  نوع المنشور (Publication Type)
+                </h3>
+              </div>
+              <p className="text-xs text-[#6B7280]">
+                حدد قسم ومسار نشر هذا المحتوى في المنصة العامة.
+              </p>
+
+              <div className="grid grid-cols-1 gap-2.5">
+                {/* Blog Option */}
+                <div
+                  onClick={() => setArticleType("BLOG")}
+                  className={`p-3.5 rounded-xl border flex items-start gap-3 cursor-pointer transition-all duration-200 ${
+                    articleType === "BLOG"
+                      ? "bg-[#1A2B4A] border-[#E84A0C] text-white shadow-md ring-1 ring-[#E84A0C]"
+                      : "bg-[#1A2B4A]/30 border-[#6B7280]/20 text-[#6B7280] hover:text-white hover:border-[#6B7280]/40"
+                  }`}
+                >
+                  <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center border text-[10px] shrink-0 ${articleType === "BLOG" ? "bg-[#E84A0C] border-[#E84A0C] text-white" : "border-[#6B7280]/40"}`}>
+                    {articleType === "BLOG" && <Check className="w-3 h-3 stroke-[3]" />}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white leading-tight">
+                      مدونة عامة (Blog)
+                    </p>
+                    <p className="text-[11px] text-[#6B7280] mt-1 font-sans">
+                      للمقالات، التدوينات العامة، والأخبار والمبادرات التطوعية.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Academic Option */}
+                <div
+                  onClick={() => setArticleType("ACADEMIC")}
+                  className={`p-3.5 rounded-xl border flex items-start gap-3 cursor-pointer transition-all duration-200 ${
+                    articleType === "ACADEMIC"
+                      ? "bg-[#1A2B4A] border-[#E84A0C] text-white shadow-md ring-1 ring-[#E84A0C]"
+                      : "bg-[#1A2B4A]/30 border-[#6B7280]/20 text-[#6B7280] hover:text-white hover:border-[#6B7280]/40"
+                  }`}
+                >
+                  <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center border text-[10px] shrink-0 ${articleType === "ACADEMIC" ? "bg-[#E84A0C] border-[#E84A0C] text-white" : "border-[#6B7280]/40"}`}>
+                    {articleType === "ACADEMIC" && <Check className="w-3 h-3 stroke-[3]" />}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white leading-tight flex items-center gap-1.5">
+                      <span>مجلة أكاديمية (The Prometheus Post)</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-red-600/20 text-red-400 border border-red-500/30">مُحكم</span>
+                    </p>
+                    <p className="text-[11px] text-[#6B7280] mt-1 font-sans">
+                      للبحوث العلمية والدراسات التخصصية المحكمة والمراجعات الأكاديمية.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
             
             {/* MULTI-AUTHOR ATTRIBUTION SELECTOR (Task 4 - NYT Style) */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">

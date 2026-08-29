@@ -14,7 +14,8 @@ export function Navbar() {
 
   const navLinks = [
     { name: "الرئيسية", href: "/" },
-    { name: "منشورات بروميثيوس", href: "/articles" },
+    { name: "المدونة", href: "/blog" },
+    { name: "المجلة الأكاديمية", href: "/articles" },
     { name: "الهيئة التحريرية", href: "/editorial-board" },
     { name: "أخلاقيات النشر", href: "/publication-ethics" },
     { name: "فريقنا", href: "/members" },

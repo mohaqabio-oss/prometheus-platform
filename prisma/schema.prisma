@@ -25,15 +25,15 @@ enum RoleType {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
   fullName  String?
-  password  String   @default("")
+  password  String     @default("")
   image     String?
-  role      RoleType @default(MEMBER)
+  role      RoleType   @default(MEMBER)
   roles     RoleType[] @default([MEMBER])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt @default(now())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt @default(now())
 
   articles Article[]
 
@@ -115,6 +115,11 @@ enum ArticleStatus {
   ARCHIVED
 }
 
+enum ArticleType {
+  BLOG
+  ACADEMIC
+}
+
 model Category {
   id          String    @id @default(uuid())
   name        String    @unique
@@ -128,22 +133,23 @@ model Category {
 }
 
 model Article {
-  id          String        @id @default(uuid())
+  id          String         @id @default(uuid())
   title       String
-  slug        String        @unique
+  slug        String         @unique
   excerpt     String?
   content     String
   coverImage  String?
-  status      ArticleStatus @default(DRAFT)
-  viewCount   Int           @default(0)
+  status      ArticleStatus  @default(DRAFT)
+  type        ArticleType    @default(BLOG)
+  viewCount   Int            @default(0)
   publishedAt DateTime?
   authorId    String?
-  author      User?         @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  author      User?          @relation(fields: [authorId], references: [id], onDelete: SetNull)
   categoryId  String?
-  category    Category?     @relation(fields: [categoryId], references: [id])
+  category    Category?      @relation(fields: [categoryId], references: [id])
   authors     ArticleAuthors[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt @default(now())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt @default(now())
 
   @@map("articles")
 }

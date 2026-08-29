@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
-import { ArticleStatus, RoleType } from "@prisma/client";
+import { ArticleStatus, ArticleType, RoleType } from "@prisma/client";
 
 export interface ArticleAuthor {
   id: string;
@@ -24,6 +24,7 @@ export interface LocalArticleRecord {
   categoryName: string;
   coverImage?: string;
   status: ArticleStatus;
+  type: ArticleType;
   editorNotes?: string;
   authorId: string;
   authorName: string;
@@ -83,6 +84,8 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
   const content = formData.get("content")?.toString().trim();
   const coverImage = formData.get("coverImage")?.toString() || "";
   const rawAuthorIds = formData.get("authorIds")?.toString() || "";
+  const rawType = formData.get("type")?.toString();
+  const type: ArticleType = rawType === "ACADEMIC" ? ArticleType.ACADEMIC : ArticleType.BLOG;
 
   if (!title || !content) {
     return { error: "Article title and body content are required." };
@@ -124,6 +127,7 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
         content,
         coverImage,
         status: "DRAFT",
+        type,
         author: {
           connect: { id: session.userId },
         },
@@ -261,6 +265,7 @@ export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
           coverImage: a.coverImage || undefined,
           categoryName: (a as any).category?.name || "عام",
           status: a.status,
+          type: a.type || ArticleType.BLOG,
           editorNotes: undefined,
           authorId: a.author?.id || "unknown",
           authorName: authorsList.map((au) => au.name).join("، "),
@@ -275,11 +280,14 @@ export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
   return [];
 }
 
-// Get Public Published Articles for Public Articles Page
-export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
+// Get Public Published Articles for Public Articles / Blog Pages
+export async function getPublicArticlesAction(type?: ArticleType): Promise<LocalArticleRecord[]> {
   try {
     const dbArticles = await prisma.article.findMany({
-      where: { status: "PUBLISHED" },
+      where: {
+        status: "PUBLISHED",
+        ...(type ? { type } : {}),
+      },
       include: {
         author: true,
         authors: true,
@@ -318,6 +326,7 @@ export async function getPublicArticlesAction(): Promise<LocalArticleRecord[]> {
           coverImage: a.coverImage || undefined,
           categoryName: (a as any).category?.name || "عام",
           status: a.status,
+          type: a.type || ArticleType.BLOG,
           editorNotes: undefined,
           authorId: a.author?.id || "unknown",
           authorName: authorsList.map((au) => au.name).join("، "),
@@ -343,6 +352,8 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
   const coverImage = formData.get("coverImage")?.toString() || "";
   const rawStatus = formData.get("status")?.toString();
   const status = (rawStatus === "PUBLISHED" ? "PUBLISHED" : "DRAFT") as ArticleStatus;
+  const rawType = formData.get("type")?.toString();
+  const type: ArticleType = rawType === "ACADEMIC" ? ArticleType.ACADEMIC : ArticleType.BLOG;
   const rawAuthorIds = formData.get("authorIds")?.toString() || "";
 
   if (!id || !title || !content) {
@@ -386,6 +397,7 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
         content,
         coverImage,
         status,
+        type,
         ...(status === "PUBLISHED" ? { publishedAt: new Date() } : {}),
         ...(coAuthorsData.length > 0
           ? {

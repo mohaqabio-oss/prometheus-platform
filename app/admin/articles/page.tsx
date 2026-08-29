@@ -123,11 +123,24 @@ export default async function AdminArticlesPage() {
                       {art.authorName}
                     </td>
 
-                    {/* Category */}
-                    <td className="p-4">
-                      <span className="px-2.5 py-1 rounded-xl font-mono text-[10px] bg-[#1A2B4A] text-white border border-[#6B7280]/30">
-                        {art.categoryName}
-                      </span>
+                    {/* Category & Type */}
+                    <td className="p-4 space-y-1">
+                      <div>
+                        <span className="px-2.5 py-1 rounded-xl font-mono text-[10px] bg-[#1A2B4A] text-white border border-[#6B7280]/30">
+                          {art.categoryName}
+                        </span>
+                      </div>
+                      <div>
+                        {art.type === "ACADEMIC" ? (
+                          <span className="px-2 py-0.5 rounded font-mono text-[9px] bg-red-950/60 text-red-400 border border-red-800/50">
+                            مجلة أكاديمية
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded font-mono text-[9px] bg-sky-950/60 text-sky-400 border border-sky-800/50">
+                            مدونة عامة
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Workflow Status */}

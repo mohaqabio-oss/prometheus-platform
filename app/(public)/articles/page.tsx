@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Clock, BookOpen } from "lucide-react";
 import { getPublicArticlesAction } from "@/app/actions/article-actions";
 import { getSiteSettings, PageHeaderConfig } from "@/app/actions/website-actions";
+import { ArticleType } from "@prisma/client";
 
 export default function ArticlesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,11 +23,11 @@ export default function ArticlesPage() {
     async function loadData() {
       try {
         const [arts, settings] = await Promise.all([
-          getPublicArticlesAction(),
+          getPublicArticlesAction(ArticleType.ACADEMIC),
           getSiteSettings(),
         ]);
         setArticles(arts || []);
-        setHeaderConfig(settings.pageHeaders.articles);
+        setHeaderConfig(settings?.pageHeaders?.articles || null);
       } catch (e) {
         setArticles([]);
       } finally {
@@ -53,18 +54,29 @@ export default function ArticlesPage() {
   });
 
   return (
-    <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-16 relative">
+    <div className="py-12 sm:py-20 container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-12 relative">
       
       {/* Ambient Glowing Background Orbs */}
       <div className="absolute top-10 right-10 w-96 h-96 bg-[#E84A0C]/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/2 left-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Dynamic Header */}
-      <SectionHeader
-        badgeText={headerConfig?.badge || "منصة منشورات بروميثيوس"}
-        title={headerConfig?.title || "المكتبة والأوراق البحثية المفتوحة"}
-        description={headerConfig?.subtitle || "منصة تحريرية موجهة لنشر المقالات المنهجية، والمراجعات البحثية المصاغة بأعلى معايير الرصانة الأكاديمية."}
-      />
+      {/* Official Newspaper Academic Header Banner */}
+      <div className="text-center space-y-4 relative z-10 border-b border-stone-800 pb-8">
+        <div className="flex flex-wrap items-center justify-between text-[11px] font-mono uppercase tracking-widest text-stone-400 pb-2 border-b border-stone-800">
+          <span>VOL. IV • ACADEMIC JOURNAL</span>
+          <span>THE PROMETHEUS POST</span>
+          <span>OPEN ACCESS RESEARCH</span>
+        </div>
+
+        <div className="border-y-2 border-stone-700 py-6 my-2 bg-[#0D1322]/90 backdrop-blur-xl rounded-2xl">
+          <h1 className="font-['Playfair_Display',serif] text-4xl sm:text-6xl md:text-7xl font-black uppercase tracking-tight text-stone-100 select-none drop-shadow-md">
+            THE PROMETHEUS POST
+          </h1>
+          <p className="text-xs font-mono tracking-widest text-[#E84A0C] uppercase mt-2 font-semibold">
+            {headerConfig?.subtitle || "المجلة الأكاديمية المحكمة والمراجعات التخصصية لفريق بروميثيوس"}
+          </p>
+        </div>
+      </div>
 
       {/* Search & Category Filter Controls */}
       <div className="space-y-6 relative z-10">

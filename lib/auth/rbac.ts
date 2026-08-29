@@ -73,6 +73,11 @@ export const ROLE_PERMISSIONS: Record<RoleType, Permission[]> = {
     "articles:edit_own",
     "members:read",
   ],
+  WRITER: [
+    "articles:create",
+    "articles:edit_own",
+    "members:read",
+  ],
   MEMBER: [
     "members:read",
     "projects:read",

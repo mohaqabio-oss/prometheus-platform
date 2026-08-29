@@ -63,7 +63,8 @@ export function Footer() {
             </p>
             <ul className="space-y-2 text-stone-400 font-sans">
               <li><Link href="/" className="hover:text-[#E84A0C] transition-all duration-300">الرئيسية</Link></li>
-              <li><Link href="/articles" className="hover:text-[#E84A0C] transition-all duration-300">منشورات بروميثيوس</Link></li>
+              <li><Link href="/blog" className="hover:text-[#E84A0C] transition-all duration-300">المدونة العامة</Link></li>
+              <li><Link href="/articles" className="hover:text-[#E84A0C] transition-all duration-300">المجلة الأكاديمية</Link></li>
               <li><Link href="/members" className="hover:text-[#E84A0C] transition-all duration-300">فريقنا والتخصصات</Link></li>
               <li><Link href="/join-us" className="hover:text-[#E84A0C] transition-all duration-300">تقديم طلب انضمام</Link></li>
             </ul>
