@@ -221,3 +221,89 @@ model Department {
 
   @@map("departments")
 }
+
+// ==========================================
+// ACTIVITIES & ATTENDANCE MANAGEMENT MODELS
+// ==========================================
+
+enum ActivityType {
+  COURSE
+  WORKSHOP
+  LECTURE
+  BOOTCAMP
+  SEMINAR
+}
+
+enum ActivityStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  ARCHIVED
+}
+
+enum SessionFormStatus {
+  OPEN
+  CLOSED
+}
+
+model Activity {
+  id            String            @id @default(uuid())
+  title         String
+  slug          String            @unique
+  description   String?
+  coverImage    String?
+  type          ActivityType      @default(COURSE)
+  totalSessions Int               @default(1)
+  status        ActivityStatus    @default(UPCOMING)
+  location      String?
+  startDate     DateTime?
+  endDate       DateTime?
+  sessions      ActivitySession[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt @default(now())
+
+  @@map("activities")
+}
+
+model ActivitySession {
+  id                String             @id @default(uuid())
+  activityId        String
+  activity          Activity           @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  sessionNumber     Int
+  title             String
+  description       String?
+  formStatus        SessionFormStatus  @default(CLOSED)
+  expiresAt         DateTime?
+  attendanceRecords AttendanceRecord[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt @default(now())
+
+  @@unique([activityId, sessionNumber])
+  @@map("activity_sessions")
+}
+
+model Participant {
+  id                String             @id @default(uuid())
+  nameAr            String
+  nameEn            String
+  email             String             @unique
+  uniqueCode        String             @unique
+  attendanceRecords AttendanceRecord[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt @default(now())
+
+  @@map("participants")
+}
+
+model AttendanceRecord {
+  id            String          @id @default(uuid())
+  participantId String
+  participant   Participant     @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  sessionId     String
+  session       ActivitySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  feedback      String?
+  createdAt     DateTime        @default(now())
+
+  @@unique([participantId, sessionId])
+  @@map("attendance_records")
+}

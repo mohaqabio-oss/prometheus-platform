@@ -14,6 +14,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: "الرئيسية", href: "/" },
+    { name: "الأنشطة والدورات", href: "/activities" },
     { name: "المدونة", href: "/blog" },
     { name: "المجلة الأكاديمية", href: "/articles" },
     { name: "الهيئة التحريرية", href: "/editorial-board" },

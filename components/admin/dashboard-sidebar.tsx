@@ -100,6 +100,12 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
       groupLabel: "الفريق والتوظيف",
       items: [
         {
+          title: "الأنشطة والدورات",
+          href: "/admin/activities",
+          icon: <GraduationCap className="w-4 h-4 text-[#E84A0C]" />,
+          rolesAllowed: ["ADMIN", "HR_EDITOR"],
+        },
+        {
           title: "دليل الأعضاء",
           href: "/admin/members",
           icon: <Users className="w-4 h-4" />,
