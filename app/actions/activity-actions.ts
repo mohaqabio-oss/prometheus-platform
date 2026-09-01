@@ -317,13 +317,17 @@ export async function getAdminActivityById(
   }
 }
 
+import fs from "fs/promises";
+import path from "path";
+
 // 3. Create Activity with Automatic Session Generation
 export async function createActivityAction(prevState: any, formData: FormData) {
   await requireActivityAuth();
 
   const title = formData.get("title")?.toString().trim();
   const description = formData.get("description")?.toString().trim() || "";
-  const coverImage = formData.get("coverImage")?.toString().trim() || "";
+  let coverImage = formData.get("coverImage")?.toString().trim() || "";
+  const coverImageFile = formData.get("coverImageFile") as File | null;
   const location = formData.get("location")?.toString().trim() || "";
   const rawType = formData.get("type")?.toString();
   const rawStatus = formData.get("status")?.toString();
@@ -333,6 +337,30 @@ export async function createActivityAction(prevState: any, formData: FormData) {
 
   if (!title) {
     return { error: "عنوان النشاط أو الدورة مطلوب." };
+  }
+
+  // Handle direct file upload from device
+  if (coverImageFile && typeof coverImageFile === "object" && coverImageFile.size > 0) {
+    try {
+      const bytes = await coverImageFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const uploadsDir = path.join(process.cwd(), "public", "uploads", "activities");
+      await fs.mkdir(uploadsDir, { recursive: true });
+
+      const ext = path.extname(coverImageFile.name) || ".png";
+      const cleanName = coverImageFile.name.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 30);
+      const filename = `act-${Date.now()}-${cleanName}${ext}`;
+      const filePath = path.join(uploadsDir, filename);
+      await fs.writeFile(filePath, buffer);
+      coverImage = `/uploads/activities/${filename}`;
+    } catch (uploadErr) {
+      console.error("Error saving uploaded activity image file:", uploadErr);
+      try {
+        const bytes = await coverImageFile.arrayBuffer();
+        const base64 = Buffer.from(bytes).toString("base64");
+        coverImage = `data:${coverImageFile.type || "image/png"};base64,${base64}`;
+      } catch {}
+    }
   }
 
   const type = (rawType as ActivityType) || ActivityType.COURSE;
@@ -387,7 +415,8 @@ export async function updateActivityAction(prevState: any, formData: FormData) {
   const id = formData.get("id")?.toString();
   const title = formData.get("title")?.toString().trim();
   const description = formData.get("description")?.toString().trim() || "";
-  const coverImage = formData.get("coverImage")?.toString().trim() || "";
+  let coverImage = formData.get("coverImage")?.toString().trim() || "";
+  const coverImageFile = formData.get("coverImageFile") as File | null;
   const location = formData.get("location")?.toString().trim() || "";
   const rawType = formData.get("type")?.toString();
   const rawStatus = formData.get("status")?.toString();
@@ -397,6 +426,30 @@ export async function updateActivityAction(prevState: any, formData: FormData) {
 
   if (!id || !title) {
     return { error: "معرف النشاط وعنوانه مطلوبان." };
+  }
+
+  // Handle direct file upload from device
+  if (coverImageFile && typeof coverImageFile === "object" && coverImageFile.size > 0) {
+    try {
+      const bytes = await coverImageFile.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const uploadsDir = path.join(process.cwd(), "public", "uploads", "activities");
+      await fs.mkdir(uploadsDir, { recursive: true });
+
+      const ext = path.extname(coverImageFile.name) || ".png";
+      const cleanName = coverImageFile.name.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 30);
+      const filename = `act-${Date.now()}-${cleanName}${ext}`;
+      const filePath = path.join(uploadsDir, filename);
+      await fs.writeFile(filePath, buffer);
+      coverImage = `/uploads/activities/${filename}`;
+    } catch (uploadErr) {
+      console.error("Error saving uploaded activity image file:", uploadErr);
+      try {
+        const bytes = await coverImageFile.arrayBuffer();
+        const base64 = Buffer.from(bytes).toString("base64");
+        coverImage = `data:${coverImageFile.type || "image/png"};base64,${base64}`;
+      } catch {}
+    }
   }
 
   const type = (rawType as ActivityType) || ActivityType.COURSE;
