@@ -45,10 +45,10 @@ export default async function SingleCollectionPage({ params }: CollectionPagePro
       
       {/* Back Button */}
       <div>
-        <Link href="/articles">
+        <Link href="/collections">
           <Button variant="ghost" size="sm" className="gap-2 text-[#6B7280] hover:text-white">
             <ArrowLeft className="w-4 h-4 rotate-180 text-[#E84A0C]" />
-            <span>العودة لمنشورات بروميثيوس</span>
+            <span>العودة للسلاسل والمجموعات</span>
           </Button>
         </Link>
       </div>
@@ -94,7 +94,7 @@ export default async function SingleCollectionPage({ params }: CollectionPagePro
                 </div>
 
                 <h3 className="font-display text-base font-bold text-white hover:text-[#E84A0C] transition-all duration-300">
-                  <Link href={`/articles/${article.slug}`}>{article.title}</Link>
+                  <Link href="/blog">{article.title}</Link>
                 </h3>
 
                 <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed">

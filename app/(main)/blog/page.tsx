@@ -160,7 +160,7 @@ export default function BlogPage() {
                   </div>
 
                   <h3 className="font-display text-lg font-bold text-white group-hover:text-sky-400 transition-all duration-300 leading-snug">
-                    <Link href={`/articles/${article.slug}`}>
+                    <Link href={`/blog/${article.slug}`}>
                       {article.title}
                     </Link>
                   </h3>

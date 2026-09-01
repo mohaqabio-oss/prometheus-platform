@@ -375,13 +375,13 @@ export default async function HomePage() {
         <section className="container mx-auto px-4 sm:px-6 md:px-8 max-w-6xl space-y-12">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <SectionHeader
-              badgeText="المكتبة والأوراق البحثية"
-              title="جديد منشورات بروميثيوس"
-              description="مجموعة مختارة من المقالات المنهجية والأبحاث الأكاديمية المصاغة بأسلوب رصين."
+              badgeText="المدونة المعرفية"
+              title="جديد تدوينات بروميثيوس"
+              description="مجموعة مختارة من المقالات التوعوية والتدوينات البرمجية والتجارب التقنية."
             />
-            <Link href="/articles" className="shrink-0">
+            <Link href="/blog" className="shrink-0">
               <Button variant="outline" size="sm" className="gap-2 text-xs rounded-xl border-[#1E293B] bg-[#141C2F] text-[#F8FAFC] hover:border-[#D49B4B]/50 hover:text-[#D49B4B]">
-                <span>جميع المقالات</span>
+                <span>جميع التدوينات</span>
                 <ArrowLeft className="w-4 h-4 text-[#D49B4B]" />
               </Button>
             </Link>
@@ -397,7 +397,7 @@ export default async function HomePage() {
                   </div>
 
                   <h3 className="font-serif text-lg font-bold text-[#F8FAFC] hover:text-[#D49B4B] transition-all duration-300">
-                    <Link href={`/articles/${article.slug}`}>
+                    <Link href="/blog">
                       {article.title}
                     </Link>
                   </h3>

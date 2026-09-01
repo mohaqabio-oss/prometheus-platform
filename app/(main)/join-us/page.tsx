@@ -103,9 +103,9 @@ export default function JoinUsPage() {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
               </Link>
-              <Link href="/articles">
+              <Link href="/activities">
                 <Button size="sm" className="gap-2 text-xs bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shadow-md">
-                  <span>تصفح منشورات بروميثيوس</span>
+                  <span>تصفح الأنشطة والدورات</span>
                 </Button>
               </Link>
             </div>
