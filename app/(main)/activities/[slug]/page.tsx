@@ -6,6 +6,7 @@ import { getPublicActivityBySlug } from "@/app/actions/activity-actions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ActivityCoverImage } from "@/components/shared/activity-cover-image";
 import {
   GraduationCap,
   Layers,
@@ -79,15 +80,15 @@ export default async function PublicActivityDetailPage({
       {/* Hero Card */}
       <Card className="p-8 sm:p-12 bg-[#0D1322] border border-[#1E293B] rounded-3xl shadow-2xl space-y-8 relative overflow-hidden">
         
-        {/* Cover Image if available */}
+        {/* Cover Image */}
         {activity.coverImage && (
-          <div className="aspect-video w-full rounded-2xl overflow-hidden bg-[#080C16] border border-[#1E293B] max-h-96">
-            <img
-              src={activity.coverImage}
-              alt={activity.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <ActivityCoverImage
+            src={activity.coverImage}
+            alt={activity.title}
+            type={activity.type}
+            containerClassName="aspect-video w-full rounded-2xl overflow-hidden bg-[#080C16] border border-[#1E293B] max-h-96 relative"
+            className="w-full h-full object-cover"
+          />
         )}
 
         <div className="space-y-4">

@@ -68,8 +68,15 @@ export function ActivityFormDialog({
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          setPreviewUrl(result);
+          setCoverImageUrl(result);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -100,14 +107,18 @@ export function ActivityFormDialog({
     if (startDate) formData.set("startDate", startDate);
     if (endDate) formData.set("endDate", endDate);
 
-    // Attach cover image
-    if (imageMode === "file" && selectedFile) {
+    // Attach cover image (Base64 data URL or URL string or File)
+    if (selectedFile && previewUrl && previewUrl.startsWith("data:")) {
+      formData.set("coverImage", previewUrl);
+    } else if (imageMode === "file" && selectedFile) {
       formData.set("coverImageFile", selectedFile);
     } else if (imageMode === "url" && coverImageUrl) {
       formData.set("coverImage", coverImageUrl);
-    } else if (previewUrl && !selectedFile) {
-      // Keep existing image if not changed
+    } else if (previewUrl) {
+      // Keep existing image
       formData.set("coverImage", previewUrl);
+    } else {
+      formData.set("coverImage", "");
     }
 
     try {

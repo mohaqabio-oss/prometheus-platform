@@ -339,27 +339,16 @@ export async function createActivityAction(prevState: any, formData: FormData) {
     return { error: "عنوان النشاط أو الدورة مطلوب." };
   }
 
-  // Handle direct file upload from device
+  // Convert uploaded image file to persistent base64 data URL
   if (coverImageFile && typeof coverImageFile === "object" && coverImageFile.size > 0) {
     try {
       const bytes = await coverImageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const uploadsDir = path.join(process.cwd(), "public", "uploads", "activities");
-      await fs.mkdir(uploadsDir, { recursive: true });
-
-      const ext = path.extname(coverImageFile.name) || ".png";
-      const cleanName = coverImageFile.name.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 30);
-      const filename = `act-${Date.now()}-${cleanName}${ext}`;
-      const filePath = path.join(uploadsDir, filename);
-      await fs.writeFile(filePath, buffer);
-      coverImage = `/uploads/activities/${filename}`;
+      const mimeType = coverImageFile.type || "image/jpeg";
+      const base64 = buffer.toString("base64");
+      coverImage = `data:${mimeType};base64,${base64}`;
     } catch (uploadErr) {
-      console.error("Error saving uploaded activity image file:", uploadErr);
-      try {
-        const bytes = await coverImageFile.arrayBuffer();
-        const base64 = Buffer.from(bytes).toString("base64");
-        coverImage = `data:${coverImageFile.type || "image/png"};base64,${base64}`;
-      } catch {}
+      console.error("Error processing cover image file:", uploadErr);
     }
   }
 
@@ -428,27 +417,16 @@ export async function updateActivityAction(prevState: any, formData: FormData) {
     return { error: "معرف النشاط وعنوانه مطلوبان." };
   }
 
-  // Handle direct file upload from device
+  // Convert uploaded image file to persistent base64 data URL
   if (coverImageFile && typeof coverImageFile === "object" && coverImageFile.size > 0) {
     try {
       const bytes = await coverImageFile.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const uploadsDir = path.join(process.cwd(), "public", "uploads", "activities");
-      await fs.mkdir(uploadsDir, { recursive: true });
-
-      const ext = path.extname(coverImageFile.name) || ".png";
-      const cleanName = coverImageFile.name.replace(/[^a-zA-Z0-9]/g, "_").slice(0, 30);
-      const filename = `act-${Date.now()}-${cleanName}${ext}`;
-      const filePath = path.join(uploadsDir, filename);
-      await fs.writeFile(filePath, buffer);
-      coverImage = `/uploads/activities/${filename}`;
+      const mimeType = coverImageFile.type || "image/jpeg";
+      const base64 = buffer.toString("base64");
+      coverImage = `data:${mimeType};base64,${base64}`;
     } catch (uploadErr) {
-      console.error("Error saving uploaded activity image file:", uploadErr);
-      try {
-        const bytes = await coverImageFile.arrayBuffer();
-        const base64 = Buffer.from(bytes).toString("base64");
-        coverImage = `data:${coverImageFile.type || "image/png"};base64,${base64}`;
-      } catch {}
+      console.error("Error processing cover image file:", uploadErr);
     }
   }
 

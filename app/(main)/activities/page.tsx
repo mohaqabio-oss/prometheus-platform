@@ -6,6 +6,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ActivityCoverImage } from "@/components/shared/activity-cover-image";
 import {
   GraduationCap,
   Layers,
@@ -63,15 +64,13 @@ export default async function PublicActivitiesPage() {
                 className="p-6 bg-[#0D1322] border border-[#1E293B] rounded-2xl flex flex-col justify-between space-y-5 shadow-xl hover:border-[#E84A0C]/50 hover:shadow-2xl transition-all duration-300 group"
               >
                 <div className="space-y-3">
-                  {act.coverImage && (
-                    <div className="aspect-video w-full rounded-xl overflow-hidden bg-[#080C16] border border-[#1E293B]">
-                      <img
-                        src={act.coverImage}
-                        alt={act.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                  )}
+                  <ActivityCoverImage
+                    src={act.coverImage}
+                    alt={act.title}
+                    type={act.type}
+                    containerClassName="aspect-video w-full rounded-xl overflow-hidden bg-[#080C16] border border-[#1E293B]"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
 
                   <div className="flex items-center justify-between">
                     <Badge variant="dark" className="bg-[#1A2B4A] text-stone-300 border-white/10 text-[10px]">
