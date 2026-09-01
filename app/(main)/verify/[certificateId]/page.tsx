@@ -300,11 +300,12 @@ export default async function UnifiedVerificationPage({ params }: VerifyPageProp
             </div>
 
             <div className="pt-4 flex justify-center">
-              <Link href="/">
-                <Button variant="outline" size="sm" className="gap-2 text-xs border-white/10 text-stone-300">
-                  <ArrowRight className="w-4 h-4" />
-                  <span>العودة للرئيسية</span>
-                </Button>
+              <Link
+                href="/"
+                className="inline-flex items-center justify-center gap-2 text-xs border border-white/10 text-stone-300 hover:text-white hover:border-white/30 rounded-xl h-8 px-3 transition-all duration-300 font-medium cursor-pointer"
+              >
+                <ArrowRight className="w-4 h-4" />
+                <span>العودة للرئيسية</span>
               </Link>
             </div>
           </Card>

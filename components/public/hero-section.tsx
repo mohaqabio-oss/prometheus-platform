@@ -79,21 +79,19 @@ export function HeroSection({
 
           {/* Call to Action Buttons */}
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
-            <Link href="/articles" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full gap-2 text-sm font-bold bg-[#E84A0C] hover:bg-[#d03e06] text-white rounded-xl shadow-xl transition-all duration-300 h-12 px-6">
-                <span>تصفح منشورات بروميثيوس</span>
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
+            <Link
+              href="/activities"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-sm font-bold bg-[#E84A0C] hover:bg-[#d03e06] text-white rounded-xl shadow-xl transition-all duration-300 h-12 px-6"
+            >
+              <span>تصفح أنشطة ودورات بروميثيوس</span>
+              <ArrowLeft className="w-4 h-4" />
             </Link>
 
-            <Link href="/join-us" className="w-full sm:w-auto">
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full text-sm font-medium border-white/15 bg-white/5 text-white hover:text-[#E84A0C] hover:border-[#E84A0C]/50 rounded-xl transition-all duration-300 h-12 px-6 backdrop-blur-md"
-              >
-                <span>تقديم طلب انضمام</span>
-              </Button>
+            <Link
+              href="/join-us"
+              className="w-full sm:w-auto inline-flex items-center justify-center text-sm font-medium border border-white/15 bg-white/5 text-white hover:text-[#E84A0C] hover:border-[#E84A0C]/50 rounded-xl transition-all duration-300 h-12 px-6 backdrop-blur-md"
+            >
+              <span>تقديم طلب انضمام</span>
             </Link>
           </div>
 

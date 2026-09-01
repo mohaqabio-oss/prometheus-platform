@@ -520,17 +520,19 @@ export function PrometheusHero() {
               {/* Action Buttons for Section 0 */}
               {index === 0 && (
                 <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4 pointer-events-auto">
-                  <Link href="/articles">
-                    <button className="px-6 py-3 rounded-xl bg-[#e84a0c] hover:bg-[#c83d08] text-white text-xs font-bold font-sans transition-all duration-300 shadow-2xl flex items-center gap-2 cursor-pointer">
-                      <span>تصفح المنشورات الأكاديمية</span>
-                      <ArrowLeft className="w-4 h-4" />
-                    </button>
+                  <Link
+                    href="/activities"
+                    className="px-6 py-3 rounded-xl bg-[#e84a0c] hover:bg-[#c83d08] text-white text-xs font-bold font-sans transition-all duration-300 shadow-2xl flex items-center gap-2 cursor-pointer"
+                  >
+                    <span>استكشف الأنشطة والدورات</span>
+                    <ArrowLeft className="w-4 h-4" />
                   </Link>
 
-                  <Link href="/join-us">
-                    <button className="px-6 py-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/15 text-white text-xs font-medium font-sans transition-all duration-300 backdrop-blur-md cursor-pointer">
-                      <span>تقديم طلب انضمام</span>
-                    </button>
+                  <Link
+                    href="/join-us"
+                    className="px-6 py-3 rounded-xl border border-white/20 bg-white/5 hover:bg-white/15 text-white text-xs font-medium font-sans transition-all duration-300 backdrop-blur-md cursor-pointer"
+                  >
+                    <span>تقديم طلب انضمام</span>
                   </Link>
                 </div>
               )}

@@ -97,11 +97,12 @@ export function MemberCard({ member }: MemberCardProps) {
             <strong className="text-white font-bold">{member.volunteerHours}h</strong>
           </div>
 
-          <Link href={`/members/${member.id}`}>
-            <Button variant="outline" size="sm" className="w-full justify-center gap-1.5 text-xs rounded-xl border-white/15 text-white bg-white/5 hover:bg-[#E84A0C] hover:border-[#E84A0C] transition-all duration-300">
-              <span>عرض الملف الشخصي</span>
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </Button>
+          <Link
+            href={`/members/${member.id}`}
+            className="w-full inline-flex items-center justify-center gap-1.5 text-xs rounded-xl border border-white/15 text-white bg-white/5 hover:bg-[#E84A0C] hover:border-[#E84A0C] h-8 px-3 transition-all duration-300 font-medium cursor-pointer"
+          >
+            <span>عرض الملف الشخصي</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
           </Link>
         </div>
       </Card>

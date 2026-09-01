@@ -133,11 +133,12 @@ export default async function HomePage() {
             />
 
             <div className="pt-2">
-              <Link href="/join-us">
-                <Button variant="outline" size="md" className="gap-2 text-xs rounded-xl border-[#1E293B] bg-[#141C2F] text-[#F8FAFC] hover:border-[#D49B4B]/50 hover:text-[#D49B4B]">
-                  <span>تعرّف على آلية الانضمام</span>
-                  <ArrowLeft className="w-4 h-4 text-[#D49B4B]" />
-                </Button>
+              <Link
+                href="/join-us"
+                className="inline-flex items-center justify-center gap-2 text-xs font-medium rounded-xl border border-[#1E293B] bg-[#141C2F] text-[#F8FAFC] hover:border-[#D49B4B]/50 hover:text-[#D49B4B] h-10 px-4 transition-all duration-300"
+              >
+                <span>تعرّف على آلية الانضمام</span>
+                <ArrowLeft className="w-4 h-4 text-[#D49B4B]" />
               </Link>
             </div>
           </div>
@@ -474,11 +475,12 @@ export default async function HomePage() {
           </p>
 
           <div className="pt-2 flex justify-center">
-            <Link href="/join-us">
-              <Button size="lg" className="gap-2 text-sm bg-[#D49B4B] hover:bg-[#b8823b] text-[#0A0F1D] font-bold rounded-xl shadow-lg transition-all duration-300">
-                <span>تقديم طلب انضمام</span>
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
+            <Link
+              href="/join-us"
+              className="inline-flex items-center justify-center gap-2 text-sm bg-[#D49B4B] hover:bg-[#b8823b] text-[#0A0F1D] font-bold rounded-xl shadow-lg transition-all duration-300 h-12 px-6"
+            >
+              <span>تقديم طلب انضمام</span>
+              <ArrowLeft className="w-4 h-4" />
             </Link>
           </div>
         </div>
