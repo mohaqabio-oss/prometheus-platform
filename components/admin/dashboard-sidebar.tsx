@@ -22,6 +22,7 @@ import {
   BookOpen,
   BarChart3,
   Building2,
+  GraduationCap,
 } from "lucide-react";
 
 interface NavItem {

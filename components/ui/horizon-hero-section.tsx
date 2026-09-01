@@ -6,7 +6,12 @@ import * as THREE from "three";
 import { gsap } from "gsap";
 import { ArrowLeft, ChevronDown } from "lucide-react";
 
-export function PrometheusHero() {
+interface PrometheusHeroProps {
+  heroBadge?: string;
+  heroSubtitle?: string;
+}
+
+export function PrometheusHero({ heroBadge, heroSubtitle }: PrometheusHeroProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textContainerRef = useRef<HTMLDivElement>(null);

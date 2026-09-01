@@ -235,7 +235,9 @@ export default async function UnifiedVerificationPage({ params }: VerifyPageProp
                     <User className="w-3.5 h-3.5" />
                     الممنوحة له (العضو)
                   </span>
-                  <p className="text-sm font-bold text-white font-sans">{cert.recipientName}</p>
+                  <p className="text-sm font-bold text-white font-sans">
+                    {cert.memberName || (cert as any).recipientName || "عضو بروميثيوس"}
+                  </p>
                 </div>
 
                 <div className="p-3.5 rounded-lg bg-[#080C16] border border-[#1E293B] space-y-1">
@@ -244,7 +246,7 @@ export default async function UnifiedVerificationPage({ params }: VerifyPageProp
                     تاريخ الإصدار
                   </span>
                   <p className="text-sm font-bold text-stone-200">
-                    {new Date(cert.issueDate).toLocaleDateString("ar-SA", {
+                    {new Date(cert.issuedAt || (cert as any).issueDate || Date.now()).toLocaleDateString("ar-SA", {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
@@ -268,7 +270,7 @@ export default async function UnifiedVerificationPage({ params }: VerifyPageProp
                     ساعات التطوع الموثقة
                   </span>
                   <p className="text-sm font-bold text-[#E84A0C]">
-                    {cert.hoursCount ? `${cert.hoursCount} ساعة تدريبية/تطوعية` : "شهادة إنجاز وتقدير"}
+                    {cert.volunteerHours ? `${cert.volunteerHours} ساعة تدريبية/تطوعية` : "شهادة إنجاز وتقدير"}
                   </p>
                 </div>
               </div>
