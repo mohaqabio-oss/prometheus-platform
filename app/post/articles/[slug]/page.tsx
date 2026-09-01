@@ -11,8 +11,6 @@ import {
   ArrowLeft,
   Clock,
   Calendar,
-  ExternalLink,
-  BookOpen,
   Users,
   Newspaper,
   Flame,
@@ -45,7 +43,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   };
 }
 
-export default async function SingleArticlePage({ params }: ArticlePageProps) {
+export default async function SingleAcademicArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
 
@@ -58,6 +56,7 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
       include: {
         author: true,
         authors: true,
+        category: true,
       },
     });
 
@@ -68,7 +67,8 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
     latestArticles = await prisma.article.findMany({
       where: {
         slug: { not: decodedSlug },
-        type: article?.type || "ACADEMIC",
+        type: "ACADEMIC",
+        status: "PUBLISHED",
       },
       take: 5,
       orderBy: { createdAt: "desc" },
@@ -109,12 +109,9 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
       day: "numeric",
     });
 
-  const backLink = article.type === "BLOG" ? "/blog" : "/articles";
-  const backLabel = article.type === "BLOG" ? "العودة إلى المدونة" : "العودة إلى المجلة الأكاديمية";
-
   return (
     <article className="py-10 sm:py-16 bg-[#FCFBF9] min-h-screen !text-stone-900 animate-fade-in font-sans selection:bg-red-200 selection:!text-red-900">
-
+      
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap"
@@ -123,15 +120,15 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
       <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
 
         <div className="mb-8 flex items-center justify-between border-b border-stone-200 pb-4">
-          <Link href={backLink}>
+          <Link href="/articles">
             <Button variant="ghost" size="sm" className="gap-2 !text-stone-700 hover:!text-black hover:bg-stone-200/50 transition-colors">
               <ArrowLeft className="w-4 h-4 !text-[#E84A0C]" />
-              <span className="font-semibold">{backLabel}</span>
+              <span className="font-semibold">العودة إلى المجلة الأكاديمية</span>
             </Button>
           </Link>
 
           <span className="text-[11px] font-mono !text-stone-600 uppercase tracking-widest hidden sm:inline-block font-bold">
-            Prometheus Academic Publishing Engine
+            The Prometheus Post • Academic Publishing Engine
           </span>
         </div>
 
@@ -164,7 +161,7 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
 
             <div className="border-b border-stone-300 pb-8">
               <span className="bg-red-800 !text-white px-3 py-1 text-[11px] uppercase font-bold tracking-widest inline-block font-mono mb-6 shadow-sm">
-                {article.categoryName || (article.type === "BLOG" ? "PROMETHEUS BLOG" : "FEATURED JOURNAL")}
+                {article.category?.name || "FEATURED ACADEMIC JOURNAL"}
               </span>
 
               <h1 className="font-['Playfair_Display',serif] text-3xl sm:text-5xl lg:text-6xl leading-[1.15] font-black !text-black tracking-tight mb-6">
@@ -302,7 +299,7 @@ export default async function SingleArticlePage({ params }: ArticlePageProps) {
                   latestArticles.map((item: any) => (
                     <article key={item.id} className="border-b border-stone-200 pb-6 space-y-2 group">
                       <div className="flex items-center gap-2 text-[10px] font-mono !text-stone-600 uppercase font-bold">
-                        <span className="!text-red-800">{item.categoryName || (item.type === "BLOG" ? "BLOG POST" : "ESSAY")}</span>
+                        <span className="!text-red-800">{item.categoryName || "ACADEMIC ESSAY"}</span>
                         <span>•</span>
                         <span>{new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                       </div>

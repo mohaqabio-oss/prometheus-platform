@@ -11,7 +11,7 @@ import { getPublicArticlesAction } from "@/app/actions/article-actions";
 import { getSiteSettings, PageHeaderConfig } from "@/app/actions/website-actions";
 import { ArticleType } from "@prisma/client";
 
-export default function ArticlesPage() {
+export default function AcademicArticlesCatalogPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("الكل");
   const [sortBy, setSortBy] = useState<"latest" | "oldest">("latest");
@@ -127,10 +127,10 @@ export default function ArticlesPage() {
         </div>
       </div>
 
-      {/* Articles Cards Grid with Framer Motion 3D Hover Cards */}
+      {/* Articles Cards Grid */}
       {loading ? (
         <div className="text-center py-16 text-xs font-mono text-stone-400">
-          جاري تحميل منشورات بروميثيوس...
+          جاري تحميل منشورات بروميثيوس الأكاديمية...
         </div>
       ) : filteredArticles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
@@ -146,20 +146,20 @@ export default function ArticlesPage() {
             >
               <Card className="h-full p-6 bg-[#0D1322]/80 backdrop-blur-xl border border-white/10 rounded-2xl flex flex-col justify-between space-y-4 shadow-xl hover:shadow-2xl hover:border-[#E84A0C]/50 transition-all duration-300 relative overflow-hidden group">
                 
-                {/* Subtle Ambient Card Glow */}
+                {/* Ambient Card Glow */}
                 <div className="absolute -top-12 -right-12 w-24 h-24 bg-[#E84A0C]/10 rounded-full blur-2xl pointer-events-none group-hover:bg-[#E84A0C]/25 transition-all duration-500" />
 
                 <div className="space-y-3 relative z-10">
                   <div className="flex items-center justify-between">
                     <Badge variant="orange" className="backdrop-blur-md">
-                      {article.category || article.categoryName || "عام"}
+                      {article.category || article.categoryName || "بحث أكاديمي"}
                     </Badge>
                     <span className="text-[11px] font-mono text-stone-400">
                       {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString("ar-SA") : "جديد"}
                     </span>
                   </div>
 
-                  <h3 className="font-display text-lg font-bold text-white group-hover:text-[#E84A0C] transition-all duration-300">
+                  <h3 className="font-['Playfair_Display',serif] text-lg font-bold text-white group-hover:text-[#E84A0C] transition-all duration-300">
                     <Link href={`/articles/${article.slug}`}>
                       {article.title}
                     </Link>
@@ -185,7 +185,7 @@ export default function ArticlesPage() {
         <Card className="p-12 text-center border border-dashed border-white/15 bg-[#0D1322]/80 backdrop-blur-xl space-y-3">
           <BookOpen className="w-10 h-10 text-stone-400 mx-auto" />
           <h3 className="font-display text-base font-bold text-white">
-            لا توجد مقالات حالياً
+            لا توجد أوراق أكاديمية حالياً
           </h3>
           <p className="text-xs text-stone-400 max-w-md mx-auto">
             سيتم نشر المقالات والأوراق البحثية المعتمدة فور صدورها من قبل الهيئة التحريرية للفريق.

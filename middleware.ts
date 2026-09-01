@@ -7,21 +7,37 @@ const encodedKey = new TextEncoder().encode(secretKey);
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const cookieToken = req.cookies.get("prometheus_session")?.value;
+  const hostname = req.headers.get("host") || "";
 
+  // -------------------------------------------------------------
+  // 1. Bypass static files, internal Next.js assets, and APIs
+  // -------------------------------------------------------------
+  if (
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/static") ||
+    pathname.includes(".") // e.g. favicon.ico, images, robots.txt
+  ) {
+    return NextResponse.next();
+  }
+
+  // -------------------------------------------------------------
+  // 2. Authentication & RBAC Rules for Admin Area (/admin)
+  // -------------------------------------------------------------
+  const cookieToken = req.cookies.get("prometheus_session")?.value;
   let session: any = null;
+
   if (cookieToken) {
     try {
       const { payload } = await jwtVerify(cookieToken, encodedKey, {
         algorithms: ["HS256"],
       });
       session = payload;
-    } catch (e) {
+    } catch {
       session = null;
     }
   }
 
-  // 1. Protected Admin Routes Authentication & RBAC Rules
   if (pathname.startsWith("/admin")) {
     if (!session) {
       const loginUrl = new URL("/login", req.url);
@@ -34,34 +50,77 @@ export async function middleware(req: NextRequest) {
     const isHR = userRoles.includes("HR_EDITOR");
     const isWriterOrEditor = userRoles.includes("AUTHOR") || userRoles.includes("POST_EDITOR");
 
-    // Task 1 RBAC: Master Admin Only for User Accounts Management
+    // RBAC: Users management is Master Admin only
     if (pathname.startsWith("/admin/users") && !isAdmin) {
       return NextResponse.redirect(new URL("/admin/dashboard", req.url));
     }
 
-    // Task 1 RBAC: Writer/Author can ONLY access Articles Dashboard
-    if (pathname.startsWith("/admin/members") || pathname.startsWith("/admin/certificates") || pathname.startsWith("/admin/applications")) {
-      if (!isAdmin && !isHR) {
-        return NextResponse.redirect(new URL("/admin/articles", req.url));
-      }
+    // RBAC: Writers/Authors restricted to articles
+    if (
+      (pathname.startsWith("/admin/members") ||
+        pathname.startsWith("/admin/certificates") ||
+        pathname.startsWith("/admin/applications")) &&
+      !isAdmin &&
+      !isHR
+    ) {
+      return NextResponse.redirect(new URL("/admin/articles", req.url));
     }
 
-    // Task 1 RBAC: HR Editor can ONLY access HR/Members Dashboard
-    if (pathname.startsWith("/admin/articles") || pathname.startsWith("/admin/collections")) {
-      if (!isAdmin && !isWriterOrEditor) {
-        return NextResponse.redirect(new URL("/admin/members", req.url));
-      }
+    // RBAC: HR Editor restricted to HR/Members
+    if (
+      (pathname.startsWith("/admin/articles") || pathname.startsWith("/admin/collections")) &&
+      !isAdmin &&
+      !isWriterOrEditor
+    ) {
+      return NextResponse.redirect(new URL("/admin/members", req.url));
     }
+
+    return NextResponse.next();
   }
 
-  // 2. Redirect Authenticated Users Away from Login Page
+  // Redirect authenticated users away from login page
   if (pathname === "/login" && session) {
     return NextResponse.redirect(new URL("/admin/dashboard", req.url));
   }
 
+  // -------------------------------------------------------------
+  // 3. Subdomain Detection & URL Rewriting
+  // -------------------------------------------------------------
+  // Normalize host: strips port (e.g., "post.localhost:3000" -> "post.localhost")
+  const currentHost = hostname.replace(/:\d+$/, "").toLowerCase();
+
+  // Detect Academic Journal Subdomain (Production & Localhost)
+  const isJournalSubdomain =
+    currentHost === "post.pmthiq.online" ||
+    currentHost === "post.localhost";
+
+  if (isJournalSubdomain) {
+    // If request already starts with /post, pass through
+    if (pathname.startsWith("/post")) {
+      return NextResponse.next();
+    }
+    // Rewrite requests to the /post directory
+    // e.g. post.pmthiq.online/ -> /post
+    // e.g. post.pmthiq.online/editorial-board -> /post/editorial-board
+    const url = req.nextUrl.clone();
+    url.pathname = `/post${pathname === "/" ? "" : pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
+  // Main Platform (pmthiq.online, www.pmthiq.online, localhost)
+  // If someone directly visits /post on main domain, rewrite to 404 or journal
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/login"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+  ],
 };

@@ -423,7 +423,7 @@ export async function getPublicWebsiteData() {
 
   try {
     const articles = await prisma.article.findMany({
-      where: { status: "PUBLISHED" },
+      where: { status: "PUBLISHED", type: "BLOG" },
       take: 3,
       orderBy: { createdAt: "desc" },
     });

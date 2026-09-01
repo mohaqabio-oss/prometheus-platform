@@ -5,16 +5,14 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { Card } from "@/components/ui/card";
 import { FileText, ShieldAlert, Scale, CheckCircle2, Lock, Sparkles } from "lucide-react";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings();
-  const ethics = settings.pageHeaders.publicationEthics;
-  return {
-    title: `${ethics.title} | مجلة وفريق بروميثيوس`,
-    description: ethics.subtitle,
-  };
-}
+export const dynamic = "force-dynamic";
 
-export default async function PublicationEthicsPage() {
+export const metadata: Metadata = {
+  title: "أخلاقيات النشر والمعايير الأكاديمية | مجلة بروميثيوس",
+  description: "دليل النزاهة العلمية وقواعد السلوك المهني والتحكيم المزدوج في مجلة بروميثيوس.",
+};
+
+export default async function AcademicPublicationEthicsPage() {
   const settings = await getSiteSettings();
   const ethics = settings.pageHeaders.publicationEthics;
 
@@ -75,7 +73,7 @@ export default async function PublicationEthicsPage() {
       <Card className="p-8 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
         <div className="flex items-center gap-2 text-[#E84A0C] font-mono text-xs">
           <Sparkles className="w-4 h-4" />
-          <span>ميثاق النزاهة والشفافية</span>
+          <span>ميثاق النزاهة والشفافية الأكاديمية</span>
         </div>
         <h2 className="font-display text-2xl font-bold text-white">
           {ethics.ethosTitle || "التزامنا بالشفافية والنزاهة العلمية"}

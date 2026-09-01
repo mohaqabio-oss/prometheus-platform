@@ -11,16 +11,12 @@ import { ShieldCheck, BookOpen, UserCheck, Award, GraduationCap, Globe, External
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings();
-  const ed = settings.pageHeaders.editorialBoard;
-  return {
-    title: `${ed.title} | مجلة وفريق بروميثيوس`,
-    description: ed.subtitle,
-  };
-}
+export const metadata: Metadata = {
+  title: "الهيئة التحريرية والاستشارية | مجلة بروميثيوس الأكاديمية",
+  description: "أعضاء الهيئة التحريرية والمحكمون المعتمدون في مجلة بروميثيوس الأكاديمية.",
+};
 
-export default async function EditorialBoardPage() {
+export default async function AcademicEditorialBoardPage() {
   const settings = await getSiteSettings();
   const ed = settings.pageHeaders.editorialBoard;
 
