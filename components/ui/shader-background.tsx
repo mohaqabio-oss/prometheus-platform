@@ -210,106 +210,117 @@ export default function ShaderBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const gl = canvas.getContext("webgl");
-    if (!gl) return;
+    try {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const gl = canvas.getContext("webgl");
+      if (!gl) return;
 
-    const compileShader = (type: number, source: string) => {
-      const shader = gl.createShader(type);
-      if (!shader) return null;
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error(gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-        return null;
-      }
-      return shader;
-    };
+      const compileShader = (type: number, source: string) => {
+        try {
+          const shader = gl.createShader(type);
+          if (!shader) return null;
+          gl.shaderSource(shader, source);
+          gl.compileShader(shader);
+          if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+            gl.deleteShader(shader);
+            return null;
+          }
+          return shader;
+        } catch {
+          return null;
+        }
+      };
 
-    const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
-    if (!vertexShader || !fragmentShader) return;
+      const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
+      const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSource);
+      if (!vertexShader || !fragmentShader) return;
 
-    const program = gl.createProgram();
-    if (!program) return;
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
-    gl.useProgram(program);
+      const program = gl.createProgram();
+      if (!program) return;
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      gl.useProgram(program);
 
-    const positionBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      const positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
 
-    const positionLocation = gl.getAttribLocation(program, "position");
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+      const positionLocation = gl.getAttribLocation(program, "position");
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-    const uColors = gl.getUniformLocation(program, "u_colors");
-    const uScene = gl.getUniformLocation(program, "u_scene");
-    const uShape = gl.getUniformLocation(program, "u_shape");
-    const uSurface = gl.getUniformLocation(program, "u_surface");
-    const uFinish = gl.getUniformLocation(program, "u_finish");
-    const uTransform = gl.getUniformLocation(program, "u_transform");
-    const uSpace = gl.getUniformLocation(program, "u_space");
-    const uCursor = gl.getUniformLocation(program, "u_cursor");
+      const uColors = gl.getUniformLocation(program, "u_colors");
+      const uScene = gl.getUniformLocation(program, "u_scene");
+      const uShape = gl.getUniformLocation(program, "u_shape");
+      const uSurface = gl.getUniformLocation(program, "u_surface");
+      const uFinish = gl.getUniformLocation(program, "u_finish");
+      const uTransform = gl.getUniformLocation(program, "u_transform");
+      const uSpace = gl.getUniformLocation(program, "u_space");
+      const uCursor = gl.getUniformLocation(program, "u_cursor");
 
-    const colors = new Float32Array([
-      0.0, 0.0, 0.0,
-      0.6, 1.0, 0.0,
-      0.4, 0.0, 1.0,
-      1.0, 0.039, 0.937,
-      0.02, 1.0, 0.02,
-      0.055, 0.024, 1.0,
-      0.0, 0.0, 0.0,
-      0.0, 0.0, 0.0,
-    ]);
+      const colors = new Float32Array([
+        0.0, 0.0, 0.0,
+        0.6, 1.0, 0.0,
+        0.4, 0.0, 1.0,
+        1.0, 0.039, 0.937,
+        0.02, 1.0, 0.02,
+        0.055, 0.024, 1.0,
+        0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0,
+      ]);
 
-    let animationFrame: number;
-    const startTime = Date.now();
+      let animationFrame: number;
+      const startTime = Date.now();
 
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-    };
-    window.addEventListener("resize", resize);
-    resize();
+      const resize = () => {
+        try {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = window.innerWidth * dpr;
+          canvas.height = window.innerHeight * dpr;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        } catch {}
+      };
+      window.addEventListener("resize", resize);
+      resize();
 
-    const render = () => {
-      if (document.hidden) {
-        animationFrame = requestAnimationFrame(render);
-        return;
-      }
+      const render = () => {
+        try {
+          if (document.hidden) {
+            animationFrame = requestAnimationFrame(render);
+            return;
+          }
 
-      const time = (Date.now() - startTime) / 1000;
+          const time = (Date.now() - startTime) / 1000;
 
-      gl.uniform3fv(uColors, colors);
-      gl.uniform4f(uScene, canvas.width, canvas.height, time * 0.57, 6.0);
-      gl.uniform4f(uShape, 1.26, 0.35, 0.28, 0.0);
-      gl.uniform4f(uSurface, 1.82, 1.0, 0.0, 1.0);
-      gl.uniform4f(uFinish, 0.0, 0.0, 0.0, 0.04);
-      gl.uniform4f(uTransform, 1.0, 0.0, 0.0, 1.0);
-      gl.uniform4f(uSpace, 0.0, 0.0, 0.0, 0.0);
-      gl.uniform4f(uCursor, 0.0, 2.0, 0.65, 0.46);
+          gl.uniform3fv(uColors, colors);
+          gl.uniform4f(uScene, canvas.width, canvas.height, time * 0.57, 6.0);
+          gl.uniform4f(uShape, 1.26, 0.35, 0.28, 0.0);
+          gl.uniform4f(uSurface, 1.82, 1.0, 0.0, 1.0);
+          gl.uniform4f(uFinish, 0.0, 0.0, 0.0, 0.04);
+          gl.uniform4f(uTransform, 1.0, 0.0, 0.0, 1.0);
+          gl.uniform4f(uSpace, 0.0, 0.0, 0.0, 0.0);
+          gl.uniform4f(uCursor, 0.0, 2.0, 0.65, 0.46);
 
-      gl.drawArrays(gl.TRIANGLES, 0, 3);
-      animationFrame = requestAnimationFrame(render);
-    };
-    render();
+          gl.drawArrays(gl.TRIANGLES, 0, 3);
+          animationFrame = requestAnimationFrame(render);
+        } catch {}
+      };
+      render();
 
-    return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animationFrame);
-      gl.deleteProgram(program);
-    };
+      return () => {
+        try {
+          window.removeEventListener("resize", resize);
+          cancelAnimationFrame(animationFrame);
+          if (program) gl.deleteProgram(program);
+        } catch {}
+      };
+    } catch {}
   }, []);
 
-  // DO NOT RENDER on individual article pages (e.g. /articles/slug-name)
-  if (pathname?.includes("/articles/")) return null;
+  // DO NOT RENDER on individual article pages
+  if (pathname?.includes("/articles/") || pathname?.includes("/blog/")) return null;
 
   return (
     <canvas

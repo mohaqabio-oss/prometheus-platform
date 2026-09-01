@@ -19,7 +19,10 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/static") ||
-    pathname.includes(".") // e.g. favicon.ico, images, robots.txt
+    pathname === "/sw.js" ||
+    pathname === "/favicon.ico" ||
+    pathname === "/manifest.webmanifest" ||
+    pathname.includes(".") // e.g. favicon.ico, images, fonts, robots.txt
   ) {
     return NextResponse.next();
   }
@@ -117,7 +120,15 @@ export async function middleware(req: NextRequest) {
     currentHost === "post.localhost";
 
   if (isJournalSubdomain) {
-    if (pathname.startsWith("/post")) {
+    // Keep global shared routes intact
+    if (
+      pathname.startsWith("/admin") ||
+      pathname === "/login" ||
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/verify") ||
+      pathname.startsWith("/attendance") ||
+      pathname.startsWith("/post")
+    ) {
       return NextResponse.next();
     }
     const url = req.nextUrl.clone();

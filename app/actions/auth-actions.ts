@@ -98,7 +98,13 @@ export async function loginAction(prevState: any, formData: FormData) {
     return { error: "An unexpected error occurred during login. Please try again." };
   }
 
-  redirect("/admin/dashboard");
+  const rawCallbackUrl = formData.get("callbackUrl")?.toString();
+  const safeCallbackUrl =
+    rawCallbackUrl && rawCallbackUrl.startsWith("/admin")
+      ? rawCallbackUrl
+      : "/admin/dashboard";
+
+  redirect(safeCallbackUrl);
 }
 
 export async function logoutAction() {
