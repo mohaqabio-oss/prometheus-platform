@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db/prisma";
 import { RoleType } from "@prisma/client";
 
-const secretKey = process.env.NEXTAUTH_SECRET || "prometheus_super_secret_jwt_key_change_in_production";
+const secretKey = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || "Prometheus_Super_Secret_Key_2026_!@";
 const encodedKey = new TextEncoder().encode(secretKey);
 
 export interface SessionPayload {
@@ -30,11 +30,17 @@ export async function decrypt(session: string | undefined): Promise<SessionPaylo
     const { payload } = await jwtVerify(session, encodedKey, {
       algorithms: ["HS256"],
     });
+    const roles: RoleType[] = Array.isArray(payload.roles)
+      ? (payload.roles as RoleType[])
+      : payload.role
+      ? [payload.role as RoleType]
+      : [];
+
     return {
       userId: payload.userId as string,
       email: payload.email as string,
       fullName: payload.fullName as string,
-      roles: payload.roles as RoleType[],
+      roles,
       expiresAt: new Date(payload.expiresAt as string),
     };
   } catch (error) {

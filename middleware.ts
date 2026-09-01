@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const secretKey = process.env.NEXTAUTH_SECRET || "prometheus_super_secret_jwt_key_change_in_production";
+const secretKey =
+  process.env.JWT_SECRET ||
+  process.env.NEXTAUTH_SECRET ||
+  "Prometheus_Super_Secret_Key_2026_!@";
 const encodedKey = new TextEncoder().encode(secretKey);
 
 export async function middleware(req: NextRequest) {
@@ -24,7 +27,12 @@ export async function middleware(req: NextRequest) {
   // -------------------------------------------------------------
   // 2. Authentication & RBAC Rules for Admin Area (/admin)
   // -------------------------------------------------------------
-  const cookieToken = req.cookies.get("prometheus_session")?.value;
+  const cookieToken =
+    req.cookies.get("prometheus_session")?.value ||
+    req.cookies.get("token")?.value ||
+    req.cookies.get("session")?.value ||
+    req.cookies.get("auth_token")?.value;
+
   let session: any = null;
 
   if (cookieToken) {
@@ -45,17 +53,31 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    const userRoles: string[] = Array.isArray(session.roles) ? session.roles : [];
+    // Extract roles flexibly whether stored as array (roles) or single value (role)
+    const rawRoles = session.roles || session.role || [];
+    const userRoles: string[] = Array.isArray(rawRoles)
+      ? rawRoles.map(String)
+      : typeof rawRoles === "string"
+      ? [rawRoles]
+      : [];
+
+    if (session.role && typeof session.role === "string" && !userRoles.includes(session.role)) {
+      userRoles.push(session.role);
+    }
+
     const isAdmin = userRoles.includes("ADMIN");
     const isHR = userRoles.includes("HR_EDITOR");
-    const isWriterOrEditor = userRoles.includes("AUTHOR") || userRoles.includes("POST_EDITOR");
+    const isWriterOrEditor =
+      userRoles.includes("AUTHOR") ||
+      userRoles.includes("POST_EDITOR") ||
+      userRoles.includes("WRITER");
 
-    // RBAC: Users management is Master Admin only
+    // Task 1 RBAC: Master Admin Only for User Accounts Management
     if (pathname.startsWith("/admin/users") && !isAdmin) {
       return NextResponse.redirect(new URL("/admin/dashboard", req.url));
     }
 
-    // RBAC: Writers/Authors restricted to articles
+    // Task 1 RBAC: Writers/Authors restricted to articles
     if (
       (pathname.startsWith("/admin/members") ||
         pathname.startsWith("/admin/certificates") ||
@@ -66,7 +88,7 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/admin/articles", req.url));
     }
 
-    // RBAC: HR Editor restricted to HR/Members
+    // Task 1 RBAC: HR Editor restricted to HR/Members
     if (
       (pathname.startsWith("/admin/articles") || pathname.startsWith("/admin/collections")) &&
       !isAdmin &&
@@ -95,20 +117,14 @@ export async function middleware(req: NextRequest) {
     currentHost === "post.localhost";
 
   if (isJournalSubdomain) {
-    // If request already starts with /post, pass through
     if (pathname.startsWith("/post")) {
       return NextResponse.next();
     }
-    // Rewrite requests to the /post directory
-    // e.g. post.pmthiq.online/ -> /post
-    // e.g. post.pmthiq.online/editorial-board -> /post/editorial-board
     const url = req.nextUrl.clone();
     url.pathname = `/post${pathname === "/" ? "" : pathname}`;
     return NextResponse.rewrite(url);
   }
 
-  // Main Platform (pmthiq.online, www.pmthiq.online, localhost)
-  // If someone directly visits /post on main domain, rewrite to 404 or journal
   return NextResponse.next();
 }
 
