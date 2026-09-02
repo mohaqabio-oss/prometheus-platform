@@ -1,12 +1,17 @@
 import React from "react";
 import Link from "next/link";
 import { ArticleEditor } from "@/components/admin/article-editor";
-import { createArticleDraftAction, getMembersForSelectAction } from "@/app/actions/article-actions";
+import { createArticleDraftAction, getMembersForSelectAction, getPartnersForSelectAction } from "@/app/actions/article-actions";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewArticlePage() {
-  const availableMembers = await getMembersForSelectAction();
+  const [availableMembers, availablePartners] = await Promise.all([
+    getMembersForSelectAction(),
+    getPartnersForSelectAction(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -19,7 +24,11 @@ export default async function NewArticlePage() {
         </Link>
       </div>
 
-      <ArticleEditor availableMembers={availableMembers} saveAction={createArticleDraftAction} />
+      <ArticleEditor
+        availableMembers={availableMembers}
+        availablePartners={availablePartners}
+        saveAction={createArticleDraftAction}
+      />
     </div>
   );
 }

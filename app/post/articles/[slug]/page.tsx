@@ -14,6 +14,8 @@ import {
   Users,
   Newspaper,
   Flame,
+  Building2,
+  UserPlus,
 } from "lucide-react";
 
 interface ArticlePageProps {
@@ -201,7 +203,7 @@ export default async function SingleAcademicArticlePage({ params }: ArticlePageP
                   <div>
                     <span>BY </span>
                     <strong className="!text-black font-bold uppercase tracking-wider">
-                      {authorsList.map((au: any) => au.fullName).join(" & ")}
+                      {[...authorsList.map((au: any) => au.fullName), ...(article.guestAuthors || [])].join(" & ")}
                     </strong>
                   </div>
                 </div>
@@ -269,6 +271,7 @@ export default async function SingleAcademicArticlePage({ params }: ArticlePageP
               </div>
             )}
 
+            {/* ── ABOUT THE AUTHORS ── */}
             <div className="pt-10 mt-10 border-t-4 border-black space-y-6">
               <h3 className="font-['Playfair_Display',serif] text-2xl font-black uppercase tracking-wider !text-black flex items-center gap-2">
                 <Users className="w-5 h-5 !text-red-800" />
@@ -310,6 +313,69 @@ export default async function SingleAcademicArticlePage({ params }: ArticlePageP
                 ))}
               </div>
             </div>
+
+            {/* ── EXTERNAL CONTRIBUTORS / GUEST AUTHORS ── */}
+            {article.guestAuthors && article.guestAuthors.length > 0 && (
+              <div className="pt-6 border-t-2 border-stone-200 space-y-4">
+                <h3 className="font-['Playfair_Display',serif] text-xl font-black uppercase tracking-wider !text-black flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 !text-red-800" />
+                  <span>EXTERNAL CONTRIBUTORS • الباحثون والمؤلفون الخارجيون</span>
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {article.guestAuthors.map((guest: string, index: number) => (
+                    <Card
+                      key={index}
+                      className="p-4 bg-stone-50 border border-stone-300 rounded-none shadow-sm flex items-center gap-3"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-stone-200 border border-stone-300 flex items-center justify-center font-bold text-stone-700 font-mono text-sm shrink-0">
+                        {guest.trim().charAt(0) || "G"}
+                      </div>
+                      <div>
+                        <h4 className="font-['Playfair_Display',serif] text-base font-bold !text-black">
+                          {guest}
+                        </h4>
+                        <p className="text-[10px] font-mono !text-red-800 uppercase font-bold">
+                          GUEST AUTHOR / مساهم خارجي
+                        </p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── PARTNER INSTITUTIONS ── */}
+            {article.partners && article.partners.length > 0 && (
+              <div className="pt-6 border-t-2 border-stone-200 space-y-4">
+                <h3 className="font-['Playfair_Display',serif] text-xl font-black uppercase tracking-wider !text-black flex items-center gap-2">
+                  <Building2 className="w-5 h-5 !text-red-800" />
+                  <span>AFFILIATED INSTITUTIONS • الشركاء والجهات الداعمة</span>
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {article.partners.map((pa: any) => (
+                    <Link
+                      key={pa.partner.id}
+                      href={`/partners/${pa.partner.slug}`}
+                      className="p-4 bg-white border border-stone-300 hover:border-black transition-colors flex items-center gap-3 group"
+                    >
+                      <div className="w-12 h-12 bg-stone-50 border border-stone-200 p-1 flex items-center justify-center shrink-0">
+                        <img src={pa.partner.logoUrl} alt={pa.partner.name} className="w-full h-full object-contain" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-['Playfair_Display',serif] text-sm font-bold !text-black group-hover:!text-red-800 transition-colors truncate">
+                          {pa.partner.name}
+                        </h4>
+                        <p className="text-[10px] font-mono !text-stone-500 uppercase font-bold">
+                          PARTNER ORGANIZATION
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
           </main>
 

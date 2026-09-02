@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Save, Loader2, AlertCircle, ArrowLeft, Plus, Trash2,
   FolderGit2, Users, FileText, Building2, Check, Upload,
+  UserPlus,
 } from "lucide-react";
 import { ProjectRecord } from "@/app/actions/project-actions";
 
@@ -34,18 +35,19 @@ interface MemberRole {
   roleName: string;
 }
 
+interface ProjectDetail extends ProjectRecord {
+  members?: { memberId: string; memberName: string; roleName: string }[];
+  articles?: { id: string; title: string; type: string }[];
+  partners?: { id: string; name: string; logoUrl: string }[];
+  guestAuthors?: string[];
+}
+
 interface ProjectEditorProps {
   project?: ProjectDetail | null;
   availableMembers: Member[];
   availableArticles: Article[];
   availablePartners: Partner[];
   saveAction: (prevState: any, formData: FormData) => Promise<any>;
-}
-
-interface ProjectDetail extends ProjectRecord {
-  members?: { memberId: string; memberName: string; roleName: string }[];
-  articles?: { id: string; title: string; type: string }[];
-  partners?: { id: string; name: string; logoUrl: string }[];
 }
 
 const STATUS_OPTIONS = [
@@ -70,6 +72,11 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
     project?.members?.map((m) => ({ memberId: m.memberId, memberName: m.memberName, roleName: m.roleName })) || []
   );
 
+  // External / Guest contributors
+  const [guestAuthors, setGuestAuthors] = useState<string[]>(
+    project?.guestAuthors && project.guestAuthors.length > 0 ? project.guestAuthors : [""]
+  );
+
   // Member role dialog state
   const [newMemberId, setNewMemberId] = useState("");
   const [newRoleName, setNewRoleName] = useState("");
@@ -80,6 +87,8 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
     formData.set("articleIds", JSON.stringify(selectedArticleIds));
     formData.set("partnerIds", JSON.stringify(selectedPartnerIds));
     formData.set("members", JSON.stringify(memberRoles));
+    const cleanGuestAuthors = guestAuthors.filter((g) => g.trim() !== "");
+    formData.set("guestAuthors", JSON.stringify(cleanGuestAuthors));
     return await saveAction(prevState, formData);
   }, null);
 
@@ -101,6 +110,11 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
 
   const removeMemberRole = (memberId: string) =>
     setMemberRoles((prev) => prev.filter((mr) => mr.memberId !== memberId));
+
+  const addGuestAuthor = () => setGuestAuthors((prev) => [...prev, ""]);
+  const removeGuestAuthor = (i: number) => setGuestAuthors((prev) => prev.filter((_, idx) => idx !== i));
+  const updateGuestAuthor = (i: number, val: string) =>
+    setGuestAuthors((prev) => prev.map((g, idx) => (idx === i ? val : g)));
 
   const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -198,7 +212,7 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
                 />
               </div>
               <Button type="button" onClick={addMemberRole} size="sm"
-                className="bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shrink-0">
+                className="bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shrink-0 h-10 px-4">
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
@@ -222,6 +236,42 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
                   </div>
                 ))
               )}
+            </div>
+          </div>
+
+          {/* External / Guest Contributors */}
+          <div className="p-6 bg-[#0D0D0D] rounded-2xl border border-[#6B7280]/20 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-3">
+              <div className="flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-[#E84A0C]" />
+                <h3 className="font-cairo font-bold text-white">المساهمون والباحثون الخارجيون (Guest Contributors)</h3>
+              </div>
+              <button type="button" onClick={addGuestAuthor}
+                className="text-xs text-[#E84A0C] hover:underline flex items-center gap-1 font-sans">
+                <Plus className="w-3.5 h-3.5" /> إضافة مساهم خارجي
+              </button>
+            </div>
+            <p className="text-xs text-[#6B7280] font-sans">
+              اكتب أسماء الباحثين أو الأطباء أو الخبراء المساهمين من خارج الفريق الذين لا يملكون حسابات نظام.
+            </p>
+            <div className="space-y-2">
+              {guestAuthors.map((guest, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={guest}
+                    onChange={(e) => updateGuestAuthor(idx, e.target.value)}
+                    placeholder="مثال: د. أحمد المحمد (باحث زائر - جامعة القاهرة)"
+                    className="flex-1 h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C] font-sans"
+                  />
+                  {guestAuthors.length > 1 && (
+                    <button type="button" onClick={() => removeGuestAuthor(idx)}
+                      className="p-2 text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 

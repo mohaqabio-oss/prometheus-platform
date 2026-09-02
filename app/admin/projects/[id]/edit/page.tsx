@@ -45,6 +45,7 @@ export default async function EditProjectPage({ params }: Props) {
     description: project.description,
     coverImage: project.coverImage,
     status: project.status,
+    guestAuthors: project.guestAuthors || [],
     membersCount: project.members.length,
     articlesCount: project.articles.length,
     createdAt: project.createdAt.toISOString(),

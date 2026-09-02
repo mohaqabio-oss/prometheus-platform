@@ -76,6 +76,19 @@ export async function getMembersForSelectAction(): Promise<ArticleAuthor[]> {
   ];
 }
 
+// Fetch all partners for Partner Multi-Select in Article Editor
+export async function getPartnersForSelectAction(): Promise<{ id: string; name: string; logoUrl: string }[]> {
+  try {
+    const dbPartners = await prisma.partner.findMany({
+      orderBy: { order: "asc" },
+      select: { id: true, name: true, logoUrl: true },
+    });
+    return dbPartners;
+  } catch (e) {
+    return [];
+  }
+}
+
 // 1. Create Article Draft
 export async function createArticleDraftAction(prevState: any, formData: FormData) {
   const session = await requireAuth(["AUTHOR", "POST_EDITOR", "ADMIN"]);
@@ -88,8 +101,16 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
   const rawType = formData.get("type")?.toString();
   const type: ArticleType = rawType === "ACADEMIC" ? ArticleType.ACADEMIC : ArticleType.BLOG;
   const rawSources = formData.get("sources")?.toString() || "[]";
+  const rawPartnerIds = formData.get("partnerIds")?.toString() || "[]";
+  const rawGuestAuthors = formData.get("guestAuthors")?.toString() || "[]";
+
   let sources: string[] = [];
+  let partnerIds: string[] = [];
+  let guestAuthors: string[] = [];
+
   try { sources = JSON.parse(rawSources).filter((s: string) => s.trim() !== ""); } catch { sources = []; }
+  try { partnerIds = JSON.parse(rawPartnerIds); } catch { partnerIds = []; }
+  try { guestAuthors = JSON.parse(rawGuestAuthors).filter((g: string) => g.trim() !== ""); } catch { guestAuthors = []; }
 
   if (!title || !content) {
     return { error: "Article title and body content are required." };
@@ -131,11 +152,19 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
         content,
         coverImage,
         sources,
+        guestAuthors,
         status: "DRAFT",
         type,
         author: {
           connect: { id: session.userId },
         },
+        ...(partnerIds.length > 0
+          ? {
+            partners: {
+              create: partnerIds.map((pid) => ({ partnerId: pid })),
+            },
+          }
+          : {}),
         ...(coAuthorsData.length > 0
           ? {
             authors: {
@@ -363,8 +392,16 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
   const type: ArticleType = rawType === "ACADEMIC" ? ArticleType.ACADEMIC : ArticleType.BLOG;
   const rawAuthorIds = formData.get("authorIds")?.toString() || "";
   const rawSources = formData.get("sources")?.toString() || "[]";
+  const rawPartnerIds = formData.get("partnerIds")?.toString() || "[]";
+  const rawGuestAuthors = formData.get("guestAuthors")?.toString() || "[]";
+
   let sources: string[] = [];
+  let partnerIds: string[] = [];
+  let guestAuthors: string[] = [];
+
   try { sources = JSON.parse(rawSources).filter((s: string) => s.trim() !== ""); } catch { sources = []; }
+  try { partnerIds = JSON.parse(rawPartnerIds); } catch { partnerIds = []; }
+  try { guestAuthors = JSON.parse(rawGuestAuthors).filter((g: string) => g.trim() !== ""); } catch { guestAuthors = []; }
 
   if (!id || !title || !content) {
     return { error: "Article ID, title, and content are required." };
@@ -407,9 +444,14 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
         content,
         coverImage,
         sources,
+        guestAuthors,
         status,
         type,
         ...(status === "PUBLISHED" ? { publishedAt: new Date() } : {}),
+        partners: {
+          deleteMany: {},
+          create: partnerIds.map((pid) => ({ partnerId: pid })),
+        },
         ...(coAuthorsData.length > 0
           ? {
             authors: {
@@ -417,7 +459,11 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
               create: coAuthorsData,
             },
           }
-          : {}),
+          : {
+            authors: {
+              deleteMany: {},
+            },
+          }),
       },
     });
   } catch (err: any) {

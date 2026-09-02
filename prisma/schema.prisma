@@ -141,6 +141,7 @@ model Article {
   content     String         @db.Text
   coverImage  String?        @db.Text
   sources     String[]       @default([])
+  guestAuthors String[]      @default([])
   status      ArticleStatus  @default(DRAFT)
   type        ArticleType    @default(BLOG)
   viewCount   Int            @default(0)
@@ -233,6 +234,7 @@ model Project {
   description String?          @db.Text
   coverImage  String?          @db.Text
   status      ProjectStatus    @default(PLANNED)
+  guestAuthors String[]        @default([])
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt @default(now())
 

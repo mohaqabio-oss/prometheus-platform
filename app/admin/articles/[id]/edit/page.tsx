@@ -2,13 +2,16 @@ import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArticleEditor } from "@/components/admin/article-editor";
+import { prisma } from "@/lib/db/prisma";
 import {
   updateArticleAction,
-  getAdminArticlesList,
   getMembersForSelectAction,
+  getPartnersForSelectAction,
 } from "@/app/actions/article-actions";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 interface EditArticlePageProps {
   params: Promise<{
@@ -18,13 +21,53 @@ interface EditArticlePageProps {
 
 export default async function EditArticlePage({ params }: EditArticlePageProps) {
   const { id } = await params;
-  const articles = await getAdminArticlesList();
-  const article = articles.find((a) => a.id === id);
-  const availableMembers = await getMembersForSelectAction();
+
+  let article: any = null;
+  let availableMembers: any[] = [];
+  let availablePartners: any[] = [];
+
+  try {
+    [article, availableMembers, availablePartners] = await Promise.all([
+      prisma.article.findUnique({
+        where: { id },
+        include: {
+          author: true,
+          authors: true,
+          category: true,
+          partners: { include: { partner: true } },
+        },
+      }),
+      getMembersForSelectAction(),
+      getPartnersForSelectAction(),
+    ]);
+  } catch (e) {}
 
   if (!article) {
     notFound();
   }
+
+  const articleForEditor = {
+    id: article.id,
+    title: article.title,
+    excerpt: article.excerpt || "",
+    content: article.content,
+    categoryName: article.category?.name || "عام",
+    coverImage: article.coverImage || undefined,
+    status: article.status,
+    type: article.type,
+    sources: article.sources || [],
+    guestAuthors: article.guestAuthors || [],
+    authors: article.authors?.map((a: any) => ({
+      id: a.id,
+      name: a.name,
+      title: a.role || "مؤلف مشارك",
+    })) || [],
+    partners: article.partners?.map((p: any) => ({
+      id: p.partner.id,
+      name: p.partner.name,
+      logoUrl: p.partner.logoUrl,
+    })) || [],
+  };
 
   return (
     <div className="space-y-6">
@@ -38,8 +81,9 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
       </div>
 
       <ArticleEditor
-        article={article}
+        article={articleForEditor}
         availableMembers={availableMembers}
+        availablePartners={availablePartners}
         saveAction={updateArticleAction}
       />
     </div>

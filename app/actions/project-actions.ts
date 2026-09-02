@@ -14,6 +14,7 @@ export interface ProjectRecord {
   description?: string;
   coverImage?: string;
   status: ProjectStatus;
+  guestAuthors?: string[];
   membersCount: number;
   articlesCount: number;
   createdAt: string;
@@ -67,6 +68,7 @@ export async function getProjectsAction(): Promise<ProjectRecord[]> {
       description: p.description || undefined,
       coverImage: p.coverImage || undefined,
       status: p.status,
+      guestAuthors: p.guestAuthors || [],
       membersCount: p._count.members,
       articlesCount: p._count.articles,
       createdAt: p.createdAt.toISOString(),
@@ -109,6 +111,7 @@ export async function getProjectBySlugAction(slug: string): Promise<ProjectDetai
       description: p.description || undefined,
       coverImage: p.coverImage || undefined,
       status: p.status,
+      guestAuthors: p.guestAuthors || [],
       membersCount: p._count.members,
       articlesCount: p._count.articles,
       createdAt: p.createdAt.toISOString(),
@@ -151,14 +154,17 @@ export async function createProjectAction(prevState: any, formData: FormData) {
   const rawArticleIds = formData.get("articleIds")?.toString() || "[]";
   const rawPartnerIds = formData.get("partnerIds")?.toString() || "[]";
   const rawMembers = formData.get("members")?.toString() || "[]"; // [{memberId, roleName}]
+  const rawGuestAuthors = formData.get("guestAuthors")?.toString() || "[]";
 
   let articleIds: string[] = [];
   let partnerIds: string[] = [];
   let memberRoles: { memberId: string; roleName: string }[] = [];
+  let guestAuthors: string[] = [];
 
   try { articleIds = JSON.parse(rawArticleIds); } catch { articleIds = []; }
   try { partnerIds = JSON.parse(rawPartnerIds); } catch { partnerIds = []; }
   try { memberRoles = JSON.parse(rawMembers); } catch { memberRoles = []; }
+  try { guestAuthors = JSON.parse(rawGuestAuthors).filter((g: string) => g.trim() !== ""); } catch { guestAuthors = []; }
 
   if (!title) return { error: "عنوان المشروع مطلوب." };
 
@@ -172,6 +178,7 @@ export async function createProjectAction(prevState: any, formData: FormData) {
         description,
         coverImage,
         status,
+        guestAuthors,
         articles: articleIds.length > 0
           ? { create: articleIds.map((aid) => ({ articleId: aid })) }
           : undefined,
@@ -207,14 +214,17 @@ export async function updateProjectAction(prevState: any, formData: FormData) {
   const rawArticleIds = formData.get("articleIds")?.toString() || "[]";
   const rawPartnerIds = formData.get("partnerIds")?.toString() || "[]";
   const rawMembers = formData.get("members")?.toString() || "[]";
+  const rawGuestAuthors = formData.get("guestAuthors")?.toString() || "[]";
 
   let articleIds: string[] = [];
   let partnerIds: string[] = [];
   let memberRoles: { memberId: string; roleName: string }[] = [];
+  let guestAuthors: string[] = [];
 
   try { articleIds = JSON.parse(rawArticleIds); } catch { articleIds = []; }
   try { partnerIds = JSON.parse(rawPartnerIds); } catch { partnerIds = []; }
   try { memberRoles = JSON.parse(rawMembers); } catch { memberRoles = []; }
+  try { guestAuthors = JSON.parse(rawGuestAuthors).filter((g: string) => g.trim() !== ""); } catch { guestAuthors = []; }
 
   if (!id || !title) return { error: "معرف المشروع والعنوان مطلوبان." };
 
@@ -224,7 +234,7 @@ export async function updateProjectAction(prevState: any, formData: FormData) {
     await prisma.$transaction([
       prisma.project.update({
         where: { id },
-        data: { title, slug, description, coverImage, status },
+        data: { title, slug, description, coverImage, status, guestAuthors },
       }),
       prisma.projectArticle.deleteMany({ where: { projectId: id } }),
       ...(articleIds.length > 0

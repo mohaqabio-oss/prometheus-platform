@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import { prisma } from "@/lib/db/prisma";
 import {
   FolderGit2, Users, FileText, Building2, ArrowLeft,
-  CheckCircle2, Clock, Circle, Calendar, BookOpen,
+  CheckCircle2, Clock, Circle, Calendar, BookOpen, UserPlus,
 } from "lucide-react";
 
 interface Props { params: Promise<{ slug: string }> }
@@ -108,6 +108,12 @@ export default async function ProjectDetailPage({ params }: Props) {
               <Users className="w-4 h-4 text-[#D49B4B]" />
               <strong className="text-white">{project.members.length}</strong> عضو في الفريق
             </span>
+            {project.guestAuthors && project.guestAuthors.length > 0 && (
+              <span className="flex items-center gap-2 text-[#6B7280] font-fira">
+                <UserPlus className="w-4 h-4 text-[#D49B4B]" />
+                <strong className="text-white">{project.guestAuthors.length}</strong> مساهم خارجي
+              </span>
+            )}
             <span className="flex items-center gap-2 text-[#6B7280] font-fira">
               <FileText className="w-4 h-4 text-[#D49B4B]" />
               <strong className="text-white">{project.articles.length}</strong> مقالة ومخرجات
@@ -153,6 +159,29 @@ export default async function ProjectDetailPage({ params }: Props) {
                     <p className="text-[10px] text-[#6B7280] font-sans mt-1">{pr.member.departmentName}</p>
                   )}
                 </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Guest Authors / External Contributors */}
+        {project.guestAuthors && project.guestAuthors.length > 0 && (
+          <section>
+            <h2 className="font-cairo text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              <UserPlus className="w-6 h-6 text-[#D49B4B]" />
+              المساهمون والباحثون الخارجيون
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {project.guestAuthors.map((author: string, idx: number) => (
+                <div key={idx} className="flex items-center gap-3 p-4 rounded-2xl bg-[#141C2F] border border-[#1E293B]">
+                  <div className="w-12 h-12 rounded-full bg-[#1E293B] border border-[#D49B4B]/30 flex items-center justify-center text-[#D49B4B] font-cairo font-bold text-base shrink-0">
+                    {author.trim().charAt(0) || "ب"}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-cairo font-bold text-white text-sm truncate">{author}</p>
+                    <span className="text-[11px] text-[#6B7280] font-sans">باحث / مساهم خارجي</span>
+                  </div>
+                </div>
               ))}
             </div>
           </section>

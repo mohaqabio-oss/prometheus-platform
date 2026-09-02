@@ -13,7 +13,7 @@ import TipTapImage from "@tiptap/extension-image";
 import ImageResize from "tiptap-extension-resize-image";
 import { FontSize } from "@/lib/tiptap/font-size";
 import { Button } from "@/components/ui/button";
-import { getMembersForSelectAction, ArticleAuthor } from "@/app/actions/article-actions";
+import { getMembersForSelectAction, getPartnersForSelectAction, ArticleAuthor } from "@/app/actions/article-actions";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3, Heading4, Pilcrow,
@@ -21,7 +21,7 @@ import {
   List, ListOrdered, Quote, ImageIcon, Save, AlertCircle,
   Loader2, Upload, Maximize2, Minimize2, Palette, Highlighter,
   Type, Users, Check, FileText, BookOpen, Info, AlertTriangle,
-  Lightbulb, Plus, Trash2, Link2, BookMarked,
+  Lightbulb, Plus, Trash2, Link2, BookMarked, Building2, UserPlus,
 } from "lucide-react";
 
 // ── Custom Callout TipTap Node ────────────────────────────────────────────────
@@ -51,6 +51,12 @@ const CalloutNode = Node.create({
 });
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+export interface PartnerSelectOption {
+  id: string;
+  name: string;
+  logoUrl: string;
+}
+
 export interface ArticleEditorProps {
   article?: {
     id: string;
@@ -63,8 +69,11 @@ export interface ArticleEditorProps {
     type?: string;
     authors?: ArticleAuthor[];
     sources?: string[];
+    guestAuthors?: string[];
+    partners?: { id: string; name: string; logoUrl: string }[];
   } | null;
   availableMembers?: ArticleAuthor[];
+  availablePartners?: PartnerSelectOption[];
   saveAction: (prevState: any, formData: FormData) => Promise<any>;
 }
 
@@ -102,7 +111,7 @@ const CALLOUT_TYPES = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
-export function ArticleEditor({ article, availableMembers = [], saveAction }: ArticleEditorProps) {
+export function ArticleEditor({ article, availableMembers = [], availablePartners = [], saveAction }: ArticleEditorProps) {
   const [focusMode, setFocusMode] = useState(false);
   const [coverImageUrl, setCoverImageUrl] = useState<string>(article?.coverImage || "");
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -116,6 +125,17 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
 
   // Sources state
   const [sources, setSources] = useState<string[]>(article?.sources || [""]);
+
+  // Guest authors state
+  const [guestAuthors, setGuestAuthors] = useState<string[]>(
+    article?.guestAuthors && article.guestAuthors.length > 0 ? article.guestAuthors : [""]
+  );
+
+  // Partners state
+  const [partnersList, setPartnersList] = useState<PartnerSelectOption[]>(availablePartners);
+  const [selectedPartnerIds, setSelectedPartnerIds] = useState<string[]>(
+    article?.partners?.map((p: any) => p.id || p.partnerId) || []
+  );
 
   // Multi-Author Selection State
   const [membersList, setMembersList] = useState<ArticleAuthor[]>(availableMembers);
@@ -136,6 +156,16 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     }
   }, [membersList.length]);
 
+  useEffect(() => {
+    if (partnersList.length === 0) {
+      async function loadPartners() {
+        const data = await getPartnersForSelectAction();
+        setPartnersList(data || []);
+      }
+      loadPartners();
+    }
+  }, [partnersList.length]);
+
   const toggleAuthorSelection = (authorId: string) => {
     setSelectedAuthorIds((prev) =>
       prev.includes(authorId)
@@ -144,10 +174,23 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     );
   };
 
+  const togglePartnerSelection = (partnerId: string) => {
+    setSelectedPartnerIds((prev) =>
+      prev.includes(partnerId)
+        ? prev.filter((id) => id !== partnerId)
+        : [...prev, partnerId]
+    );
+  };
+
   const addSource = () => setSources((prev) => [...prev, ""]);
   const removeSource = (i: number) => setSources((prev) => prev.filter((_, idx) => idx !== i));
   const updateSource = (i: number, val: string) =>
     setSources((prev) => prev.map((s, idx) => (idx === i ? val : s)));
+
+  const addGuestAuthor = () => setGuestAuthors((prev) => [...prev, ""]);
+  const removeGuestAuthor = (i: number) => setGuestAuthors((prev) => prev.filter((_, idx) => idx !== i));
+  const updateGuestAuthor = (i: number, val: string) =>
+    setGuestAuthors((prev) => prev.map((g, idx) => (idx === i ? val : g)));
 
   const editor = useEditor({
     extensions: [
@@ -176,6 +219,9 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     formData.set("authorIds", JSON.stringify(selectedAuthorIds));
     const cleanSources = sources.filter((s) => s.trim() !== "");
     formData.set("sources", JSON.stringify(cleanSources));
+    const cleanGuestAuthors = guestAuthors.filter((g) => g.trim() !== "");
+    formData.set("guestAuthors", JSON.stringify(cleanGuestAuthors));
+    formData.set("partnerIds", JSON.stringify(selectedPartnerIds));
     return await saveAction(prevState, formData);
   }, null);
 
@@ -541,6 +587,79 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
                             <p className="text-[10px] font-fira text-[#6B7280] mt-1">{member.title} ({member.department})</p>
                           </div>
                         </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* EXTERNAL / GUEST AUTHORS */}
+            <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
+              <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-3">
+                <div className="flex items-center gap-2">
+                  <UserPlus className="w-4 h-4 text-[#E84A0C]" />
+                  <h3 className="font-cairo font-bold text-white text-base">المؤلفون الخارجيون (Guest Authors)</h3>
+                </div>
+                <button type="button" onClick={addGuestAuthor}
+                  className="p-1.5 rounded-lg bg-[#E84A0C]/10 hover:bg-[#E84A0C]/20 text-[#E84A0C] transition-colors">
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <p className="text-xs text-[#6B7280] font-sans">
+                أضف أسماء الكتاب أو الباحثين من خارج الفريق لعرضهم رسمياً كمؤلفين للمقالة.
+              </p>
+              <div className="space-y-2">
+                {guestAuthors.map((guest, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={guest}
+                      onChange={(e) => updateGuestAuthor(idx, e.target.value)}
+                      placeholder="مثال: د. سارة خالد (كاتب زائر)"
+                      className="flex-1 h-9 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-lg text-xs text-white focus:outline-none focus:border-[#E84A0C] font-sans"
+                    />
+                    {guestAuthors.length > 1 && (
+                      <button type="button" onClick={() => removeGuestAuthor(idx)}
+                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button type="button" onClick={addGuestAuthor}
+                className="w-full py-2 rounded-lg border border-dashed border-[#6B7280]/30 text-[#6B7280] hover:text-[#E84A0C] hover:border-[#E84A0C]/40 text-xs font-cairo flex items-center justify-center gap-1.5 transition-colors">
+                <Plus className="w-3.5 h-3.5" />
+                إضافة مؤلف خارجي آخر
+              </button>
+            </div>
+
+            {/* PARTNER CO-AUTHORSHIP SELECTION */}
+            <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
+              <div className="flex items-center gap-2 border-b border-[#6B7280]/20 pb-3">
+                <Building2 className="w-4 h-4 text-[#D49B4B]" />
+                <h3 className="font-cairo font-bold text-white text-base">الشركاء والمؤسسات المساهمة</h3>
+              </div>
+              <p className="text-xs text-[#6B7280] font-sans">
+                اختر المؤسسات الشريكة المساهمة في هذا البحث أو المقال.
+              </p>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {partnersList.length === 0 ? (
+                  <p className="text-xs text-[#6B7280] italic">لا يوجد شركاء مضافون.</p>
+                ) : (
+                  partnersList.map((partner) => {
+                    const isSelected = selectedPartnerIds.includes(partner.id);
+                    return (
+                      <div key={partner.id} onClick={() => togglePartnerSelection(partner.id)}
+                        className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all ${
+                          isSelected ? "bg-[#1A2B4A] border-[#D49B4B]" : "bg-[#1A2B4A]/30 border-[#6B7280]/20 hover:border-[#6B7280]/40"
+                        }`}>
+                        <div className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 ${isSelected ? "bg-[#D49B4B] border-[#D49B4B] text-[#0A0F1D]" : "border-[#6B7280]/40"}`}>
+                          {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                        </div>
+                        <img src={partner.logoUrl} alt={partner.name} className="w-6 h-6 object-contain rounded" />
+                        <p className="text-xs text-white truncate flex-1">{partner.name}</p>
                       </div>
                     );
                   })
