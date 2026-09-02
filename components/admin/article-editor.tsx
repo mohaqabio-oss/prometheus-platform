@@ -171,6 +171,10 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
 
     setUploadingCover(true);
     setUploadError(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -178,19 +182,34 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
-      const data = await res.json();
+      clearTimeout(timeoutId);
+
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("استجابة الخادم غير صالحة عند رفع صورة الغلاف");
+      }
+
       if (!res.ok || data.error) {
-        throw new Error(data.error || "فشل رفع صورة الغلاف");
+        throw new Error(data.error || "فشل رفع صورة الغلاف على الخادم");
       }
 
       setCoverImageUrl(data.url);
     } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error("[ARTICLE COVER UPLOAD ERROR]:", err);
-      setUploadError(err.message || "فشل رفع صورة الغلاف إلى الخادم.");
+      const msg = err.name === "AbortError"
+        ? "انتهت مهلة طلب رفع صورة الغلاف. يرجى المحاولة مرة أخرى."
+        : (err.message || "فشل رفع صورة الغلاف إلى الخادم.");
+      setUploadError(msg);
+      alert(`خطأ في رفع صورة الغلاف: ${msg}`);
     } finally {
       setUploadingCover(false);
+      e.target.value = "";
     }
   };
 
@@ -200,6 +219,10 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
 
     setUploadingInlineImg(true);
     setUploadError(null);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -207,19 +230,34 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
+        signal: controller.signal,
       });
 
-      const data = await res.json();
+      clearTimeout(timeoutId);
+
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("استجابة الخادم غير صالحة عند رفع الصورة");
+      }
+
       if (!res.ok || data.error) {
-        throw new Error(data.error || "فشل رفع الصورة");
+        throw new Error(data.error || "فشل رفع الصورة على الخادم");
       }
 
       editor.chain().focus().setImage({ src: data.url }).run();
     } catch (err: any) {
+      clearTimeout(timeoutId);
       console.error("[ARTICLE INLINE IMAGE UPLOAD ERROR]:", err);
-      setUploadError(err.message || "فشل رفع الصورة إلى الخادم.");
+      const msg = err.name === "AbortError"
+        ? "انتهت مهلة طلب رفع الصورة. يرجى المحاولة مرة أخرى."
+        : (err.message || "فشل رفع الصورة إلى الخادم.");
+      setUploadError(msg);
+      alert(`خطأ في رفع الصورة: ${msg}`);
     } finally {
       setUploadingInlineImg(false);
+      e.target.value = "";
     }
   };
 
