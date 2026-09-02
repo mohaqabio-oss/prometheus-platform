@@ -347,6 +347,7 @@ export async function addPartnerAction(prevState: any, formData: FormData) {
     await prisma.partner.create({
       data: {
         name,
+        slug: name.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\u0621-\u064A\u0660-\u0669\-]+/g, "") + "-" + Date.now().toString().slice(-4),
         logoUrl,
         websiteUrl: websiteUrl || undefined,
         order: newPartner.order,

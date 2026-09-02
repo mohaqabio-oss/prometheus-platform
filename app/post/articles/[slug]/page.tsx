@@ -67,6 +67,7 @@ export default async function SingleAcademicArticlePage({ params }: ArticlePageP
         author: true,
         authors: true,
         category: true,
+        partners: { include: { partner: true } },
       },
     });
 
@@ -248,6 +249,25 @@ export default async function SingleAcademicArticlePage({ params }: ArticlePageP
                 </div>
               )}
             </div>
+
+            {/* ── SOURCES & REFERENCES BOX ── */}
+            {article.sources && article.sources.length > 0 && (
+              <div className="sources-box mt-12">
+                <h3>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block" style={{color:'#D49B4B'}}><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                  المصادر والمراجع
+                </h3>
+                <ol>
+                  {article.sources.map((src: string, i: number) => (
+                    <li key={i}>
+                      {src.startsWith("http") ? (
+                        <a href={src} target="_blank" rel="noopener noreferrer">{src}</a>
+                      ) : src}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
 
             <div className="pt-10 mt-10 border-t-4 border-black space-y-6">
               <h3 className="font-['Playfair_Display',serif] text-2xl font-black uppercase tracking-wider !text-black flex items-center gap-2">

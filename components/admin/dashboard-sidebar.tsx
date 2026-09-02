@@ -23,6 +23,7 @@ import {
   BarChart3,
   Building2,
   GraduationCap,
+  FolderGit2,
 } from "lucide-react";
 
 interface NavItem {
@@ -94,6 +95,23 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
           href: "/admin/editorial-members",
           icon: <BookOpen className="w-4 h-4" />,
           rolesAllowed: ["ADMIN", "HR_EDITOR"],
+        },
+      ],
+    },
+    {
+      groupLabel: "شبكة الشراكات",
+      items: [
+        {
+          title: "المشاريع البحثية",
+          href: "/admin/projects",
+          icon: <FolderGit2 className="w-4 h-4 text-[#E84A0C]" />,
+          rolesAllowed: ["ADMIN"],
+        },
+        {
+          title: "الشركاء والمؤسسات",
+          href: "/admin/partners",
+          icon: <Building2 className="w-4 h-4 text-[#E84A0C]" />,
+          rolesAllowed: ["ADMIN"],
         },
       ],
     },

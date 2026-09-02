@@ -8,171 +8,324 @@ import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { prisma } from "@/lib/db/prisma";
 import {
-  ArrowLeft,
-  Clock,
-  BookOpen,
-  FolderGit2,
-  Microscope,
-  Calendar,
+  ArrowLeft, Clock, BookOpen, FolderGit2, Microscope, Calendar,
+  FileText, Users, Award, Flame, ChevronLeft, Building2,
 } from "lucide-react";
 
 interface MemberProfilePageProps {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: MemberProfilePageProps): Promise<Metadata> {
   const { id } = await params;
   try {
-    const member = await prisma.member.findUnique({
-      where: { id },
-    });
-
+    const member = await prisma.member.findUnique({ where: { id } });
     if (member) {
       return {
-        title: `${member.fullName} - ${member.title || "عضو فريق"}`,
-        description: `${member.fullName} is a ${member.title || "Member"} in the ${member.departmentName || "General"} department at Prometheus Voluntary Team.`,
+        title: `${member.fullName} | فريق بروميثيوس`,
+        description: member.bio || `${member.fullName} — ${member.title || "عضو"} في ${member.departmentName || "الفريق"}`,
       };
     }
-  } catch (e) {}
-
-  return {
-    title: "Member Profile | Prometheus Voluntary Team",
-  };
+  } catch {}
+  return { title: "ملف العضو | بروميثيوس" };
 }
 
 export default async function SingleMemberProfilePage({ params }: MemberProfilePageProps) {
   const { id } = await params;
   let member: any = null;
+  let articles: any[] = [];
 
   try {
-    member = await prisma.member.findUnique({
-      where: { id },
-      include: {
-        certificates: true,
-      },
-    });
-  } catch (e) {}
+    [member] = await Promise.all([
+      prisma.member.findUnique({
+        where: { id },
+        include: {
+          certificates: { orderBy: { issuedAt: "desc" } },
+          projectRoles: {
+            include: {
+              project: {
+                include: {
+                  _count: { select: { members: true, articles: true } },
+                  partners: { include: { partner: true }, take: 3 },
+                },
+              },
+            },
+            orderBy: { createdAt: "desc" },
+          },
+        },
+      }),
+    ]);
 
-  if (!member) {
-    notFound();
-  }
+    if (member) {
+      // Fetch articles where this member is co-author or main author
+      articles = await prisma.article.findMany({
+        where: {
+          status: "PUBLISHED",
+          OR: [
+            { authors: { some: { name: member.fullName } } },
+          ],
+        },
+        include: {
+          authors: true,
+          category: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+  } catch {}
+
+  if (!member) notFound();
+
+  const projectRoles = member.projectRoles || [];
+  const academicArticles = articles.filter((a: any) => a.type === "ACADEMIC");
+  const blogArticles = articles.filter((a: any) => a.type === "BLOG");
 
   return (
-    <div className="py-12 sm:py-20 bg-[#1A2B4A] min-h-screen text-white animate-fade-in">
-      <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-5xl">
-        
-        {/* Back Navigation */}
-        <div className="mb-8">
-          <Link href="/members">
-            <Button variant="ghost" size="sm" className="gap-2 text-[#6B7280] hover:text-white">
-              <ArrowLeft className="w-4 h-4 text-[#E84A0C]" />
-              <span>Back to Members Directory</span>
-            </Button>
-          </Link>
-        </div>
+    <main className="py-12 sm:py-20 bg-[#0A0F1D] min-h-screen text-white animate-fade-in">
+      <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-5xl space-y-10">
 
-        {/* MEMBER PROFILE HEADER CARD */}
-        <div className="p-6 sm:p-10 rounded-2xl border border-[#6B7280]/20 bg-[#0D0D0D] mb-10 shadow-2xl relative overflow-hidden">
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
-            
+        {/* Back Navigation */}
+        <Link href="/members"
+          className="inline-flex items-center gap-2 text-sm text-[#6B7280] hover:text-[#D49B4B] transition-colors font-sans">
+          <ArrowLeft className="w-4 h-4 text-[#D49B4B]" />
+          العودة إلى دليل الكادر
+        </Link>
+
+        {/* MEMBER PROFILE HEADER */}
+        <div className="p-8 sm:p-12 rounded-2xl border border-[#1E293B] bg-[#141C2F] shadow-2xl relative overflow-hidden">
+          {/* Background accent */}
+          <div className="absolute inset-0 radial-glow-amber pointer-events-none opacity-40" />
+
+          <div className="relative flex flex-col md:flex-row items-start md:items-center gap-8">
+            {/* Avatar */}
             <Avatar
               src={member.avatarUrl || member.profileImage}
               name={member.fullName}
               size="xl"
               shape="rounded"
-              className="border-2 border-[#6B7280]/30 shadow-xl"
+              className="border-4 border-[#D49B4B]/30 shadow-2xl"
             />
 
             <div className="space-y-3 flex-1">
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="orange">{member.departmentName || "عام"}</Badge>
-                <Badge variant="dark" className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1" />
-                  {member.status} MEMBER
+                <Badge variant="dark"
+                  className={`${member.status === "ACTIVE" ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10" : "text-[#6B7280] border-[#6B7280]/30 bg-[#6B7280]/10"}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${member.status === "ACTIVE" ? "bg-emerald-400 animate-pulse" : "bg-[#6B7280]"} mr-1`} />
+                  {member.status === "ACTIVE" ? "نشط" : member.status === "ALUMNI" ? "خريج" : "غير نشط"}
                 </Badge>
+                {member.leadershipTier && member.leadershipTier !== "Regular" && (
+                  <Badge variant="dark" className="text-[#D49B4B] border-[#D49B4B]/30 bg-[#D49B4B]/10">
+                    {member.leadershipTier}
+                  </Badge>
+                )}
               </div>
 
-              <h1 className="font-display text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h1 className="font-cairo text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
                 {member.fullName}
               </h1>
 
-              <p className="text-[#E84A0C] text-sm font-mono">{member.title || "عضو متطوع"}</p>
+              <p className="text-[#D49B4B] text-base font-ibm font-medium">
+                {member.title || "متطوع في فريق بروميثيوس"}
+              </p>
 
-              <div className="flex items-center gap-4 text-xs font-mono text-[#6B7280] pt-1">
+              <div className="flex items-center gap-4 text-xs font-fira text-[#6B7280] pt-1">
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-[#6B7280]" />
-                  Joined {new Date(member.joinDate || member.createdAt).toLocaleDateString("ar-EG")}
+                  <Calendar className="w-3.5 h-3.5" />
+                  انضم {new Date(member.joinDate || member.createdAt).toLocaleDateString("ar-EG", { year: "numeric", month: "long" })}
                 </span>
               </div>
             </div>
-
           </div>
         </div>
 
         {/* STATISTICS METRICS GRID */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-          <Card className="p-5 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#E84A0C]/15 border border-[#E84A0C]/30 flex items-center justify-center text-[#E84A0C] shrink-0">
-                <Clock className="w-5 h-5" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { icon: <Clock className="w-5 h-5" />, value: `${member.volunteerHours || 0}h`, label: "ساعات التطوع" },
+            { icon: <FileText className="w-5 h-5" />, value: academicArticles.length + blogArticles.length, label: "مقالات منشورة" },
+            { icon: <FolderGit2 className="w-5 h-5" />, value: projectRoles.length, label: "مشاريع مشارك بها" },
+            { icon: <Award className="w-5 h-5" />, value: member.certificates?.length || 0, label: "شهادات مكتسبة" },
+          ].map((stat, i) => (
+            <Card key={i} className="p-5 bg-[#141C2F] border border-[#1E293B] rounded-2xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#D49B4B]/10 border border-[#D49B4B]/20 flex items-center justify-center text-[#D49B4B] shrink-0">
+                  {stat.icon}
+                </div>
+                <div>
+                  <p className="text-2xl font-bold font-fira text-white">{stat.value}</p>
+                  <p className="text-xs text-[#6B7280] font-sans">{stat.label}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold font-mono text-white">{member.volunteerHours || 0}h</p>
-                <p className="text-xs text-[#6B7280] font-sans">Volunteer Logged</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-5 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 flex items-center justify-center text-[#E84A0C] shrink-0">
-                <BookOpen className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold font-mono text-white">0</p>
-                <p className="text-xs text-[#6B7280] font-sans">Articles Published</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-5 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 flex items-center justify-center text-[#E84A0C] shrink-0">
-                <FolderGit2 className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold font-mono text-white">0</p>
-                <p className="text-xs text-[#6B7280] font-sans">Projects Led</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="p-5 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20 flex items-center justify-center text-[#E84A0C] shrink-0">
-                <Microscope className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold font-mono text-white">0</p>
-                <p className="text-xs text-[#6B7280] font-sans">Research Papers</p>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          ))}
         </div>
 
-        {/* BIOGRAPHY SECTION */}
-        {(member.bio || (member as any).biography) && (member.bio || (member as any).biography).trim() !== "" && (
-          <section className="mb-10 space-y-3">
-            <h2 className="font-display text-xl font-bold text-white">Member Biography</h2>
-            <Card className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl leading-relaxed text-[#6B7280] text-sm sm:text-base">
-              {member.bio || (member as any).biography}
+        {/* BIOGRAPHY */}
+        {member.bio && member.bio.trim() !== "" && (
+          <section className="space-y-4">
+            <h2 className="font-cairo text-2xl font-bold text-white flex items-center gap-3">
+              <span className="w-1 h-6 bg-[#D49B4B] rounded-full" />
+              نبذة عن العضو
+            </h2>
+            <Card className="p-8 bg-[#141C2F] border border-[#1E293B] rounded-2xl">
+              <p className="font-amiri text-[#CBD5E1] text-lg leading-loose italic">{member.bio}</p>
             </Card>
           </section>
         )}
 
+        {/* PROJECT ROLES */}
+        {projectRoles.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="font-cairo text-2xl font-bold text-white flex items-center gap-3">
+              <FolderGit2 className="w-6 h-6 text-[#D49B4B]" />
+              المشاريع البحثية
+              <span className="text-sm font-fira text-[#6B7280] bg-[#1E293B] px-2 py-0.5 rounded-full">
+                {projectRoles.length}
+              </span>
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {projectRoles.map((pr: any) => (
+                <Link key={pr.project.id} href={`/projects/${pr.project.slug}`}
+                  className="group archival-card rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300">
+                  {pr.project.coverImage && (
+                    <div className="h-28 overflow-hidden">
+                      <img src={pr.project.coverImage} alt={pr.project.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    </div>
+                  )}
+                  <div className="p-4 space-y-2">
+                    {/* Role badge */}
+                    <span className="inline-flex items-center gap-1 text-[10px] font-fira text-[#D49B4B] bg-[#D49B4B]/10 border border-[#D49B4B]/20 px-2 py-0.5 rounded-full">
+                      {pr.roleName}
+                    </span>
+                    <h3 className="font-cairo font-bold text-white group-hover:text-[#D49B4B] transition-colors text-base line-clamp-2">
+                      {pr.project.title}
+                    </h3>
+                    <div className="flex items-center gap-3 text-[10px] font-fira text-[#6B7280]">
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3 text-[#D49B4B]" />
+                        {pr.project._count?.members || 0}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <FileText className="w-3 h-3 text-[#D49B4B]" />
+                        {pr.project._count?.articles || 0}
+                      </span>
+                      {pr.project.partners?.length > 0 && (
+                        <div className="flex items-center gap-1 mr-auto">
+                          {pr.project.partners.slice(0, 2).map((pp: any) => (
+                            <div key={pp.partner.id} className="w-5 h-5 rounded bg-white/5 border border-[#1E293B] overflow-hidden">
+                              <img src={pp.partner.logoUrl} alt={pp.partner.name} className="w-full h-full object-contain" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ACADEMIC ARTICLES */}
+        {academicArticles.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="font-cairo text-2xl font-bold text-white flex items-center gap-3">
+              <Microscope className="w-6 h-6 text-[#D49B4B]" />
+              الأبحاث والمقالات الأكاديمية
+              <span className="text-sm font-fira text-[#6B7280] bg-[#1E293B] px-2 py-0.5 rounded-full">
+                {academicArticles.length}
+              </span>
+            </h2>
+            <div className="space-y-3">
+              {academicArticles.map((article: any) => (
+                <ArticleCard key={article.id} article={article} type="ACADEMIC" />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* BLOG ARTICLES */}
+        {blogArticles.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="font-cairo text-2xl font-bold text-white flex items-center gap-3">
+              <BookOpen className="w-6 h-6 text-[#D49B4B]" />
+              مقالات المدونة
+              <span className="text-sm font-fira text-[#6B7280] bg-[#1E293B] px-2 py-0.5 rounded-full">
+                {blogArticles.length}
+              </span>
+            </h2>
+            <div className="space-y-3">
+              {blogArticles.map((article: any) => (
+                <ArticleCard key={article.id} article={article} type="BLOG" />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* CERTIFICATES */}
+        {member.certificates?.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="font-cairo text-2xl font-bold text-white flex items-center gap-3">
+              <Award className="w-6 h-6 text-[#D49B4B]" />
+              الشهادات والإنجازات
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {member.certificates.map((cert: any) => (
+                <Card key={cert.id} className="p-5 bg-[#141C2F] border border-[#1E293B] rounded-2xl space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Award className="w-4 h-4 text-[#D49B4B] shrink-0" />
+                    <h3 className="font-cairo font-bold text-white text-sm">{cert.title}</h3>
+                  </div>
+                  {cert.description && (
+                    <p className="text-xs text-[#6B7280] font-sans leading-relaxed">{cert.description}</p>
+                  )}
+                  <p className="text-[10px] font-fira text-[#D49B4B]">
+                    {new Date(cert.issuedAt).toLocaleDateString("ar-EG")}
+                  </p>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
       </div>
-    </div>
+    </main>
+  );
+}
+
+// ── Article Card Component ─────────────────────────────────────────────────────
+function ArticleCard({ article, type }: { article: any; type: string }) {
+  return (
+    <Link href={`/post/articles/${article.slug}`}
+      className="group archival-card rounded-xl p-5 flex items-start gap-4 hover:shadow-lg transition-all duration-200">
+      {article.coverImage && (
+        <div className="w-20 h-16 rounded-lg overflow-hidden shrink-0">
+          <img src={article.coverImage} alt="" className="w-full h-full object-cover" />
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`text-[10px] font-fira px-2 py-0.5 rounded-full border ${type === "ACADEMIC" ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}>
+            {type === "ACADEMIC" ? "بحث أكاديمي" : "مدونة"}
+          </span>
+          {article.category && (
+            <span className="text-[10px] text-[#6B7280] font-fira">{article.category.name}</span>
+          )}
+        </div>
+        <h3 className="font-cairo font-bold text-white group-hover:text-[#D49B4B] transition-colors text-base line-clamp-2 mb-1">
+          {article.title}
+        </h3>
+        {article.excerpt && (
+          <p className="text-xs text-[#6B7280] font-sans line-clamp-2 leading-relaxed">{article.excerpt}</p>
+        )}
+        <div className="flex items-center gap-2 mt-2 text-[10px] font-fira text-[#6B7280]">
+          <Calendar className="w-3 h-3" />
+          {new Date(article.createdAt).toLocaleDateString("ar-EG")}
+        </div>
+      </div>
+      <ChevronLeft className="w-4 h-4 text-[#6B7280] group-hover:text-[#D49B4B] transition-colors shrink-0 mt-1" />
+    </Link>
   );
 }

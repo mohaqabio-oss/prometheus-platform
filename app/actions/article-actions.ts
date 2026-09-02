@@ -23,6 +23,7 @@ export interface LocalArticleRecord {
   content: string;
   categoryName: string;
   coverImage?: string;
+  sources: string[];
   status: ArticleStatus;
   type: ArticleType;
   editorNotes?: string;
@@ -86,6 +87,9 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
   const rawAuthorIds = formData.get("authorIds")?.toString() || "";
   const rawType = formData.get("type")?.toString();
   const type: ArticleType = rawType === "ACADEMIC" ? ArticleType.ACADEMIC : ArticleType.BLOG;
+  const rawSources = formData.get("sources")?.toString() || "[]";
+  let sources: string[] = [];
+  try { sources = JSON.parse(rawSources).filter((s: string) => s.trim() !== ""); } catch { sources = []; }
 
   if (!title || !content) {
     return { error: "Article title and body content are required." };
@@ -126,6 +130,7 @@ export async function createArticleDraftAction(prevState: any, formData: FormDat
         excerpt,
         content,
         coverImage,
+        sources,
         status: "DRAFT",
         type,
         author: {
@@ -263,6 +268,7 @@ export async function getAdminArticlesList(): Promise<LocalArticleRecord[]> {
           excerpt: a.excerpt || "",
           content: a.content,
           coverImage: a.coverImage || undefined,
+          sources: (a as any).sources || [],
           categoryName: (a as any).category?.name || "عام",
           status: a.status,
           type: a.type || ArticleType.BLOG,
@@ -324,6 +330,7 @@ export async function getPublicArticlesAction(type?: ArticleType): Promise<Local
           excerpt: a.excerpt || "",
           content: a.content,
           coverImage: a.coverImage || undefined,
+          sources: (a as any).sources || [],
           categoryName: (a as any).category?.name || "عام",
           status: a.status,
           type: a.type || ArticleType.BLOG,
@@ -355,6 +362,9 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
   const rawType = formData.get("type")?.toString();
   const type: ArticleType = rawType === "ACADEMIC" ? ArticleType.ACADEMIC : ArticleType.BLOG;
   const rawAuthorIds = formData.get("authorIds")?.toString() || "";
+  const rawSources = formData.get("sources")?.toString() || "[]";
+  let sources: string[] = [];
+  try { sources = JSON.parse(rawSources).filter((s: string) => s.trim() !== ""); } catch { sources = []; }
 
   if (!id || !title || !content) {
     return { error: "Article ID, title, and content are required." };
@@ -392,10 +402,11 @@ export async function updateArticleAction(prevState: any, formData: FormData) {
       where: { id },
       data: {
         title,
-        slug, // تحديث الرابط ليتوافق مع العنوان الجديد
+        slug,
         excerpt,
         content,
         coverImage,
+        sources,
         status,
         type,
         ...(status === "PUBLISHED" ? { publishedAt: new Date() } : {}),

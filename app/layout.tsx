@@ -1,14 +1,107 @@
 import type { Metadata, Viewport } from "next";
-import { Tajawal } from "next/font/google";
+import {
+  // Arabic Fonts
+  Tajawal,
+  Cairo,
+  Amiri,
+  Almarai,
+  IBM_Plex_Sans_Arabic,
+  // English Fonts
+  Inter,
+  Roboto,
+  Merriweather,
+  Playfair_Display,
+  Fira_Code,
+} from "next/font/google";
 import "./globals.css";
 import { getSiteSettings } from "@/app/actions/website-actions";
 import ShaderBackground from "@/components/ui/shader-background";
 
+// ── Arabic Fonts ──────────────────────────────────────────
 const tajawal = Tajawal({
   subsets: ["arabic"],
   weight: ["300", "400", "500", "700", "800", "900"],
   variable: "--font-tajawal",
+  display: "swap",
 });
+
+const cairo = Cairo({
+  subsets: ["arabic"],
+  weight: ["300", "400", "600", "700", "900"],
+  variable: "--font-cairo",
+  display: "swap",
+});
+
+const amiri = Amiri({
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  variable: "--font-amiri",
+  display: "swap",
+});
+
+const almarai = Almarai({
+  subsets: ["arabic"],
+  weight: ["300", "400", "700", "800"],
+  variable: "--font-almarai",
+  display: "swap",
+});
+
+const ibmPlexSansArabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-ibm",
+  display: "swap",
+});
+
+// ── English Fonts ──────────────────────────────────────────
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const roboto = Roboto({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-roboto",
+  display: "swap",
+});
+
+const merriweather = Merriweather({
+  subsets: ["latin"],
+  weight: ["300", "400", "700", "900"],
+  variable: "--font-merriweather",
+  display: "swap",
+});
+
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-playfair",
+  display: "swap",
+});
+
+const firaCode = Fira_Code({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-fira",
+  display: "swap",
+});
+
+// ── Combined className for html element ───────────────────
+const allFontVariables = [
+  tajawal.variable,
+  cairo.variable,
+  amiri.variable,
+  almarai.variable,
+  ibmPlexSansArabic.variable,
+  inter.variable,
+  roboto.variable,
+  merriweather.variable,
+  playfairDisplay.variable,
+  firaCode.variable,
+].join(" ");
 
 export const viewport: Viewport = {
   themeColor: "#0A0F1D",
@@ -74,7 +167,7 @@ export default async function RootLayout({
   const secondaryColor = settings?.secondaryColor || "#0A0F1D";
 
   return (
-    <html lang="ar" dir="rtl" className={`${tajawal.variable} h-full antialiased`}>
+    <html lang="ar" dir="rtl" className={`${allFontVariables} h-full antialiased`}>
       <head>
         <style dangerouslySetInnerHTML={{ __html: `
           :root {

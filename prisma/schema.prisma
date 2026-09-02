@@ -51,22 +51,23 @@ enum MemberStatus {
 }
 
 model Member {
-  id             String       @id @default(uuid())
+  id             String        @id @default(uuid())
   fullName       String
   title          String?
   departmentName String?
   bio            String?
   profileImage   String?
   avatarUrl      String?
-  volunteerHours Int          @default(0)
-  status         MemberStatus @default(ACTIVE)
-  leadershipTier String       @default("Regular")
-  joinDate       DateTime     @default(now())
+  volunteerHours Int           @default(0)
+  status         MemberStatus  @default(ACTIVE)
+  leadershipTier String        @default("Regular")
+  joinDate       DateTime      @default(now())
   customSections Json?
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt @default(now())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt @default(now())
 
   certificates Certificate[]
+  projectRoles ProjectRole[]
 
   @@map("members")
 }
@@ -139,6 +140,7 @@ model Article {
   excerpt     String?        @db.Text
   content     String         @db.Text
   coverImage  String?        @db.Text
+  sources     String[]       @default([])
   status      ArticleStatus  @default(DRAFT)
   type        ArticleType    @default(BLOG)
   viewCount   Int            @default(0)
@@ -148,6 +150,8 @@ model Article {
   categoryId  String?
   category    Category?      @relation(fields: [categoryId], references: [id])
   authors     ArticleAuthors[]
+  partners    PartnerArticle[]
+  projects    ProjectArticle[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt @default(now())
 
@@ -167,6 +171,104 @@ model ArticleAuthors {
 }
 
 // ==========================================
+// PARTNERS & CO-AUTHORSHIP MODELS
+// ==========================================
+
+model Partner {
+  id          String           @id @default(uuid())
+  name        String
+  slug        String           @unique
+  description String?          @db.Text
+  bio         String?          @db.Text
+  logoUrl     String
+  websiteUrl  String?
+  order       Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt @default(now())
+
+  articles    PartnerArticle[]
+  projects    PartnerProject[]
+
+  @@map("partners")
+}
+
+model PartnerArticle {
+  id        String   @id @default(uuid())
+  partnerId String
+  partner   Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([partnerId, articleId])
+  @@map("partner_articles")
+}
+
+model PartnerProject {
+  id        String   @id @default(uuid())
+  partnerId String
+  partner   Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([partnerId, projectId])
+  @@map("partner_projects")
+}
+
+// ==========================================
+// PROJECTS & RESEARCH ECOSYSTEM MODELS
+// ==========================================
+
+enum ProjectStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Project {
+  id          String           @id @default(uuid())
+  title       String
+  slug        String           @unique
+  description String?          @db.Text
+  coverImage  String?          @db.Text
+  status      ProjectStatus    @default(PLANNED)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt @default(now())
+
+  members     ProjectRole[]
+  articles    ProjectArticle[]
+  partners    PartnerProject[]
+
+  @@map("projects")
+}
+
+model ProjectRole {
+  id        String   @id @default(uuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  roleName  String   @default("باحث")
+  createdAt DateTime @default(now())
+
+  @@unique([memberId, projectId])
+  @@map("project_roles")
+}
+
+model ProjectArticle {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, articleId])
+  @@map("project_articles")
+}
+
+// ==========================================
 // DYNAMIC HOMEPAGE & CMS MODELS
 // ==========================================
 
@@ -180,18 +282,6 @@ model SiteSetting {
   updatedAt      DateTime @updatedAt @default(now())
 
   @@map("site_settings")
-}
-
-model Partner {
-  id         String   @id @default(uuid())
-  name       String
-  logoUrl    String
-  websiteUrl String?
-  order      Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt @default(now())
-
-  @@map("partners")
 }
 
 model JoinRequest {

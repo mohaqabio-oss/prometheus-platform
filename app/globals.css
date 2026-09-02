@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap');
 @import "tailwindcss";
 
 @layer base {
@@ -26,10 +25,24 @@
     --ring: #D49B4B;
     --radius: 0.75rem;
 
+    /* ── Arabic Font Variables ── */
     --font-tajawal: "Tajawal", system-ui, sans-serif;
-    --font-serif-arabic: "Amiri", "Tajawal", Georgia, serif;
-    --font-sans-arabic: "IBM Plex Sans Arabic", "Tajawal", system-ui, sans-serif;
-    --font-mono-code: "JetBrains Mono", monospace;
+    --font-cairo: "Cairo", system-ui, sans-serif;
+    --font-amiri: "Amiri", Georgia, "Times New Roman", serif;
+    --font-almarai: "Almarai", system-ui, sans-serif;
+    --font-ibm: "IBM Plex Sans Arabic", system-ui, sans-serif;
+
+    /* ── English Font Variables ── */
+    --font-inter: "Inter", system-ui, sans-serif;
+    --font-roboto: "Roboto", system-ui, sans-serif;
+    --font-merriweather: "Merriweather", Georgia, serif;
+    --font-playfair: "Playfair Display", Georgia, serif;
+    --font-fira: "Fira Code", "JetBrains Mono", monospace;
+
+    /* ── Legacy aliases (keep backward compat) ── */
+    --font-serif-arabic: var(--font-amiri);
+    --font-sans-arabic: var(--font-tajawal);
+    --font-mono-code: var(--font-fira);
   }
 }
 
@@ -54,46 +67,52 @@ html {
 body {
   background-color: #0A0F1D;
   color: #F8FAFC;
-  font-family: var(--font-sans-arabic);
+  font-family: var(--font-tajawal);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Heading Typography (Cairo) ── */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif-arabic);
+  font-family: var(--font-cairo);
   font-weight: 700;
   color: #F8FAFC;
 }
 
-.font-serif, .font-display {
-  font-family: var(--font-serif-arabic) !important;
-}
+/* ── Font Utility Overrides ── */
+.font-sans  { font-family: var(--font-tajawal) !important; }
+.font-cairo { font-family: var(--font-cairo) !important; }
+.font-amiri { font-family: var(--font-amiri) !important; }
+.font-almarai { font-family: var(--font-almarai) !important; }
+.font-ibm   { font-family: var(--font-ibm) !important; }
+.font-inter { font-family: var(--font-inter) !important; }
+.font-roboto { font-family: var(--font-roboto) !important; }
+.font-serif { font-family: var(--font-merriweather) !important; }
+.font-playfair { font-family: var(--font-playfair) !important; }
+.font-fira  { font-family: var(--font-fira) !important; }
+.font-mono  { font-family: var(--font-fira) !important; }
+/* Legacy display alias → Cairo */
+.font-display { font-family: var(--font-cairo) !important; }
 
-.font-sans {
-  font-family: var(--font-sans-arabic) !important;
-}
-
-.font-mono {
-  font-family: var(--font-mono-code) !important;
-}
-
+/* ── Animations ── */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-
 .animate-fade-in {
   animation: fadeIn 0.35s ease-out forwards;
 }
 
-/* Oxford Slate Grid Pattern */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+/* ── Oxford Slate Grid Pattern ── */
 .bg-grid-pattern {
   background-size: 48px 48px;
   background-image: 
@@ -101,12 +120,12 @@ h1, h2, h3, h4, h5, h6 {
     linear-gradient(to bottom, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
 }
 
-/* Promethean Amber Subtle Glow */
+/* ── Promethean Amber Subtle Glow ── */
 .radial-glow-amber {
   background: radial-gradient(circle at 50% 25%, rgba(212, 155, 75, 0.12) 0%, rgba(10, 15, 29, 0) 70%);
 }
 
-/* Archival Spec-Margin Card Styling */
+/* ── Archival Spec-Margin Card Styling ── */
 .archival-card {
   position: relative;
   background-color: #141C2F;
@@ -114,7 +133,6 @@ h1, h2, h3, h4, h5, h6 {
   border-right: 3px solid #D49B4B;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .archival-card:hover {
   border-color: rgba(212, 155, 75, 0.5);
   border-right-color: #D49B4B;
@@ -122,21 +140,19 @@ h1, h2, h3, h4, h5, h6 {
   transform: translateY(-2px);
 }
 
-/* Monograph Body Text */
+/* ── Article Body Typography ── */
 .article-body {
   color: #F8FAFC;
   font-size: 1.125rem;
   line-height: 1.9;
-  font-family: var(--font-sans-arabic);
+  font-family: var(--font-tajawal);
 }
-
 .article-body p {
   margin-bottom: 1.75rem;
   color: #94A3B8;
 }
-
 .article-body h2 {
-  font-family: var(--font-serif-arabic);
+  font-family: var(--font-cairo);
   color: #F8FAFC;
   font-size: 1.75rem;
   font-weight: 700;
@@ -144,22 +160,33 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1.25rem;
   line-height: 1.3;
 }
+.article-body h3 {
+  font-family: var(--font-cairo);
+  color: #E2E8F0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
 
+/* Blockquote uses Amiri for academic gravitas */
 .article-body blockquote {
+  font-family: var(--font-amiri);
   border-right: 3px solid #D49B4B;
   border-left: none;
   padding-right: 1.5rem;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+  margin: 2rem 0;
   font-style: italic;
-  color: #94A3B8;
-  background: rgba(20, 28, 47, 0.5);
-  padding: 1rem 1.5rem;
+  font-size: 1.2rem;
+  color: #CBD5E1;
+  background: rgba(20, 28, 47, 0.6);
+  padding: 1.25rem 1.75rem;
   border-radius: 0.5rem;
+  line-height: 2;
 }
 
 .article-body code {
-  font-family: var(--font-mono-code);
+  font-family: var(--font-fira);
   font-size: 0.9em;
   background-color: #141C2F;
   color: #D49B4B;
@@ -167,13 +194,101 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 0.375rem;
   border: 1px solid #1E293B;
 }
-
 .article-body a {
   color: #D49B4B;
   text-decoration: underline;
   text-underline-offset: 4px;
 }
+.article-body a:hover { color: #F8FAFC; }
 
-.article-body a:hover {
-  color: #F8FAFC;
+/* ── TipTap Callout Node ── */
+.tiptap-callout {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid;
+  margin: 1.5rem 0;
+  font-family: var(--font-tajawal);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.tiptap-callout.info {
+  background: rgba(2, 132, 199, 0.08);
+  border-color: rgba(2, 132, 199, 0.3);
+  color: #7DD3FC;
+}
+.tiptap-callout.warning {
+  background: rgba(245, 166, 35, 0.08);
+  border-color: rgba(245, 166, 35, 0.3);
+  color: #FCD34D;
+}
+.tiptap-callout.success {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #6EE7B7;
+}
+.tiptap-callout.danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #FCA5A5;
+}
+
+/* ── TipTap Image Caption (figure) ── */
+figure.tiptap-figure {
+  margin: 2rem 0;
+  text-align: center;
+}
+figure.tiptap-figure img {
+  border-radius: 0.75rem;
+  border: 1px solid #1E293B;
+  max-width: 100%;
+  display: inline-block;
+}
+figure.tiptap-figure figcaption {
+  margin-top: 0.625rem;
+  font-family: var(--font-amiri);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: #64748B;
+  padding: 0.25rem 1rem;
+  border-top: 1px solid #1E293B;
+}
+
+/* ── Sources / References Box ── */
+.sources-box {
+  margin-top: 3rem;
+  padding: 1.5rem 2rem;
+  border: 1px solid rgba(212, 155, 75, 0.25);
+  border-top: 3px solid #D49B4B;
+  border-radius: 0.75rem;
+  background: rgba(20, 28, 47, 0.6);
+}
+.sources-box h3 {
+  font-family: var(--font-cairo);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #D49B4B;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sources-box ol {
+  list-style: decimal;
+  padding-right: 1.5rem;
+  space-y: 0.5rem;
+}
+.sources-box li {
+  font-family: var(--font-ibm);
+  font-size: 0.875rem;
+  color: #94A3B8;
+  line-height: 1.7;
+  margin-bottom: 0.5rem;
+  word-break: break-all;
+}
+.sources-box li a {
+  color: #D49B4B;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

@@ -81,9 +81,23 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-tt-norms)", "TT Norms Pro", "Inter", "sans-serif"],
-        display: ["var(--font-garet)", "Garet", "Outfit", "sans-serif"],
-        mono: ["JetBrains Mono", "Menlo", "Consolas", "monospace"],
+        // ── Primary UI Fonts (Arabic-first) ──────────────────
+        sans: ["var(--font-tajawal)", "Tajawal", "system-ui", "sans-serif"],
+        cairo: ["var(--font-cairo)", "Cairo", "sans-serif"],
+        amiri: ["var(--font-amiri)", "Amiri", "Georgia", "serif"],
+        almarai: ["var(--font-almarai)", "Almarai", "sans-serif"],
+        ibm: ["var(--font-ibm)", "IBM Plex Sans Arabic", "sans-serif"],
+        
+        // ── English Fonts ─────────────────────────────────────
+        inter: ["var(--font-inter)", "Inter", "sans-serif"],
+        roboto: ["var(--font-roboto)", "Roboto", "sans-serif"],
+        serif: ["var(--font-merriweather)", "Merriweather", "Georgia", "serif"],
+        playfair: ["var(--font-playfair)", "Playfair Display", "Georgia", "serif"],
+        fira: ["var(--font-fira)", "Fira Code", "monospace"],
+        mono: ["var(--font-fira)", "JetBrains Mono", "Menlo", "Consolas", "monospace"],
+
+        // ── Legacy aliases ────────────────────────────────────
+        display: ["var(--font-cairo)", "Cairo", "Outfit", "sans-serif"],
       },
       spacing: {
         "18": "4.5rem",
