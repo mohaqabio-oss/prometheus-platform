@@ -254,7 +254,7 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
       )}
 
       {/* Header Controls Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#6B7280]/20 bg-[#0D0D0D]/90 p-4 rounded-2xl border backdrop-blur-md sticky top-2 z-40 shadow-xl">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#6B7280]/20 bg-[#0D0D0D]/90 p-4 rounded-2xl border backdrop-blur-md shadow-xl">
         <div className="flex items-center gap-3">
           <Button
             type="button" variant="outline" size="sm"
@@ -316,10 +316,10 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
           </div>
 
           {/* WORD PROCESSOR EDITOR CONTAINER */}
-          <div className="border border-[#6B7280]/20 rounded-2xl overflow-hidden bg-[#0D0D0D] shadow-2xl">
+          <div className="border border-[#6B7280]/20 rounded-2xl bg-[#0D0D0D] shadow-2xl">
 
             {/* STICKY TOP TOOLBAR */}
-            <div className="p-3 bg-[#1A2B4A] border-b border-[#6B7280]/20 sticky top-16 z-30 flex flex-wrap items-center gap-2 text-white shadow-md">
+            <div className="p-3 bg-[#1A2B4A]/95 backdrop-blur border-b border-[#6B7280]/20 sticky top-0 z-40 flex flex-wrap items-center gap-2 text-white shadow-md rounded-t-2xl">
 
               {/* Font Family Selector */}
               <div className="flex items-center gap-1 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl px-2 py-1">
@@ -472,7 +472,7 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
             </div>
 
             {/* EDITOR CANVAS */}
-            <div className="p-4 sm:p-8 bg-[#121A2B]/80 flex justify-center overflow-x-auto min-h-[750px]">
+            <div className="p-4 sm:p-8 bg-[#121A2B]/80 flex justify-center overflow-x-auto min-h-[750px] rounded-b-2xl">
               <div className="w-full max-w-4xl bg-[#0D0D0D] border border-[#6B7280]/30 rounded-2xl p-8 sm:p-12 shadow-2xl min-h-[700px] text-white font-sans text-base sm:text-lg leading-relaxed focus:outline-none prose prose-invert max-w-none [&_img]:rounded-xl [&_img]:border [&_img]:border-[#6B7280]/30 [&_img]:my-6">
                 <EditorContent editor={editor} />
               </div>
