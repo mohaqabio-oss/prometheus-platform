@@ -24,7 +24,12 @@ interface ArticlePageProps {
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug);
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch {
+    decodedSlug = slug;
+  }
 
   try {
     const article = await prisma.article.findUnique({
@@ -45,7 +50,12 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
 export default async function SingleAcademicArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug);
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch {
+    decodedSlug = slug;
+  }
 
   let article: any = null;
   let latestArticles: any[] = [];

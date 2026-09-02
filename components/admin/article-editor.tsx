@@ -172,11 +172,23 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     setUploadingCover(true);
     setUploadError(null);
     try {
-      const base64Data = await convertImageToBase64(file, 1200, 800, 0.85);
-      setCoverImageUrl(base64Data);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "فشل رفع صورة الغلاف");
+      }
+
+      setCoverImageUrl(data.url);
     } catch (err: any) {
       console.error("[ARTICLE COVER UPLOAD ERROR]:", err);
-      setUploadError(err.message || "فشل معالجة صورة الغلاف في المتصفح.");
+      setUploadError(err.message || "فشل رفع صورة الغلاف إلى الخادم.");
     } finally {
       setUploadingCover(false);
     }
@@ -189,11 +201,23 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
     setUploadingInlineImg(true);
     setUploadError(null);
     try {
-      const base64Data = await convertImageToBase64(file, 1000, 1000, 0.85);
-      editor.chain().focus().setImage({ src: base64Data }).run();
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "فشل رفع الصورة");
+      }
+
+      editor.chain().focus().setImage({ src: data.url }).run();
     } catch (err: any) {
       console.error("[ARTICLE INLINE IMAGE UPLOAD ERROR]:", err);
-      setUploadError(err.message || "فشل معالجة الصورة في المتصفح.");
+      setUploadError(err.message || "فشل رفع الصورة إلى الخادم.");
     } finally {
       setUploadingInlineImg(false);
     }

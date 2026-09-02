@@ -136,9 +136,9 @@ model Article {
   id          String         @id @default(uuid())
   title       String
   slug        String         @unique
-  excerpt     String?
-  content     String
-  coverImage  String?
+  excerpt     String?        @db.Text
+  content     String         @db.Text
+  coverImage  String?        @db.Text
   status      ArticleStatus  @default(DRAFT)
   type        ArticleType    @default(BLOG)
   viewCount   Int            @default(0)

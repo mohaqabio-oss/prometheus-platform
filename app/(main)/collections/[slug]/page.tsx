@@ -15,11 +15,17 @@ interface CollectionPageProps {
 
 export default async function SingleCollectionPage({ params }: CollectionPageProps) {
   const { slug } = await params;
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch {
+    decodedSlug = slug;
+  }
   let collection: any = null;
 
   try {
     collection = await prisma.collection.findUnique({
-      where: { slug },
+      where: { slug: decodedSlug },
       include: {
         articles: {
           include: {
