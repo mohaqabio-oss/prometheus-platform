@@ -50,32 +50,6 @@ const CalloutNode = Node.create({
   },
 });
 
-// ── Custom Figure/Caption TipTap Node ─────────────────────────────────────────
-const FigcaptionNode = Node.create({
-  name: "figcaption",
-  content: "inline*",
-  defining: true,
-  parseHTML() {
-    return [{ tag: "figcaption" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["figcaption", HTMLAttributes, 0];
-  },
-});
-
-const FigureNode = Node.create({
-  name: "figure",
-  group: "block",
-  content: "(image | imageResize)? figcaption?",
-  draggable: true,
-  parseHTML() {
-    return [{ tag: "figure.tiptap-figure" }, { tag: "figure" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["figure", mergeAttributes(HTMLAttributes, { class: "tiptap-figure" }), 0];
-  },
-});
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 export interface ArticleEditorProps {
   article?: {
@@ -188,8 +162,6 @@ export function ArticleEditor({ article, availableMembers = [], saveAction }: Ar
       FontSize,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       CalloutNode,
-      FigcaptionNode,
-      FigureNode,
     ],
     content: article?.content || "<p>اكتب هنا نص المقالة أو البحث الأكاديمي التخصصي...</p>",
     onUpdate: ({ editor }) => {
