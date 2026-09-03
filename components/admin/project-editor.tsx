@@ -9,6 +9,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { ProjectRecord } from "@/app/actions/project-actions";
+import { PartnerMultiSelect } from "@/components/admin/partner-multi-select";
 
 interface Member {
   id: string;
@@ -69,7 +70,11 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
     project?.partners?.map((p) => p.id) || []
   );
   const [memberRoles, setMemberRoles] = useState<MemberRole[]>(
-    project?.members?.map((m) => ({ memberId: m.memberId, memberName: m.memberName, roleName: m.roleName })) || []
+    project?.members?.map((m) => ({
+      memberId: m.memberId,
+      memberName: m.memberName || availableMembers.find((am) => am.id === m.memberId)?.name || "عضو",
+      roleName: m.roleName,
+    })) || []
   );
 
   // External / Guest contributors
@@ -94,9 +99,6 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
 
   const toggleArticle = (id: string) =>
     setSelectedArticleIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
-
-  const togglePartner = (id: string) =>
-    setSelectedPartnerIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
 
   const addMemberRole = () => {
     if (!newMemberId || !newRoleName.trim()) return;
@@ -186,52 +188,92 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
           <div className="p-6 bg-[#0D0D0D] rounded-2xl border border-[#6B7280]/20 shadow-xl space-y-4">
             <div className="flex items-center gap-2 border-b border-[#6B7280]/20 pb-3">
               <Users className="w-4 h-4 text-[#E84A0C]" />
-              <h3 className="font-cairo font-bold text-white">أعضاء الفريق وأدوارهم</h3>
+              <h3 className="font-cairo font-bold text-white">أعضاء الفريق وأدوارهم (Project Roles)</h3>
             </div>
 
             {/* Add member form */}
-            <div className="flex gap-2 items-end">
-              <div className="flex-1">
-                <label className="text-xs text-[#6B7280] font-sans mb-1 block">العضو</label>
-                <select value={newMemberId} onChange={(e) => setNewMemberId(e.target.value)}
-                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C]">
-                  <option value="">-- اختر عضواً --</option>
-                  {availableMembers
-                    .filter((m) => !memberRoles.some((mr) => mr.memberId === m.id))
-                    .map((m) => (
-                      <option key={m.id} value={m.id}>{m.name} ({m.department})</option>
-                    ))}
-                </select>
+            <div className="space-y-3 bg-[#1A2B4A]/40 p-4 rounded-xl border border-[#6B7280]/20">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs text-[#6B7280] font-sans mb-1 block">العضو المشارك</label>
+                  <select
+                    value={newMemberId}
+                    onChange={(e) => setNewMemberId(e.target.value)}
+                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C]"
+                  >
+                    <option value="">-- اختر عضواً --</option>
+                    {availableMembers
+                      .filter((m) => !memberRoles.some((mr) => mr.memberId === m.id))
+                      .map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} {m.department ? `(${m.department})` : ""}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-[#6B7280] font-sans mb-1 block">الدور في المشروع (roleName)</label>
+                  <input
+                    type="text"
+                    value={newRoleName}
+                    onChange={(e) => setNewRoleName(e.target.value)}
+                    placeholder="مثال: باحث رئيسي، Researcher..."
+                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C]"
+                    onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addMemberRole())}
+                  />
+                </div>
               </div>
-              <div className="flex-1">
-                <label className="text-xs text-[#6B7280] font-sans mb-1 block">الدور في المشروع</label>
-                <input type="text" value={newRoleName} onChange={(e) => setNewRoleName(e.target.value)}
-                  placeholder="مثال: باحث رئيسي، مراجع، محرر..."
-                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C]"
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addMemberRole())}
-                />
+
+              {/* Suggested Quick Roles */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                <span className="text-[11px] text-[#6B7280]">أدوار مقترحة:</span>
+                {["باحث رئيسي", "Researcher", "مساعد بحث", "مستشار علمي", "مطور برمجيات"].map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setNewRoleName(role)}
+                    className="text-[10px] bg-[#1A2B4A] hover:bg-[#E84A0C]/20 hover:text-[#E84A0C] text-slate-300 px-2 py-0.5 rounded-lg border border-[#6B7280]/30 transition-colors"
+                  >
+                    + {role}
+                  </button>
+                ))}
               </div>
-              <Button type="button" onClick={addMemberRole} size="sm"
-                className="bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl shrink-0 h-10 px-4">
+
+              <Button
+                type="button"
+                onClick={addMemberRole}
+                disabled={!newMemberId || !newRoleName.trim()}
+                size="sm"
+                className="w-full bg-[#E84A0C] hover:bg-[#D03E06] text-white rounded-xl h-9 text-xs font-bold gap-1.5"
+              >
                 <Plus className="w-4 h-4" />
+                <span>إضافة العضو والدور للمشروع</span>
               </Button>
             </div>
 
             {/* Assigned members list */}
             <div className="space-y-2">
               {memberRoles.length === 0 ? (
-                <p className="text-xs text-[#6B7280] italic font-sans">لم يتم إضافة أعضاء بعد.</p>
+                <p className="text-xs text-[#6B7280] italic font-sans py-2 text-center">لم يتم إضافة أعضاء للمشروع بعد.</p>
               ) : (
                 memberRoles.map((mr) => (
-                  <div key={mr.memberId}
-                    className="flex items-center justify-between p-3 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20">
+                  <div
+                    key={mr.memberId}
+                    className="flex items-center justify-between p-3 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/20"
+                  >
                     <div>
                       <p className="text-xs font-bold text-white">{mr.memberName}</p>
-                      <p className="text-[10px] text-[#E84A0C] font-fira mt-0.5">{mr.roleName}</p>
+                      <span className="inline-block text-[10px] text-[#E84A0C] bg-[#E84A0C]/10 px-2 py-0.5 rounded-md font-fira mt-1 border border-[#E84A0C]/30">
+                        {mr.roleName}
+                      </span>
                     </div>
-                    <button type="button" onClick={() => removeMemberRole(mr.memberId)}
-                      className="p-1.5 text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-                      <Trash2 className="w-3.5 h-3.5" />
+                    <button
+                      type="button"
+                      onClick={() => removeMemberRole(mr.memberId)}
+                      className="p-1.5 text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="إزالة العضو"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 ))
@@ -244,10 +286,13 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
             <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-3">
               <div className="flex items-center gap-2">
                 <UserPlus className="w-4 h-4 text-[#E84A0C]" />
-                <h3 className="font-cairo font-bold text-white">المساهمون والباحثون الخارجيون (Guest Contributors)</h3>
+                <h3 className="font-cairo font-bold text-white">المساهمون والباحثون الخارجيون (Guest Authors)</h3>
               </div>
-              <button type="button" onClick={addGuestAuthor}
-                className="text-xs text-[#E84A0C] hover:underline flex items-center gap-1 font-sans">
+              <button
+                type="button"
+                onClick={addGuestAuthor}
+                className="text-xs text-[#E84A0C] hover:underline flex items-center gap-1 font-sans"
+              >
                 <Plus className="w-3.5 h-3.5" /> إضافة مساهم خارجي
               </button>
             </div>
@@ -265,14 +310,26 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
                     className="flex-1 h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C] font-sans"
                   />
                   {guestAuthors.length > 1 && (
-                    <button type="button" onClick={() => removeGuestAuthor(idx)}
-                      className="p-2 text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                    <button
+                      type="button"
+                      onClick={() => removeGuestAuthor(idx)}
+                      className="p-2 text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="حذف"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   )}
                 </div>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={addGuestAuthor}
+              className="w-full py-2 rounded-xl border border-dashed border-[#6B7280]/30 text-[#6B7280] hover:text-[#E84A0C] hover:border-[#E84A0C]/40 text-xs font-cairo flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              إضافة كاتب / مساهم خارجي آخر
+            </button>
           </div>
 
           {/* Linked Articles */}
@@ -326,31 +383,21 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
             </div>
           </div>
 
-          {/* Partner Selection */}
+          {/* Partner Selection Dropdown */}
           <div className="p-6 bg-[#0D0D0D] rounded-2xl border border-[#6B7280]/20 shadow-xl space-y-4">
             <div className="flex items-center gap-2 border-b border-[#6B7280]/20 pb-3">
               <Building2 className="w-4 h-4 text-[#E84A0C]" />
               <h3 className="font-cairo font-bold text-white">الشركاء المرتبطون</h3>
             </div>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {availablePartners.length === 0 ? (
-                <p className="text-xs text-[#6B7280] italic">لا يوجد شركاء مضافون.</p>
-              ) : (
-                availablePartners.map((partner) => {
-                  const sel = selectedPartnerIds.includes(partner.id);
-                  return (
-                    <div key={partner.id} onClick={() => togglePartner(partner.id)}
-                      className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all ${sel ? "bg-[#1A2B4A] border-[#E84A0C]" : "bg-[#1A2B4A]/30 border-[#6B7280]/20 hover:border-[#6B7280]/40"}`}>
-                      <div className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 ${sel ? "bg-[#E84A0C] border-[#E84A0C] text-white" : "border-[#6B7280]/40"}`}>
-                        {sel && <Check className="w-3 h-3 stroke-[3]" />}
-                      </div>
-                      <img src={partner.logoUrl} alt={partner.name} className="w-6 h-6 object-contain rounded" />
-                      <p className="text-xs text-white truncate flex-1">{partner.name}</p>
-                    </div>
-                  );
-                })
-              )}
-            </div>
+            <p className="text-xs text-[#6B7280] font-sans">
+              اختر المؤسسات أو الشركات الشريكة المرتبطة بهذا المشروع.
+            </p>
+            <PartnerMultiSelect
+              availablePartners={availablePartners}
+              selectedPartnerIds={selectedPartnerIds}
+              onChange={setSelectedPartnerIds}
+              placeholder="اختر الشركاء للمشروع..."
+            />
           </div>
 
           {/* Cover Image */}

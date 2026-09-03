@@ -14,6 +14,7 @@ import ImageResize from "tiptap-extension-resize-image";
 import { FontSize } from "@/lib/tiptap/font-size";
 import { Button } from "@/components/ui/button";
 import { getMembersForSelectAction, getPartnersForSelectAction, ArticleAuthor } from "@/app/actions/article-actions";
+import { PartnerMultiSelect } from "@/components/admin/partner-multi-select";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3, Heading4, Pilcrow,
@@ -171,14 +172,6 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
       prev.includes(authorId)
         ? prev.filter((id) => id !== authorId)
         : [...prev, authorId]
-    );
-  };
-
-  const togglePartnerSelection = (partnerId: string) => {
-    setSelectedPartnerIds((prev) =>
-      prev.includes(partnerId)
-        ? prev.filter((id) => id !== partnerId)
-        : [...prev, partnerId]
     );
   };
 
@@ -644,27 +637,12 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
               <p className="text-xs text-[#6B7280] font-sans">
                 اختر المؤسسات الشريكة المساهمة في هذا البحث أو المقال.
               </p>
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {partnersList.length === 0 ? (
-                  <p className="text-xs text-[#6B7280] italic">لا يوجد شركاء مضافون.</p>
-                ) : (
-                  partnersList.map((partner) => {
-                    const isSelected = selectedPartnerIds.includes(partner.id);
-                    return (
-                      <div key={partner.id} onClick={() => togglePartnerSelection(partner.id)}
-                        className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer transition-all ${
-                          isSelected ? "bg-[#1A2B4A] border-[#D49B4B]" : "bg-[#1A2B4A]/30 border-[#6B7280]/20 hover:border-[#6B7280]/40"
-                        }`}>
-                        <div className={`w-4 h-4 rounded flex items-center justify-center border shrink-0 ${isSelected ? "bg-[#D49B4B] border-[#D49B4B] text-[#0A0F1D]" : "border-[#6B7280]/40"}`}>
-                          {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
-                        </div>
-                        <img src={partner.logoUrl} alt={partner.name} className="w-6 h-6 object-contain rounded" />
-                        <p className="text-xs text-white truncate flex-1">{partner.name}</p>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
+              <PartnerMultiSelect
+                availablePartners={partnersList}
+                selectedPartnerIds={selectedPartnerIds}
+                onChange={setSelectedPartnerIds}
+                placeholder="اختر الشركاء والمؤسسات..."
+              />
             </div>
 
             {/* SOURCES & REFERENCES PANEL */}
