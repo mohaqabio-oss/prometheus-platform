@@ -3,31 +3,23 @@
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { QRCodeSVG } from "qrcode.react";
 import {
   getPublicSessionForAttendance,
   submitAttendanceAction,
-} from "@/app/actions/activity-actions";
+} from "@/app/actions/project-actions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  GraduationCap,
   Clock,
   CheckCircle2,
   XCircle,
-  QrCode,
-  ExternalLink,
-  Sparkles,
   Send,
   User,
   Mail,
   MessageSquare,
-  ShieldCheck,
   ArrowRight,
-  Copy,
-  Check,
 } from "lucide-react";
 
 interface AttendancePageProps {
@@ -52,16 +44,12 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
 
   // Result State
   const [submissionResult, setSubmissionResult] = useState<{
-    uniqueCode: string;
     nameAr: string;
-    nameEn: string;
     sessionTitle: string;
-    activityTitle: string;
-    activitySlug?: string;
+    projectTitle: string;
+    message?: string;
     alreadySubmitted?: boolean;
   } | null>(null);
-
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -95,12 +83,10 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
         setErrorMessage(res.error);
       } else if (res?.success || res?.alreadySubmitted) {
         setSubmissionResult({
-          uniqueCode: res.uniqueCode,
           nameAr: res.nameAr || nameAr,
-          nameEn: res.nameEn || nameEn,
           sessionTitle: res.sessionTitle,
-          activityTitle: res.activityTitle,
-          activitySlug: res.activitySlug,
+          projectTitle: res.projectTitle,
+          message: res.message,
           alreadySubmitted: res.alreadySubmitted,
         });
       }
@@ -109,19 +95,6 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const getVerificationUrl = (code: string) => {
-    if (typeof window !== "undefined") {
-      return `${window.location.origin}/verify/${code}`;
-    }
-    return `https://pmthiq.online/verify/${code}`;
-  };
-
-  const handleCopyCode = (code: string) => {
-    navigator.clipboard.writeText(getVerificationUrl(code));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading) {
@@ -146,7 +119,7 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
           <div className="space-y-1">
             <h2 className="font-display text-xl font-bold text-white">رمز الجلسة غير صحيح</h2>
             <p className="text-xs text-stone-400 leading-relaxed">
-              لم يتم العثور على جلسة حضور بهذا المعرف. يرجى التأكد من الرابط أو طلب رمز الاستجابة السريعة من المحاضر.
+              لم يتم العثور على جلسة حضور بهذا المعرف. يرجى التأكد من الرابط الخاص بالجلسة.
             </p>
           </div>
           <Link href="/">
@@ -160,14 +133,13 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
   }
 
   const session = sessionData.session;
-  const activity = session.activity;
+  const project = session.project;
 
   // Form Closed Screen
   if (!sessionData.isOpen) {
     return (
       <div className="min-h-screen py-20 px-4 bg-[#080C16] flex items-center justify-center font-sans">
         <Card className="max-w-lg w-full p-8 sm:p-10 bg-[#0D1322] border-[#1E293B] text-center space-y-6 rounded-3xl shadow-2xl relative overflow-hidden">
-          
           <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
             <Clock className="w-8 h-8" />
           </div>
@@ -188,8 +160,8 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
 
           <div className="p-4 rounded-2xl bg-[#080C16] border border-[#1E293B] text-xs space-y-2 text-right font-mono">
             <div className="flex justify-between text-stone-400">
-              <span>الفعالية:</span>
-              <span className="text-white font-bold font-sans">{activity.title}</span>
+              <span>الفعالية / المشروع:</span>
+              <span className="text-white font-bold font-sans">{project.title}</span>
             </div>
             <div className="flex justify-between text-stone-400">
               <span>الجلسة:</span>
@@ -198,9 +170,9 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
           </div>
 
           <div className="pt-2 flex justify-center gap-3">
-            <Link href={`/activities/${activity.slug}`}>
+            <Link href="/projects">
               <Button size="sm" className="bg-[#E84A0C] hover:bg-[#D03E06] text-white text-xs font-bold rounded-xl">
-                عرض تفاصيل الدورة
+                استعراض المشاريع والأنشطة
               </Button>
             </Link>
           </div>
@@ -209,92 +181,52 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
     );
   }
 
-  // Successful Submission / Already Submitted View with Dynamic QR Code
+  // Security Workflow: Successful Public Submission (Clean Success Message WITHOUT QR Code)
   if (submissionResult) {
-    const verifyUrl = getVerificationUrl(submissionResult.uniqueCode);
-
     return (
       <div className="min-h-screen py-16 px-4 bg-[#080C16] flex items-center justify-center font-sans animate-fade-in">
-        <Card className="max-w-xl w-full p-8 sm:p-10 bg-[#0D1322] border border-emerald-500/40 text-center space-y-8 rounded-3xl shadow-2xl relative overflow-hidden">
+        <Card className="max-w-md w-full p-8 sm:p-10 bg-[#0D1322] border border-emerald-500/40 text-center space-y-6 rounded-3xl shadow-2xl relative overflow-hidden">
           
           {/* Ambient Glow */}
           <div className="absolute top-0 right-1/2 translate-x-1/2 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Success Banner */}
-          <div className="space-y-3 relative z-10">
+          <div className="space-y-4 relative z-10">
             <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-lg">
               <CheckCircle2 className="w-9 h-9" />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-xs mx-auto">
-                {submissionResult.alreadySubmitted ? "سجل حضور مسبق موثق" : "تم تسجيل حضورك بنجاح!"}
+                {submissionResult.alreadySubmitted ? "سجل حضور مسبق موثق" : "تم تسليم التسجيل بنجاح"}
               </Badge>
               <h1 className="font-display text-2xl sm:text-3xl font-bold text-white">
-                أهلاً بك، {submissionResult.nameAr}
+                شكراً لك، {submissionResult.nameAr}
               </h1>
-              <p className="text-xs text-stone-400 font-mono">
-                {submissionResult.sessionTitle} • {submissionResult.activityTitle}
+              <p className="text-xs text-stone-300 leading-relaxed max-w-sm mx-auto">
+                {submissionResult.message || "تم تسجيل استمارة حضورك بنجاح. تم توثيق مشاركتك لدى فريق إدارة الفعالية."}
               </p>
             </div>
           </div>
 
-          {/* QR Code Container */}
-          <div className="relative z-10 p-6 bg-white rounded-3xl inline-block mx-auto shadow-2xl border-4 border-[#E84A0C]">
-            <QRCodeSVG
-              value={verifyUrl}
-              size={200}
-              level="H"
-              includeMargin={true}
-            />
-          </div>
-
-          {/* Participant Verification Code Box */}
-          <div className="relative z-10 space-y-3">
-            <div className="p-4 rounded-2xl bg-[#080C16] border border-[#1E293B] space-y-2 text-center">
-              <span className="text-[11px] font-mono text-stone-400 uppercase tracking-widest block">
-                رمز التحقق المؤسسي الفريد (Unique Participant Code)
-              </span>
-              <p className="font-mono text-2xl font-black text-[#E84A0C] tracking-wider select-all">
-                {submissionResult.uniqueCode}
-              </p>
-              <p className="text-[11px] text-stone-400 font-sans">
-                احتفظ بهذا الرمز للتحقق من نسبة حضورك والحصول على شهادة المشاركة المعتمدة.
-              </p>
+          {/* Details Card */}
+          <div className="p-4 rounded-2xl bg-[#080C16] border border-[#1E293B] text-xs space-y-2 text-right font-mono">
+            <div className="flex justify-between text-stone-400">
+              <span>الفعالية:</span>
+              <span className="text-white font-bold font-sans">{submissionResult.projectTitle}</span>
             </div>
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
-              <Link href={`/verify/${submissionResult.uniqueCode}`} className="w-full">
-                <Button className="w-full gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white text-xs font-bold rounded-xl py-2.5 shadow-lg">
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>فتح بوابة التوثيق الرسمية</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </Button>
-              </Link>
-
-              <Button
-                variant="outline"
-                onClick={() => handleCopyCode(submissionResult.uniqueCode)}
-                className="w-full sm:w-auto shrink-0 gap-2 border-[#1E293B] text-stone-300 hover:text-white text-xs rounded-xl"
-              >
-                {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-                <span>{copied ? "تم نسخ رابط التوثيق" : "نسخ الرابط"}</span>
-              </Button>
+            <div className="flex justify-between text-stone-400">
+              <span>الجلسة:</span>
+              <span className="text-[#E84A0C] font-bold">{submissionResult.sessionTitle}</span>
             </div>
           </div>
 
-          {submissionResult.activitySlug && (
-            <div className="pt-2 border-t border-[#1E293B]">
-              <Link
-                href={`/activities/${submissionResult.activitySlug}`}
-                className="text-xs font-mono text-stone-400 hover:text-[#E84A0C] inline-flex items-center gap-1.5 transition-colors"
-              >
-                <span>العودة لصفحة الدورة واستعراض قائمة الحضور</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-          )}
+          <div className="pt-2">
+            <Link href="/" className="inline-flex items-center gap-2 text-xs text-stone-400 hover:text-[#E84A0C] font-mono transition-colors">
+              <span>العودة للصفحة الرئيسية</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
         </Card>
       </div>
@@ -328,7 +260,7 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
               استمارة تسجيل الحضور المباشر
             </h1>
             <p className="text-xs font-mono text-[#E84A0C]">
-              {activity.title} • {session.title} (جلسة {session.sessionNumber}/{activity.totalSessions})
+              {project.title} • {session.title} (جلسة {session.sessionNumber}/{project.totalSessions})
             </p>
           </div>
         </div>
@@ -359,7 +291,7 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
                 required
               />
               <p className="text-[10px] text-stone-500 font-mono">
-                سيتم إدراج هذا الاسم في شهادة الحضور الرسمية.
+                سيتم إدراج هذا الاسم في سجل الحضور والشهادات الرسمية.
               </p>
             </div>
 
@@ -395,7 +327,7 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
                 required
               />
               <p className="text-[10px] text-stone-500 font-mono">
-                يستخدم البريد الإلكتروني لمطابقة حضورك التراكمي عبر جلسات الدورة المختلفة.
+                يستخدم البريد الإلكتروني لمطابقة حضورك التراكمي عبر جلسات الفعالية.
               </p>
             </div>
 
@@ -421,11 +353,11 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
               className="w-full gap-2 bg-[#E84A0C] hover:bg-[#D03E06] text-white font-bold text-xs py-3.5 rounded-xl shadow-xl transition-all hover:scale-[1.01]"
             >
               {submitting ? (
-                <span>جاري تسجيل الحضور وتوليد رمز QR...</span>
+                <span>جاري إرسال تسليم الاستمارة...</span>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  <span>تأكيد تسجيل الحضور وتوليد الرمز الفريد</span>
+                  <span>تأكيد وتسليم الاستمارة</span>
                 </>
               )}
             </Button>

@@ -13,7 +13,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: "الرئيسية", href: "/" },
-    { name: "الأنشطة والدورات", href: "/activities" },
+    { name: "المشاريع والأنشطة", href: "/projects" },
     { name: "المدونة", href: "/blog" },
     { name: "فريقنا", href: "/members" },
     { name: "عن الفريق", href: "/#about" },

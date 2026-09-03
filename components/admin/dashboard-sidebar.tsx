@@ -22,7 +22,6 @@ import {
   BookOpen,
   BarChart3,
   Building2,
-  GraduationCap,
   FolderGit2,
 } from "lucide-react";
 
@@ -99,13 +98,13 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
       ],
     },
     {
-      groupLabel: "شبكة الشراكات",
+      groupLabel: "شبكة الشراكات والمشاريع",
       items: [
         {
-          title: "المشاريع البحثية",
+          title: "المشاريع والأنشطة",
           href: "/admin/projects",
           icon: <FolderGit2 className="w-4 h-4 text-[#E84A0C]" />,
-          rolesAllowed: ["ADMIN"],
+          rolesAllowed: ["ADMIN", "HR_EDITOR"],
         },
         {
           title: "الشركاء والمؤسسات",
@@ -118,12 +117,6 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
     {
       groupLabel: "الفريق والتوظيف",
       items: [
-        {
-          title: "الأنشطة والدورات",
-          href: "/admin/activities",
-          icon: <GraduationCap className="w-4 h-4 text-[#E84A0C]" />,
-          rolesAllowed: ["ADMIN", "HR_EDITOR"],
-        },
         {
           title: "دليل الأعضاء",
           href: "/admin/members",

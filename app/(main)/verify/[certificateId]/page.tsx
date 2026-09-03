@@ -1,10 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import { verifyCertificateCode } from "@/app/actions/hr-actions";
-import { getParticipantVerification } from "@/app/actions/activity-actions";
+import { getParticipantVerification } from "@/app/actions/project-actions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   ShieldCheck,
   CheckCircle2,
@@ -16,9 +15,6 @@ import {
   Building2,
   ArrowRight,
   GraduationCap,
-  Layers,
-  Award,
-  BookOpen,
 } from "lucide-react";
 
 interface VerifyPageProps {
@@ -107,7 +103,7 @@ export default async function UnifiedVerificationPage({ params }: VerifyPageProp
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-xs font-mono text-stone-300">
                 <GraduationCap className="w-4 h-4 text-[#E84A0C]" />
-                <span>الأنشطة والدورات المسجلة ({participantData.activities.length})</span>
+                <span>الأنشطة والمشاريع المسجلة ({participantData.activities.length})</span>
               </div>
 
               <div className="space-y-4">
@@ -123,7 +119,7 @@ export default async function UnifiedVerificationPage({ params }: VerifyPageProp
                             {act.activityType}
                           </Badge>
                           <Link
-                            href={`/activities/${act.activitySlug}`}
+                            href={`/projects/${act.activitySlug}`}
                             className="font-display font-bold text-white text-base hover:text-[#E84A0C] transition-colors"
                           >
                             {act.activityTitle}
@@ -297,7 +293,7 @@ export default async function UnifiedVerificationPage({ params }: VerifyPageProp
                 لم يتم العثور على سجل بهذا الرمز
               </h2>
               <p className="text-xs text-stone-400 max-w-md mx-auto leading-relaxed">
-                الرمز الذي أدخلته (<strong className="font-mono text-white">{certificateId}</strong>) غير مسجل في السجل الرسمي للمشاركين أو الشهادات الصادرة.
+                الرمز الذي أدخلته (<strong className="font-mono text-[#E84A0C]">{certificateId}</strong>) غير مسجل في السجل الرسمي للمشاركين أو الشهادات الصادرة.
               </p>
             </div>
 

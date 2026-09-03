@@ -22,23 +22,16 @@ import {
   List, ListOrdered, Quote, ImageIcon, Save, AlertCircle,
   Loader2, Upload, Maximize2, Minimize2, Palette, Highlighter,
   Type, Users, Check, FileText, BookOpen, Info, AlertTriangle,
-  Lightbulb, Plus, Trash2, Link2, BookMarked, Building2, UserPlus,
+  Lightbulb, Plus, Trash2, BookMarked, Building2, UserPlus,
 } from "lucide-react";
 
-// ── Custom Callout TipTap Node ────────────────────────────────────────────────
 const CalloutNode = Node.create({
   name: "callout",
   group: "block",
   content: "inline*",
   defining: true,
-  addAttributes() {
-    return {
-      type: { default: "info" },
-    };
-  },
-  parseHTML() {
-    return [{ tag: "div[data-callout]" }];
-  },
+  addAttributes() { return { type: { default: "info" } }; },
+  parseHTML() { return [{ tag: "div[data-callout]" }]; },
   renderHTML({ HTMLAttributes, node }) {
     return [
       "div",
@@ -51,11 +44,20 @@ const CalloutNode = Node.create({
   },
 });
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 export interface PartnerSelectOption {
   id: string;
   name: string;
   logoUrl: string;
+}
+
+export interface MemberRole {
+  memberId: string;
+  roleName: string;
+}
+
+export interface PartnerRole {
+  partnerId: string;
+  roleName: string;
 }
 
 export interface ArticleEditorProps {
@@ -69,9 +71,10 @@ export interface ArticleEditorProps {
     status?: string;
     type?: string;
     authors?: ArticleAuthor[];
+    memberRoles?: MemberRole[];
     sources?: string[];
     guestAuthors?: string[];
-    partners?: { id: string; name: string; logoUrl: string }[];
+    partners?: { id: string; name: string; logoUrl: string; roleName?: string }[];
   } | null;
   availableMembers?: ArticleAuthor[];
   availablePartners?: PartnerSelectOption[];
@@ -105,13 +108,12 @@ const FONT_SIZES = [
 ];
 
 const CALLOUT_TYPES = [
-  { value: "info", label: "معلومة", icon: Info, color: "text-blue-400" },
-  { value: "warning", label: "تحذير", icon: AlertTriangle, color: "text-yellow-400" },
-  { value: "success", label: "نجاح", icon: Check, color: "text-emerald-400" },
-  { value: "danger", label: "خطر", icon: AlertCircle, color: "text-red-400" },
+  { value: "info", label: "معلومة", icon: Info },
+  { value: "warning", label: "تحذير", icon: AlertTriangle },
+  { value: "success", label: "نجاح", icon: Check },
+  { value: "danger", label: "خطر", icon: AlertCircle },
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
 export function ArticleEditor({ article, availableMembers = [], availablePartners = [], saveAction }: ArticleEditorProps) {
   const [focusMode, setFocusMode] = useState(false);
   const [coverImageUrl, setCoverImageUrl] = useState<string>(article?.coverImage || "");
@@ -124,25 +126,23 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
     (article?.type as "BLOG" | "ACADEMIC") || "BLOG"
   );
 
-  // Sources state
   const [sources, setSources] = useState<string[]>(article?.sources || [""]);
-
-  // Guest authors state
   const [guestAuthors, setGuestAuthors] = useState<string[]>(
     article?.guestAuthors && article.guestAuthors.length > 0 ? article.guestAuthors : [""]
   );
 
-  // Partners state
   const [partnersList, setPartnersList] = useState<PartnerSelectOption[]>(availablePartners);
-  const [selectedPartnerIds, setSelectedPartnerIds] = useState<string[]>(
-    article?.partners?.map((p: any) => p.id || p.partnerId) || []
+  const [partnerRoles, setPartnerRoles] = useState<PartnerRole[]>(
+    article?.partners?.map((p: any) => ({ partnerId: p.id || p.partnerId, roleName: p.roleName || "شريك إعلامي" })) || []
   );
 
-  // Multi-Author Selection State
   const [membersList, setMembersList] = useState<ArticleAuthor[]>(availableMembers);
-  const [selectedAuthorIds, setSelectedAuthorIds] = useState<string[]>(() => {
+  const [authorRoles, setAuthorRoles] = useState<MemberRole[]>(() => {
+    if (article?.memberRoles && article.memberRoles.length > 0) {
+      return article.memberRoles;
+    }
     if (article?.authors && article.authors.length > 0) {
-      return article.authors.map((a) => a.id);
+      return article.authors.map((a) => ({ memberId: a.id, roleName: a.roleName || "مؤلف مشارك" }));
     }
     return [];
   });
@@ -167,23 +167,42 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
     }
   }, [partnersList.length]);
 
-  const toggleAuthorSelection = (authorId: string) => {
-    setSelectedAuthorIds((prev) =>
-      prev.includes(authorId)
-        ? prev.filter((id) => id !== authorId)
-        : [...prev, authorId]
+  const toggleAuthorSelection = (memberId: string) => {
+    setAuthorRoles((prev) => {
+      const exist = prev.find((ar) => ar.memberId === memberId);
+      if (exist) return prev.filter((ar) => ar.memberId !== memberId);
+      return [...prev, { memberId, roleName: "مؤلف مشارك" }];
+    });
+  };
+
+  const updateAuthorRoleName = (memberId: string, roleName: string) => {
+    setAuthorRoles((prev) =>
+      prev.map((ar) => (ar.memberId === memberId ? { ...ar, roleName } : ar))
+    );
+  };
+
+  const handlePartnerSelectChange = (partnerIds: string[]) => {
+    setPartnerRoles((prev) =>
+      partnerIds.map((pid) => {
+        const exist = prev.find((pr) => pr.partnerId === pid);
+        return exist || { partnerId: pid, roleName: "شريك إعلامي" };
+      })
+    );
+  };
+
+  const updatePartnerRoleName = (partnerId: string, roleName: string) => {
+    setPartnerRoles((prev) =>
+      prev.map((pr) => (pr.partnerId === partnerId ? { ...pr, roleName } : pr))
     );
   };
 
   const addSource = () => setSources((prev) => [...prev, ""]);
   const removeSource = (i: number) => setSources((prev) => prev.filter((_, idx) => idx !== i));
-  const updateSource = (i: number, val: string) =>
-    setSources((prev) => prev.map((s, idx) => (idx === i ? val : s)));
+  const updateSource = (i: number, val: string) => setSources((prev) => prev.map((s, idx) => (idx === i ? val : s)));
 
   const addGuestAuthor = () => setGuestAuthors((prev) => [...prev, ""]);
   const removeGuestAuthor = (i: number) => setGuestAuthors((prev) => prev.filter((_, idx) => idx !== i));
-  const updateGuestAuthor = (i: number, val: string) =>
-    setGuestAuthors((prev) => prev.map((g, idx) => (idx === i ? val : g)));
+  const updateGuestAuthor = (i: number, val: string) => setGuestAuthors((prev) => prev.map((g, idx) => (idx === i ? val : g)));
 
   const editor = useEditor({
     extensions: [
@@ -209,12 +228,14 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
     formData.set("content", editorContent || editor?.getHTML() || "");
     if (coverImageUrl) formData.set("coverImage", coverImageUrl);
     formData.set("type", articleType);
-    formData.set("authorIds", JSON.stringify(selectedAuthorIds));
+    formData.set("authorRoles", JSON.stringify(authorRoles));
+    formData.set("authorIds", JSON.stringify(authorRoles.map((ar) => ar.memberId)));
+    formData.set("partnerRoles", JSON.stringify(partnerRoles));
+    formData.set("partnerIds", JSON.stringify(partnerRoles.map((pr) => pr.partnerId)));
     const cleanSources = sources.filter((s) => s.trim() !== "");
     formData.set("sources", JSON.stringify(cleanSources));
     const cleanGuestAuthors = guestAuthors.filter((g) => g.trim() !== "");
     formData.set("guestAuthors", JSON.stringify(cleanGuestAuthors));
-    formData.set("partnerIds", JSON.stringify(selectedPartnerIds));
     return await saveAction(prevState, formData);
   }, null);
 
@@ -225,23 +246,14 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
     if (!file) return;
     setUploadingCover(true);
     setUploadError(null);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd, signal: controller.signal });
-      clearTimeout(timeoutId);
-      let data: any = {};
-      try { data = await res.json(); } catch { throw new Error("استجابة الخادم غير صالحة عند رفع صورة الغلاف"); }
-      if (!res.ok || data.error) throw new Error(data.error || "فشل رفع صورة الغلاف على الخادم");
-      setCoverImageUrl(data.url);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) setCoverImageUrl(data.url);
     } catch (err: any) {
-      clearTimeout(timeoutId);
-      const msg = err.name === "AbortError"
-        ? "انتهت مهلة طلب رفع صورة الغلاف."
-        : (err.message || "فشل رفع صورة الغلاف إلى الخادم.");
-      setUploadError(msg);
+      setUploadError(err.message || "فشل رفع صورة الغلاف");
     } finally { setUploadingCover(false); e.target.value = ""; }
   };
 
@@ -249,24 +261,14 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
     const file = e.target.files?.[0];
     if (!file || !editor) return;
     setUploadingInlineImg(true);
-    setUploadError(null);
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd, signal: controller.signal });
-      clearTimeout(timeoutId);
-      let data: any = {};
-      try { data = await res.json(); } catch { throw new Error("استجابة الخادم غير صالحة عند رفع الصورة"); }
-      if (!res.ok || data.error) throw new Error(data.error || "فشل رفع الصورة على الخادم");
-      editor.chain().focus().setImage({ src: data.url }).run();
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.url) editor.chain().focus().setImage({ src: data.url }).run();
     } catch (err: any) {
-      clearTimeout(timeoutId);
-      const msg = err.name === "AbortError"
-        ? "انتهت مهلة طلب رفع الصورة."
-        : (err.message || "فشل رفع الصورة إلى الخادم.");
-      setUploadError(msg);
+      setUploadError(err.message || "فشل رفع الصورة");
     } finally { setUploadingInlineImg(false); e.target.value = ""; }
   };
 
@@ -279,10 +281,8 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
   };
 
   return (
-    <form action={formAction} className={`transition-all duration-300 text-white ${focusMode ? "fixed inset-0 z-50 bg-[#1A2B4A] p-4 sm:p-8 overflow-y-auto" : "max-w-7xl mx-auto space-y-6"}`}>
+    <form action={formAction} className={`transition-all duration-300 text-white font-sans ${focusMode ? "fixed inset-0 z-50 bg-[#1A2B4A] p-4 sm:p-8 overflow-y-auto" : "max-w-7xl mx-auto space-y-6"}`}>
       {article?.id && <input type="hidden" name="id" value={article.id} />}
-      <input type="hidden" name="type" value={articleType} />
-      <input type="hidden" name="authorIds" value={JSON.stringify(selectedAuthorIds)} />
 
       {/* Error Banner */}
       {(state?.error || uploadError) && (
@@ -292,7 +292,7 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
         </div>
       )}
 
-      {/* Header Controls Bar */}
+      {/* Sticky Header Controls Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#6B7280]/20 bg-[#0D0D0D]/90 p-4 rounded-2xl border backdrop-blur-md shadow-xl">
         <div className="flex items-center gap-3">
           <Button
@@ -303,9 +303,6 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
             {focusMode ? <Minimize2 className="w-4 h-4 text-[#E84A0C]" /> : <Maximize2 className="w-4 h-4 text-[#E84A0C]" />}
             <span>{focusMode ? "إنهاء التركيز" : "وضع معالج المستندات (Word Mode)"}</span>
           </Button>
-          <span className="text-xs text-[#6B7280] font-fira hidden md:inline">
-            Prometheus Academic Writer v4.0
-          </span>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
@@ -316,7 +313,6 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
           >
             <option value="DRAFT">مسودة (DRAFT)</option>
             <option value="PUBLISHED">نشر فوري (PUBLISHED)</option>
-            <option value="SUBMITTED">تقديم للمراجعة (SUBMITTED)</option>
           </select>
           <Button
             type="submit" disabled={isPending}
@@ -334,7 +330,7 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
         {/* Main Editor Column */}
         <div className={`${focusMode ? "lg:col-span-12 max-w-5xl mx-auto w-full" : "lg:col-span-8"} space-y-6`}>
 
-          {/* Article Title Header Box */}
+          {/* Title Box */}
           <div className="bg-[#0D0D0D] p-6 sm:p-8 rounded-2xl border border-[#6B7280]/20 shadow-xl space-y-4">
             <div className="flex items-center gap-2 text-xs font-fira text-[#E84A0C]">
               <FileText className="w-4 h-4" />
@@ -354,13 +350,10 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
             />
           </div>
 
-          {/* WORD PROCESSOR EDITOR CONTAINER */}
+          {/* Editor Container */}
           <div className="border border-[#6B7280]/20 rounded-2xl bg-[#0D0D0D] shadow-2xl">
-
-            {/* STICKY TOP TOOLBAR */}
             <div className="p-3 bg-[#1A2B4A]/95 backdrop-blur border-b border-[#6B7280]/20 sticky top-0 z-40 flex flex-wrap items-center gap-2 text-white shadow-md rounded-t-2xl">
-
-              {/* Font Family Selector */}
+              
               <div className="flex items-center gap-1 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl px-2 py-1">
                 <Type className="w-3.5 h-3.5 text-[#E84A0C]" />
                 <select
@@ -370,7 +363,7 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
                   }}
                   className="bg-transparent text-xs text-white focus:outline-none cursor-pointer font-sans"
                 >
-                  <option value="" className="bg-[#0D0D0D] text-white">نوع الخط (Font)</option>
+                  <option value="" className="bg-[#0D0D0D] text-white">نوع الخط</option>
                   {SUPPORTED_FONTS.map((f) => (
                     <option key={f.value} value={f.value} className="bg-[#0D0D0D] text-white" style={{ fontFamily: f.value }}>
                       {f.name}
@@ -379,7 +372,6 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
                 </select>
               </div>
 
-              {/* Font Size Selector */}
               <div className="flex items-center gap-1 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl px-2 py-1">
                 <select
                   onChange={(e) => {
@@ -397,31 +389,12 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
 
               <div className="w-px h-6 bg-[#6B7280]/30 mx-1" />
 
-              {/* Text Formatting */}
               <div className="flex items-center gap-1">
                 {[
-                  { action: () => editor?.chain().focus().toggleBold().run(), active: editor?.isActive("bold"), icon: <Bold className="w-4 h-4" />, title: "Bold" },
-                  { action: () => editor?.chain().focus().toggleItalic().run(), active: editor?.isActive("italic"), icon: <Italic className="w-4 h-4" />, title: "Italic" },
-                  { action: () => editor?.chain().focus().toggleUnderline().run(), active: editor?.isActive("underline"), icon: <UnderlineIcon className="w-4 h-4" />, title: "Underline" },
-                  { action: () => editor?.chain().focus().toggleStrike().run(), active: editor?.isActive("strike"), icon: <Strikethrough className="w-4 h-4" />, title: "Strike" },
-                ].map((btn, i) => (
-                  <button key={i} type="button" onClick={btn.action} title={btn.title}
-                    className={`p-1.5 rounded-lg transition-colors ${btn.active ? "bg-[#E84A0C] text-white" : "hover:bg-[#0D0D0D] text-[#6B7280]"}`}>
-                    {btn.icon}
-                  </button>
-                ))}
-              </div>
-
-              <div className="w-px h-6 bg-[#6B7280]/30 mx-1" />
-
-              {/* Headings */}
-              <div className="flex items-center gap-1">
-                {[
-                  { action: () => editor?.chain().focus().setParagraph().run(), active: editor?.isActive("paragraph"), icon: <Pilcrow className="w-4 h-4" /> },
-                  { action: () => editor?.chain().focus().toggleHeading({ level: 1 }).run(), active: editor?.isActive("heading", { level: 1 }), icon: <Heading1 className="w-4 h-4" /> },
-                  { action: () => editor?.chain().focus().toggleHeading({ level: 2 }).run(), active: editor?.isActive("heading", { level: 2 }), icon: <Heading2 className="w-4 h-4" /> },
-                  { action: () => editor?.chain().focus().toggleHeading({ level: 3 }).run(), active: editor?.isActive("heading", { level: 3 }), icon: <Heading3 className="w-4 h-4" /> },
-                  { action: () => editor?.chain().focus().toggleHeading({ level: 4 }).run(), active: editor?.isActive("heading", { level: 4 }), icon: <Heading4 className="w-4 h-4" /> },
+                  { action: () => editor?.chain().focus().toggleBold().run(), active: editor?.isActive("bold"), icon: <Bold className="w-4 h-4" /> },
+                  { action: () => editor?.chain().focus().toggleItalic().run(), active: editor?.isActive("italic"), icon: <Italic className="w-4 h-4" /> },
+                  { action: () => editor?.chain().focus().toggleUnderline().run(), active: editor?.isActive("underline"), icon: <UnderlineIcon className="w-4 h-4" /> },
+                  { action: () => editor?.chain().focus().toggleStrike().run(), active: editor?.isActive("strike"), icon: <Strikethrough className="w-4 h-4" /> },
                 ].map((btn, i) => (
                   <button key={i} type="button" onClick={btn.action}
                     className={`p-1.5 rounded-lg transition-colors ${btn.active ? "bg-[#E84A0C] text-white" : "hover:bg-[#0D0D0D] text-[#6B7280]"}`}>
@@ -432,7 +405,6 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
 
               <div className="w-px h-6 bg-[#6B7280]/30 mx-1" />
 
-              {/* Alignment */}
               <div className="flex items-center gap-1">
                 {[
                   { align: "right", icon: <AlignRight className="w-4 h-4" /> },
@@ -450,59 +422,6 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
 
               <div className="w-px h-6 bg-[#6B7280]/30 mx-1" />
 
-              {/* Color Pickers */}
-              <div className="flex items-center gap-2 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl px-2 py-1">
-                <label className="cursor-pointer flex items-center gap-1" title="لون النص">
-                  <Palette className="w-3.5 h-3.5 text-[#E84A0C]" />
-                  <input type="color" value={textColor}
-                    onChange={(e) => { setTextColor(e.target.value); editor?.chain().focus().setColor(e.target.value).run(); }}
-                    className="w-4 h-4 bg-transparent border-none cursor-pointer p-0"
-                  />
-                </label>
-                <label className="cursor-pointer flex items-center gap-1 border-r border-[#6B7280]/30 pr-2" title="تظليل النص">
-                  <Highlighter className="w-3.5 h-3.5 text-[#F5A623]" />
-                  <input type="color" value={highlightColor}
-                    onChange={(e) => { setHighlightColor(e.target.value); editor?.chain().focus().toggleHighlight({ color: e.target.value }).run(); }}
-                    className="w-4 h-4 bg-transparent border-none cursor-pointer p-0"
-                  />
-                </label>
-              </div>
-
-              <div className="w-px h-6 bg-[#6B7280]/30 mx-1" />
-
-              {/* Lists & Quotes */}
-              <div className="flex items-center gap-1">
-                <button type="button" onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                  className={`p-1.5 rounded-lg transition-colors ${editor?.isActive("bulletList") ? "bg-[#E84A0C] text-white" : "hover:bg-[#0D0D0D] text-[#6B7280]"}`}>
-                  <List className="w-4 h-4" />
-                </button>
-                <button type="button" onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                  className={`p-1.5 rounded-lg transition-colors ${editor?.isActive("orderedList") ? "bg-[#E84A0C] text-white" : "hover:bg-[#0D0D0D] text-[#6B7280]"}`}>
-                  <ListOrdered className="w-4 h-4" />
-                </button>
-                <button type="button" onClick={() => editor?.chain().focus().toggleBlockquote().run()}
-                  className={`p-1.5 rounded-lg transition-colors ${editor?.isActive("blockquote") ? "bg-[#E84A0C] text-white" : "hover:bg-[#0D0D0D] text-[#6B7280]"}`}>
-                  <Quote className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="w-px h-6 bg-[#6B7280]/30 mx-1" />
-
-              {/* Callout Inserter */}
-              <div className="flex items-center gap-1 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-xl px-2 py-1">
-                <Lightbulb className="w-3.5 h-3.5 text-yellow-400" />
-                <select
-                  onChange={(e) => { if (e.target.value) { insertCallout(e.target.value); (e.target as HTMLSelectElement).value = ""; } }}
-                  className="bg-transparent text-xs text-white focus:outline-none cursor-pointer font-sans"
-                >
-                  <option value="">إدراج صندوق</option>
-                  {CALLOUT_TYPES.map((c) => (
-                    <option key={c.value} value={c.value} className="bg-[#0D0D0D] text-white">{c.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Inline Image Upload */}
               <label className="cursor-pointer p-1.5 rounded-lg hover:bg-[#0D0D0D] text-[#6B7280] hover:text-[#E84A0C] transition-colors flex items-center gap-1 border border-[#6B7280]/30 bg-[#0D0D0D]">
                 {uploadingInlineImg ? <Loader2 className="w-4 h-4 animate-spin text-[#E84A0C]" /> : <ImageIcon className="w-4 h-4 text-[#E84A0C]" />}
                 <span className="text-xs font-fira font-bold">إدراج صورة</span>
@@ -510,13 +429,11 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
               </label>
             </div>
 
-            {/* EDITOR CANVAS */}
-            <div className="p-4 sm:p-8 bg-[#121A2B]/80 flex justify-center overflow-x-auto min-h-[750px] rounded-b-2xl">
-              <div className="w-full max-w-4xl bg-[#0D0D0D] border border-[#6B7280]/30 rounded-2xl p-8 sm:p-12 shadow-2xl min-h-[700px] text-white font-sans text-base sm:text-lg leading-relaxed focus:outline-none prose prose-invert max-w-none [&_img]:rounded-xl [&_img]:border [&_img]:border-[#6B7280]/30 [&_img]:my-6">
+            <div className="p-4 sm:p-8 bg-[#121A2B]/80 flex justify-center overflow-x-auto min-h-[700px] rounded-b-2xl">
+              <div className="w-full max-w-4xl bg-[#0D0D0D] border border-[#6B7280]/30 rounded-2xl p-8 sm:p-12 shadow-2xl min-h-[650px] text-white font-sans text-base sm:text-lg leading-relaxed focus:outline-none prose prose-invert max-w-none">
                 <EditorContent editor={editor} />
               </div>
             </div>
-
           </div>
         </div>
 
@@ -524,7 +441,7 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
         {!focusMode && (
           <div className="lg:col-span-4 space-y-6">
 
-            {/* PUBLICATION TYPE SELECTOR */}
+            {/* Type Selector */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
               <div className="flex items-center gap-2 border-b border-[#6B7280]/20 pb-3">
                 <BookOpen className="w-4 h-4 text-[#E84A0C]" />
@@ -532,76 +449,77 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
               </div>
               <div className="grid grid-cols-1 gap-2.5">
                 {[
-                  { value: "BLOG", label: "مدونة عامة (Blog)", sub: "للمقالات، التدوينات العامة، والأخبار التطوعية." },
-                  { value: "ACADEMIC", label: "مجلة أكاديمية محكمة", sub: "للبحوث العلمية والدراسات التخصصية." },
+                  { value: "BLOG", label: "مدونة عامة (Blog)" },
+                  { value: "ACADEMIC", label: "مجلة أكاديمية محكمة" },
                 ].map((opt) => (
                   <div key={opt.value} onClick={() => setArticleType(opt.value as any)}
-                    className={`p-3.5 rounded-xl border flex items-start gap-3 cursor-pointer transition-all duration-200 ${
+                    className={`p-3.5 rounded-xl border flex items-center gap-3 cursor-pointer transition-all ${
                       articleType === opt.value
-                        ? "bg-[#1A2B4A] border-[#E84A0C] text-white shadow-md ring-1 ring-[#E84A0C]"
-                        : "bg-[#1A2B4A]/30 border-[#6B7280]/20 text-[#6B7280] hover:text-white hover:border-[#6B7280]/40"
+                        ? "bg-[#1A2B4A] border-[#E84A0C] text-white"
+                        : "bg-[#1A2B4A]/30 border-[#6B7280]/20 text-[#6B7280]"
                     }`}>
-                    <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center border text-[10px] shrink-0 ${articleType === opt.value ? "bg-[#E84A0C] border-[#E84A0C] text-white" : "border-[#6B7280]/40"}`}>
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center border shrink-0 ${articleType === opt.value ? "bg-[#E84A0C] border-[#E84A0C] text-white" : "border-[#6B7280]/40"}`}>
                       {articleType === opt.value && <Check className="w-3 h-3 stroke-[3]" />}
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-white leading-tight">{opt.label}</p>
-                      <p className="text-[11px] text-[#6B7280] mt-1 font-sans">{opt.sub}</p>
-                    </div>
+                    <span className="text-xs font-bold text-white">{opt.label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* MULTI-AUTHOR ATTRIBUTION */}
+            {/* Member Roles Input Section */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
               <div className="flex items-center gap-2 border-b border-[#6B7280]/20 pb-3">
                 <Users className="w-4 h-4 text-[#E84A0C]" />
-                <h3 className="font-cairo font-bold text-white text-base">المؤلفون والمشاركون</h3>
+                <h3 className="font-cairo font-bold text-white text-base">المؤلفون وأدوارهم</h3>
               </div>
-              <p className="text-xs text-[#6B7280]">اختر مؤلفاً واحداً أو أكثر من كادر الفريق.</p>
-              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                {membersList.length === 0 ? (
-                  <p className="text-xs text-[#6B7280] font-fira">جاري تحميل دليل الكادر...</p>
-                ) : (
-                  membersList.map((member) => {
-                    const isSelected = selectedAuthorIds.includes(member.id);
-                    return (
-                      <div key={member.id} onClick={() => toggleAuthorSelection(member.id)}
-                        className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all duration-200 ${
-                          isSelected ? "bg-[#1A2B4A] border-[#E84A0C] text-white shadow-sm" : "bg-[#1A2B4A]/30 border-[#6B7280]/20 text-[#6B7280] hover:text-white"
-                        }`}>
-                        <div className="flex items-center gap-2.5">
+              <p className="text-xs text-[#6B7280]">حدد أعضاء الفريق ودور كل مؤلف (roleName):</p>
+              
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                {membersList.map((member) => {
+                  const ar = authorRoles.find((a) => a.memberId === member.id);
+                  const isSelected = !!ar;
+
+                  return (
+                    <div key={member.id} className={`p-3 rounded-xl border transition-all ${isSelected ? "bg-[#1A2B4A] border-[#E84A0C]" : "bg-[#1A2B4A]/30 border-[#6B7280]/20"}`}>
+                      <div className="flex items-center justify-between cursor-pointer" onClick={() => toggleAuthorSelection(member.id)}>
+                        <div className="flex items-center gap-2">
                           <div className={`w-4 h-4 rounded flex items-center justify-center border text-[10px] ${isSelected ? "bg-[#E84A0C] border-[#E84A0C] text-white" : "border-[#6B7280]/40"}`}>
                             {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
                           </div>
-                          <div>
-                            <p className="text-xs font-bold text-white leading-none">{member.name}</p>
-                            <p className="text-[10px] font-fira text-[#6B7280] mt-1">{member.title} ({member.department})</p>
-                          </div>
+                          <span className="text-xs font-bold text-white">{member.name}</span>
                         </div>
                       </div>
-                    );
-                  })
-                )}
+
+                      {isSelected && (
+                        <div className="mt-2 pt-2 border-t border-[#6B7280]/20">
+                          <label className="text-[10px] text-[#6B7280] block mb-1">صفة / دور المؤلف (Role)</label>
+                          <input
+                            type="text"
+                            value={ar.roleName}
+                            onChange={(e) => updateAuthorRoleName(member.id, e.target.value)}
+                            placeholder="مثال: مؤلف رئيسي، باحث، مراجع..."
+                            className="w-full h-8 px-2 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-lg text-xs text-white focus:outline-none focus:border-[#E84A0C]"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* EXTERNAL / GUEST AUTHORS */}
+            {/* Guest Authors */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
               <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-3">
                 <div className="flex items-center gap-2">
                   <UserPlus className="w-4 h-4 text-[#E84A0C]" />
                   <h3 className="font-cairo font-bold text-white text-base">المؤلفون الخارجيون (Guest Authors)</h3>
                 </div>
-                <button type="button" onClick={addGuestAuthor}
-                  className="p-1.5 rounded-lg bg-[#E84A0C]/10 hover:bg-[#E84A0C]/20 text-[#E84A0C] transition-colors">
+                <button type="button" onClick={addGuestAuthor} className="text-xs text-[#E84A0C]">
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <p className="text-xs text-[#6B7280] font-sans">
-                أضف أسماء الكتاب أو الباحثين من خارج الفريق لعرضهم رسمياً كمؤلفين للمقالة.
-              </p>
               <div className="space-y-2">
                 {guestAuthors.map((guest, idx) => (
                   <div key={idx} className="flex items-center gap-2">
@@ -609,98 +527,57 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
                       type="text"
                       value={guest}
                       onChange={(e) => updateGuestAuthor(idx, e.target.value)}
-                      placeholder="مثال: د. سارة خالد (كاتب زائر)"
-                      className="flex-1 h-9 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-lg text-xs text-white focus:outline-none focus:border-[#E84A0C] font-sans"
+                      placeholder="مثال: د. سارة خالد"
+                      className="flex-1 h-9 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-lg text-xs text-white focus:outline-none focus:border-[#E84A0C]"
                     />
                     {guestAuthors.length > 1 && (
-                      <button type="button" onClick={() => removeGuestAuthor(idx)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                      <button type="button" onClick={() => removeGuestAuthor(idx)} className="p-1 text-red-400">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
                 ))}
               </div>
-              <button type="button" onClick={addGuestAuthor}
-                className="w-full py-2 rounded-lg border border-dashed border-[#6B7280]/30 text-[#6B7280] hover:text-[#E84A0C] hover:border-[#E84A0C]/40 text-xs font-cairo flex items-center justify-center gap-1.5 transition-colors">
-                <Plus className="w-3.5 h-3.5" />
-                إضافة مؤلف خارجي آخر
-              </button>
             </div>
 
-            {/* PARTNER CO-AUTHORSHIP SELECTION */}
+            {/* Partner Selection */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
               <div className="flex items-center gap-2 border-b border-[#6B7280]/20 pb-3">
                 <Building2 className="w-4 h-4 text-[#D49B4B]" />
-                <h3 className="font-cairo font-bold text-white text-base">الشركاء والمؤسسات المساهمة</h3>
+                <h3 className="font-cairo font-bold text-white text-base">الشركاء والمؤسسات</h3>
               </div>
-              <p className="text-xs text-[#6B7280] font-sans">
-                اختر المؤسسات الشريكة المساهمة في هذا البحث أو المقال.
-              </p>
               <PartnerMultiSelect
                 availablePartners={partnersList}
-                selectedPartnerIds={selectedPartnerIds}
-                onChange={setSelectedPartnerIds}
+                selectedPartnerIds={partnerRoles.map((pr) => pr.partnerId)}
+                onChange={handlePartnerSelectChange}
                 placeholder="اختر الشركاء والمؤسسات..."
               />
-            </div>
-
-            {/* SOURCES & REFERENCES PANEL */}
-            <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
-              <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-3">
-                <div className="flex items-center gap-2">
-                  <BookMarked className="w-4 h-4 text-[#D49B4B]" />
-                  <h3 className="font-cairo font-bold text-white text-base">المصادر والمراجع</h3>
+              {partnerRoles.length > 0 && (
+                <div className="space-y-2 pt-2 border-t border-[#6B7280]/20">
+                  {partnerRoles.map((pr) => {
+                    const partner = partnersList.find((p) => p.id === pr.partnerId);
+                    return (
+                      <div key={pr.partnerId} className="space-y-1 bg-[#1A2B4A]/30 p-2 rounded-lg border border-[#6B7280]/20">
+                        <span className="text-xs font-bold text-[#D49B4B]">{partner?.name || "شريك"}</span>
+                        <input
+                          type="text"
+                          value={pr.roleName}
+                          onChange={(e) => updatePartnerRoleName(pr.partnerId, e.target.value)}
+                          placeholder="مثال: شريك إعلامي، راعي أكاديمي..."
+                          className="w-full h-8 px-2 bg-[#0D0D0D] border border-[#6B7280]/30 rounded-lg text-xs text-white focus:outline-none"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
-                <button type="button" onClick={addSource}
-                  className="p-1.5 rounded-lg bg-[#D49B4B]/10 hover:bg-[#D49B4B]/20 text-[#D49B4B] transition-colors">
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <p className="text-xs text-[#6B7280] font-amiri italic">
-                أضف المصادر العلمية والمراجع — ستظهر في صندوق رسمي أسفل المقالة المنشورة.
-              </p>
-              <div className="space-y-2">
-                {sources.map((src, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="text-[10px] font-fira text-[#6B7280] w-5 text-center shrink-0">{i + 1}</span>
-                    <input
-                      type="text" value={src}
-                      onChange={(e) => updateSource(i, e.target.value)}
-                      placeholder="رابط المرجع أو الاقتباس الأكاديمي..."
-                      className="flex-1 h-9 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-lg text-xs text-white font-ibm placeholder-[#6B7280]/60 focus:outline-none focus:border-[#D49B4B]"
-                    />
-                    {sources.length > 1 && (
-                      <button type="button" onClick={() => removeSource(i)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-red-400 hover:bg-red-500/10 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button type="button" onClick={addSource}
-                className="w-full py-2 rounded-lg border border-dashed border-[#6B7280]/30 text-[#6B7280] hover:text-[#D49B4B] hover:border-[#D49B4B]/40 text-xs font-cairo flex items-center justify-center gap-1.5 transition-colors">
-                <Plus className="w-3.5 h-3.5" />
-                إضافة مرجع آخر
-              </button>
+              )}
             </div>
 
-            {/* CATEGORY SELECTOR */}
-            <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
-              <h3 className="font-cairo font-bold text-white text-base">التصنيف الأكاديمي</h3>
-              <input type="text" name="categoryName"
-                defaultValue={article?.categoryName || ""}
-                placeholder="اسم التصنيف (مثال: الهندسة البرمجية)"
-                className="w-full h-11 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C]"
-              />
-            </div>
-
-            {/* COVER IMAGE UPLOAD */}
+            {/* Cover Image Upload */}
             <div className="p-6 bg-[#0D0D0D] border border-[#6B7280]/20 rounded-2xl space-y-4 shadow-xl">
               <h3 className="font-cairo font-bold text-white text-base">صورة الغلاف</h3>
               {coverImageUrl ? (
-                <div className="relative aspect-video rounded-xl overflow-hidden border border-[#6B7280]/30">
+                <div className="aspect-video rounded-xl overflow-hidden border border-[#6B7280]/30">
                   <img src={coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
                 </div>
               ) : (
@@ -709,11 +586,8 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
                 </div>
               )}
               <label className="cursor-pointer w-full py-3 rounded-xl bg-[#1A2B4A] border border-[#6B7280]/30 text-white hover:border-[#E84A0C] transition-all flex items-center justify-center gap-2 text-xs font-semibold">
-                {uploadingCover ? (
-                  <><Loader2 className="w-4 h-4 animate-spin text-[#E84A0C]" /><span>جاري الرفع...</span></>
-                ) : (
-                  <><Upload className="w-4 h-4 text-[#E84A0C]" /><span>رفع صورة الغلاف</span></>
-                )}
+                {uploadingCover ? <Loader2 className="w-4 h-4 animate-spin text-[#E84A0C]" /> : <Upload className="w-4 h-4 text-[#E84A0C]" />}
+                <span>{uploadingCover ? "جاري الرفع..." : "رفع صورة الغلاف"}</span>
                 <input type="file" accept="image/*" onChange={handleCoverUpload} className="hidden" disabled={uploadingCover} />
               </label>
             </div>

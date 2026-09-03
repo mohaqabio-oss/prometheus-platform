@@ -51,23 +51,24 @@ enum MemberStatus {
 }
 
 model Member {
-  id             String        @id @default(uuid())
+  id             String              @id @default(uuid())
   fullName       String
   title          String?
   departmentName String?
   bio            String?
   profileImage   String?
   avatarUrl      String?
-  volunteerHours Int           @default(0)
-  status         MemberStatus  @default(ACTIVE)
-  leadershipTier String        @default("Regular")
-  joinDate       DateTime      @default(now())
+  volunteerHours Int                 @default(0)
+  status         MemberStatus        @default(ACTIVE)
+  leadershipTier String              @default("Regular")
+  joinDate       DateTime            @default(now())
   customSections Json?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt @default(now())
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt @default(now())
 
   certificates Certificate[]
   projectRoles ProjectRole[]
+  articleRoles ArticleMemberRole[]
 
   @@map("members")
 }
@@ -78,8 +79,10 @@ model Certificate {
   title           String
   description     String
   issuedAt        DateTime @default(now())
-  memberId        String
-  member          Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId        String?
+  member          Member?  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  projectId       String?
+  project         Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt @default(now())
 
@@ -134,27 +137,28 @@ model Category {
 }
 
 model Article {
-  id          String         @id @default(uuid())
-  title       String
-  slug        String         @unique
-  excerpt     String?        @db.Text
-  content     String         @db.Text
-  coverImage  String?        @db.Text
-  sources     String[]       @default([])
-  guestAuthors String[]      @default([])
-  status      ArticleStatus  @default(DRAFT)
-  type        ArticleType    @default(BLOG)
-  viewCount   Int            @default(0)
-  publishedAt DateTime?
-  authorId    String?
-  author      User?          @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  categoryId  String?
-  category    Category?      @relation(fields: [categoryId], references: [id])
-  authors     ArticleAuthors[]
-  partners    PartnerArticle[]
-  projects    ProjectArticle[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt @default(now())
+  id           String              @id @default(uuid())
+  title        String
+  slug         String              @unique
+  excerpt      String?             @db.Text
+  content      String              @db.Text
+  coverImage   String?             @db.Text
+  sources      String[]            @default([])
+  guestAuthors String[]            @default([])
+  status       ArticleStatus       @default(DRAFT)
+  type         ArticleType         @default(BLOG)
+  viewCount    Int                 @default(0)
+  publishedAt  DateTime?
+  authorId     String?
+  author       User?               @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  categoryId   String?
+  category     Category?           @relation(fields: [categoryId], references: [id])
+  authors      ArticleAuthors[]
+  memberRoles  ArticleMemberRole[]
+  partners     PartnerArticle[]
+  projects     ProjectArticle[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt @default(now())
 
   @@map("articles")
 }
@@ -169,6 +173,19 @@ model ArticleAuthors {
   createdAt DateTime @default(now())
 
   @@map("article_authors")
+}
+
+model ArticleMemberRole {
+  id        String   @id @default(uuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  roleName  String   @default("مؤلف مشارك")
+  createdAt DateTime @default(now())
+
+  @@unique([memberId, articleId])
+  @@map("article_member_roles")
 }
 
 // ==========================================
@@ -199,6 +216,7 @@ model PartnerArticle {
   partner   Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
   articleId String
   article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  roleName  String?  @default("شريك إعلامي")
   createdAt DateTime @default(now())
 
   @@unique([partnerId, articleId])
@@ -211,6 +229,7 @@ model PartnerProject {
   partner   Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  roleName  String?  @default("شريك استراتيجي")
   createdAt DateTime @default(now())
 
   @@unique([partnerId, projectId])
@@ -218,7 +237,7 @@ model PartnerProject {
 }
 
 // ==========================================
-// PROJECTS & RESEARCH ECOSYSTEM MODELS
+// PROJECTS, ACTIVITIES & RESEARCH ECOSYSTEM MODELS
 // ==========================================
 
 enum ProjectStatus {
@@ -227,22 +246,86 @@ enum ProjectStatus {
   COMPLETED
 }
 
-model Project {
-  id          String           @id @default(uuid())
-  title       String
-  slug        String           @unique
-  description String?          @db.Text
-  coverImage  String?          @db.Text
-  status      ProjectStatus    @default(PLANNED)
-  guestAuthors String[]        @default([])
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt @default(now())
+enum ProjectType {
+  PROJECT
+  COURSE
+  WORKSHOP
+  LECTURE
+  BOOTCAMP
+  SEMINAR
+}
 
-  members     ProjectRole[]
-  articles    ProjectArticle[]
-  partners    PartnerProject[]
+enum SessionFormStatus {
+  OPEN
+  CLOSED
+}
+
+model Project {
+  id            String           @id @default(uuid())
+  title         String
+  slug          String           @unique
+  description   String?          @db.Text
+  coverImage    String?          @db.Text
+  status        ProjectStatus    @default(PLANNED)
+  type          ProjectType      @default(PROJECT)
+  location      String?
+  startDate     DateTime?
+  endDate       DateTime?
+  totalSessions Int              @default(1)
+  guestAuthors  String[]         @default([])
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt @default(now())
+
+  members      ProjectRole[]
+  articles     ProjectArticle[]
+  partners     PartnerProject[]
+  sessions     ProjectSession[]
+  certificates Certificate[]
 
   @@map("projects")
+}
+
+model ProjectSession {
+  id                String             @id @default(uuid())
+  projectId         String
+  project           Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sessionNumber     Int
+  title             String
+  description       String?
+  formStatus        SessionFormStatus  @default(CLOSED)
+  expiresAt         DateTime?
+  attendanceRecords AttendanceRecord[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt @default(now())
+
+  @@unique([projectId, sessionNumber])
+  @@map("project_sessions")
+}
+
+model Participant {
+  id                String             @id @default(uuid())
+  nameAr            String
+  nameEn            String
+  email             String             @unique
+  uniqueCode        String             @unique
+  attendanceRecords AttendanceRecord[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt @default(now())
+
+  @@map("participants")
+}
+
+model AttendanceRecord {
+  id            String         @id @default(uuid())
+  participantId String
+  participant   Participant    @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  sessionId     String
+  session       ProjectSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  feedback      String?
+  createdAt     DateTime       @default(now())
+
+  @@unique([participantId, sessionId])
+  @@map("attendance_records")
 }
 
 model ProjectRole {
@@ -312,90 +395,4 @@ model Department {
   updatedAt DateTime @updatedAt @default(now())
 
   @@map("departments")
-}
-
-// ==========================================
-// ACTIVITIES & ATTENDANCE MANAGEMENT MODELS
-// ==========================================
-
-enum ActivityType {
-  COURSE
-  WORKSHOP
-  LECTURE
-  BOOTCAMP
-  SEMINAR
-}
-
-enum ActivityStatus {
-  UPCOMING
-  ONGOING
-  COMPLETED
-  ARCHIVED
-}
-
-enum SessionFormStatus {
-  OPEN
-  CLOSED
-}
-
-model Activity {
-  id            String            @id @default(uuid())
-  title         String
-  slug          String            @unique
-  description   String?
-  coverImage    String?
-  type          ActivityType      @default(COURSE)
-  totalSessions Int               @default(1)
-  status        ActivityStatus    @default(UPCOMING)
-  location      String?
-  startDate     DateTime?
-  endDate       DateTime?
-  sessions      ActivitySession[]
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt @default(now())
-
-  @@map("activities")
-}
-
-model ActivitySession {
-  id                String             @id @default(uuid())
-  activityId        String
-  activity          Activity           @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  sessionNumber     Int
-  title             String
-  description       String?
-  formStatus        SessionFormStatus  @default(CLOSED)
-  expiresAt         DateTime?
-  attendanceRecords AttendanceRecord[]
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt @default(now())
-
-  @@unique([activityId, sessionNumber])
-  @@map("activity_sessions")
-}
-
-model Participant {
-  id                String             @id @default(uuid())
-  nameAr            String
-  nameEn            String
-  email             String             @unique
-  uniqueCode        String             @unique
-  attendanceRecords AttendanceRecord[]
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt @default(now())
-
-  @@map("participants")
-}
-
-model AttendanceRecord {
-  id            String          @id @default(uuid())
-  participantId String
-  participant   Participant     @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  sessionId     String
-  session       ActivitySession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  feedback      String?
-  createdAt     DateTime        @default(now())
-
-  @@unique([participantId, sessionId])
-  @@map("attendance_records")
 }

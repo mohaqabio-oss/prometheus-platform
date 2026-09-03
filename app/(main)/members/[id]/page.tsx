@@ -4,12 +4,11 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { prisma } from "@/lib/db/prisma";
 import {
   ArrowLeft, Clock, BookOpen, FolderGit2, Microscope, Calendar,
-  FileText, Users, Award, Flame, ChevronLeft, Building2,
+  FileText, Users, Award, ChevronLeft,
 } from "lucide-react";
 
 interface MemberProfilePageProps {
@@ -57,16 +56,17 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
     ]);
 
     if (member) {
-      // Fetch articles where this member is co-author or main author
       articles = await prisma.article.findMany({
         where: {
           status: "PUBLISHED",
           OR: [
+            { memberRoles: { some: { memberId: member.id } } },
             { authors: { some: { name: member.fullName } } },
           ],
         },
         include: {
           authors: true,
+          memberRoles: { include: { member: true } },
           category: true,
         },
         orderBy: { createdAt: "desc" },
@@ -81,7 +81,7 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
   const blogArticles = articles.filter((a: any) => a.type === "BLOG");
 
   return (
-    <main className="py-12 sm:py-20 bg-[#0A0F1D] min-h-screen text-white animate-fade-in">
+    <main className="py-12 sm:py-20 bg-[#0A0F1D] min-h-screen text-white animate-fade-in font-sans">
       <div className="container mx-auto px-4 sm:px-6 md:px-8 max-w-5xl space-y-10">
 
         {/* Back Navigation */}
@@ -93,11 +93,9 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
 
         {/* MEMBER PROFILE HEADER */}
         <div className="p-8 sm:p-12 rounded-2xl border border-[#1E293B] bg-[#141C2F] shadow-2xl relative overflow-hidden">
-          {/* Background accent */}
           <div className="absolute inset-0 radial-glow-amber pointer-events-none opacity-40" />
 
           <div className="relative flex flex-col md:flex-row items-start md:items-center gap-8">
-            {/* Avatar */}
             <Avatar
               src={member.avatarUrl || member.profileImage}
               name={member.fullName}
@@ -179,7 +177,7 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
           <section className="space-y-4">
             <h2 className="font-cairo text-2xl font-bold text-white flex items-center gap-3">
               <FolderGit2 className="w-6 h-6 text-[#D49B4B]" />
-              المشاريع البحثية
+              المشاريع والأنشطة
               <span className="text-sm font-fira text-[#6B7280] bg-[#1E293B] px-2 py-0.5 rounded-full">
                 {projectRoles.length}
               </span>
@@ -195,7 +193,6 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
                     </div>
                   )}
                   <div className="p-4 space-y-2">
-                    {/* Role badge */}
                     <span className="inline-flex items-center gap-1 text-[10px] font-fira text-[#D49B4B] bg-[#D49B4B]/10 border border-[#D49B4B]/20 px-2 py-0.5 rounded-full">
                       {pr.roleName}
                     </span>
@@ -211,15 +208,6 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
                         <FileText className="w-3 h-3 text-[#D49B4B]" />
                         {pr.project._count?.articles || 0}
                       </span>
-                      {pr.project.partners?.length > 0 && (
-                        <div className="flex items-center gap-1 mr-auto">
-                          {pr.project.partners.slice(0, 2).map((pp: any) => (
-                            <div key={pp.partner.id} className="w-5 h-5 rounded bg-white/5 border border-[#1E293B] overflow-hidden">
-                              <img src={pp.partner.logoUrl} alt={pp.partner.name} className="w-full h-full object-contain" />
-                            </div>
-                          ))}
-                        </div>
-                      )}
                     </div>
                   </div>
                 </Link>
@@ -240,7 +228,7 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
             </h2>
             <div className="space-y-3">
               {academicArticles.map((article: any) => (
-                <ArticleCard key={article.id} article={article} type="ACADEMIC" />
+                <ArticleCard key={article.id} article={article} memberId={member.id} type="ACADEMIC" />
               ))}
             </div>
           </section>
@@ -258,7 +246,7 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
             </h2>
             <div className="space-y-3">
               {blogArticles.map((article: any) => (
-                <ArticleCard key={article.id} article={article} type="BLOG" />
+                <ArticleCard key={article.id} article={article} memberId={member.id} type="BLOG" />
               ))}
             </div>
           </section>
@@ -295,8 +283,9 @@ export default async function SingleMemberProfilePage({ params }: MemberProfileP
   );
 }
 
-// ── Article Card Component ─────────────────────────────────────────────────────
-function ArticleCard({ article, type }: { article: any; type: string }) {
+function ArticleCard({ article, memberId, type }: { article: any; memberId: string; type: string }) {
+  const memberRole = article.memberRoles?.find((mr: any) => mr.memberId === memberId)?.roleName || "مؤلف مشارك";
+
   return (
     <Link href={`/post/articles/${article.slug}`}
       className="group archival-card rounded-xl p-5 flex items-start gap-4 hover:shadow-lg transition-all duration-200">
@@ -309,6 +298,9 @@ function ArticleCard({ article, type }: { article: any; type: string }) {
         <div className="flex items-center gap-2 mb-2">
           <span className={`text-[10px] font-fira px-2 py-0.5 rounded-full border ${type === "ACADEMIC" ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}>
             {type === "ACADEMIC" ? "بحث أكاديمي" : "مدونة"}
+          </span>
+          <span className="text-[10px] font-fira text-[#D49B4B] bg-[#D49B4B]/10 border border-[#D49B4B]/20 px-2 py-0.5 rounded-full">
+            {memberRole}
           </span>
           {article.category && (
             <span className="text-[10px] text-[#6B7280] font-fira">{article.category.name}</span>

@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import { prisma } from "@/lib/db/prisma";
 import {
   Globe, ArrowLeft, Building2, BookOpen, FolderGit2,
-  Calendar, Clock, Users, ExternalLink,
+  Calendar, Users, ExternalLink,
 } from "lucide-react";
 
 interface Props { params: Promise<{ slug: string }> }
@@ -54,11 +54,18 @@ export default async function PartnerProfilePage({ params }: Props) {
 
   if (!partner) notFound();
 
-  const relatedArticles = partner.articles.map((pa: any) => pa.article);
-  const relatedProjects = partner.projects.map((pp: any) => pp.project);
+  const relatedArticles = partner.articles.map((pa: any) => ({
+    ...pa.article,
+    roleName: pa.roleName || "شريك إعلامي",
+  }));
+
+  const relatedProjects = partner.projects.map((pp: any) => ({
+    ...pp.project,
+    roleName: pp.roleName || "شريك استراتيجي",
+  }));
 
   return (
-    <main className="min-h-screen bg-[#0A0F1D]">
+    <main className="min-h-screen bg-[#0A0F1D] font-sans text-white">
       {/* Hero / Partner Header */}
       <section className="relative py-20 px-4 overflow-hidden border-b border-[#1E293B]">
         <div className="absolute inset-0 radial-glow-amber pointer-events-none opacity-50" />
@@ -140,6 +147,9 @@ export default async function PartnerProfilePage({ params }: Props) {
                         <span className={`text-[10px] font-fira px-2 py-0.5 rounded-full ${article.type === "ACADEMIC" ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"}`}>
                           {article.type === "ACADEMIC" ? "بحث أكاديمي" : "مدونة"}
                         </span>
+                        <span className="text-[10px] font-fira text-[#D49B4B] bg-[#D49B4B]/10 border border-[#D49B4B]/20 px-2 py-0.5 rounded-full">
+                          {article.roleName}
+                        </span>
                         {article.category && (
                           <span className="text-[10px] font-fira text-[#6B7280]">{article.category.name}</span>
                         )}
@@ -176,7 +186,7 @@ export default async function PartnerProfilePage({ params }: Props) {
           <section>
             <h2 className="font-cairo text-2xl font-bold text-white mb-6 flex items-center gap-3">
               <FolderGit2 className="w-6 h-6 text-[#D49B4B]" />
-              المشاريع البحثية المشتركة
+              المشاريع والأنشطة المشتركة
               <span className="text-sm font-fira text-[#6B7280] bg-[#1E293B] px-2 py-0.5 rounded-full">
                 {relatedProjects.length}
               </span>
@@ -191,12 +201,15 @@ export default async function PartnerProfilePage({ params }: Props) {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
                   )}
-                  <div className="p-4">
+                  <div className="p-4 space-y-2">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-fira text-[#D49B4B] bg-[#D49B4B]/10 border border-[#D49B4B]/20 px-2 py-0.5 rounded-full">
+                      {project.roleName}
+                    </span>
                     <h3 className="font-cairo font-bold text-white group-hover:text-[#D49B4B] transition-colors">
                       {project.title}
                     </h3>
                     {project.description && (
-                      <p className="text-xs text-[#6B7280] font-sans mt-1 line-clamp-2">{project.description}</p>
+                      <p className="text-xs text-[#6B7280] font-sans line-clamp-2">{project.description}</p>
                     )}
                     <div className="flex items-center gap-2 mt-3 text-[10px] font-fira text-[#6B7280]">
                       <Users className="w-3 h-3 text-[#D49B4B]" />
