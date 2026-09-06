@@ -10,7 +10,7 @@ import { Layers, ArrowLeft, BookOpen } from "lucide-react";
 export default async function CollectionsIndexPage() {
   let collections: any[] = [];
   try {
-    collections = await prisma.collection.findMany({
+    collections = await (prisma as any).collection.findMany({
       include: {
         articles: true,
       },

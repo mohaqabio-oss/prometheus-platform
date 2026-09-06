@@ -10,7 +10,7 @@ import {
   UserPlus, Calendar, MapPin, Clock, ExternalLink, QrCode,
   Download, Copy, ShieldCheck, RefreshCw, Eye, GraduationCap,
 } from "lucide-react";
-import { ProjectDetail, toggleProjectSessionFormAction } from "@/app/actions/project-actions";
+import { ProjectDetail, toggleProjectSessionFormAction, addManualAttendeeAction } from "@/app/actions/project-actions";
 import { PartnerMultiSelect } from "@/components/admin/partner-multi-select";
 
 interface Member {
@@ -105,6 +105,15 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
   const [sessionFormMsg, setSessionFormMsg] = useState<string | null>(null);
   const [expirationMins, setExpirationMins] = useState<number>(30);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+
+  // Manual Attendee Addition Modal State
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [manualSessionId, setManualSessionId] = useState("");
+  const [manualFullName, setManualFullName] = useState("");
+  const [manualEmail, setManualEmail] = useState("");
+  const [manualNotes, setManualNotes] = useState("");
+  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [manualMsg, setManualMsg] = useState<{ error?: string; success?: string } | null>(null);
 
   const [state, formAction, isPending] = useActionState(async (prevState: any, formData: FormData) => {
     formData.set("status", status);
@@ -294,6 +303,23 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
                 placeholder="وصف وتفاصيل المشروع/الفعالية والأهداف..."
                 className="w-full bg-[#1A2B4A]/50 border border-[#6B7280]/20 rounded-xl px-4 py-3 text-xs text-white font-sans focus:outline-none focus:border-[#E84A0C] resize-none leading-relaxed"
               />
+
+              <div className="pt-1">
+                <label className="text-xs text-[#6B7280] font-sans mb-1 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-[#E84A0C]" />
+                  <span>رابط أو معرف المقال التوثيقي (Blog Article Slug / URL)</span>
+                </label>
+                <input
+                  type="text"
+                  name="articleSlug"
+                  defaultValue={project?.articleSlug || ""}
+                  placeholder="مثال: report-on-ai-workshop أو /blog/report-on-ai-workshop"
+                  className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-xs text-white focus:outline-none focus:border-[#E84A0C] font-mono placeholder:text-stone-500"
+                />
+                <p className="text-[10px] text-[#6B7280] mt-1 font-sans">
+                  سيتم عرض بطاقة انتقال بارزة (CTA) في صفحة المشروع العامة لقراءة التقرير الكامل في مجلة بروميثيوس.
+                </p>
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                 <div>
@@ -568,7 +594,23 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                onClick={() => {
+                  setManualSessionId(project.sessions?.[0]?.id || "");
+                  setManualFullName("");
+                  setManualEmail("");
+                  setManualNotes("");
+                  setManualMsg(null);
+                  setIsManualModalOpen(true);
+                }}
+                className="bg-[#E84A0C] hover:bg-[#D03E06] text-white text-xs font-bold rounded-xl gap-1.5 px-3.5 py-2 shadow-lg"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>إضافة حاضر يدوياً</span>
+              </Button>
+
               <span className="text-xs text-[#6B7280]">مهلة فتح الاستمارة:</span>
               <select
                 value={expirationMins}
@@ -618,6 +660,24 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setManualSessionId(s.id);
+                        setManualFullName("");
+                        setManualEmail("");
+                        setManualNotes("");
+                        setManualMsg(null);
+                        setIsManualModalOpen(true);
+                      }}
+                      size="sm"
+                      variant="outline"
+                      className="border-[#E84A0C]/40 text-[#E84A0C] hover:bg-[#E84A0C]/10 text-xs rounded-xl gap-1 font-bold"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>+ إضافة حاضر</span>
+                    </Button>
+
                     <Link href={`/attendance/${s.id}`} target="_blank">
                       <Button size="sm" variant="outline" className="border-[#6B7280]/30 text-stone-300 text-xs rounded-xl gap-1">
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -654,9 +714,27 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
                 سجل جميع المسجلين والحاضرين في الفعالية مع إمكانية تحقّق الكادر وتنزيل صور رمز QR لاستخدامها في تصميم الشهادات.
               </p>
             </div>
-            <span className="text-xs font-mono bg-[#1A2B4A] text-white px-3 py-1 rounded-xl border border-[#6B7280]/30">
-              إجمالي المشاركين: {project.participants?.length || 0}
-            </span>
+            <div className="flex items-center gap-3">
+              <Button
+                type="button"
+                onClick={() => {
+                  setManualSessionId(project.sessions?.[0]?.id || "");
+                  setManualFullName("");
+                  setManualEmail("");
+                  setManualNotes("");
+                  setManualMsg(null);
+                  setIsManualModalOpen(true);
+                }}
+                className="bg-[#E84A0C] hover:bg-[#D03E06] text-white text-xs font-bold rounded-xl gap-1.5 px-3.5 py-2 shadow-lg"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>إضافة حاضر يدوياً</span>
+              </Button>
+
+              <span className="text-xs font-mono bg-[#1A2B4A] text-white px-3 py-1 rounded-xl border border-[#6B7280]/30">
+                إجمالي المشاركين: {project.participants?.length || 0}
+              </span>
+            </div>
           </div>
 
           {project.participants?.length === 0 ? (
@@ -731,6 +809,145 @@ export function ProjectEditor({ project, availableMembers, availableArticles, av
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* MANUAL ATTENDEE ADDITION MODAL */}
+      {isManualModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#0D1322] border border-[#1E293B] rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl relative text-right font-sans">
+            
+            <div className="flex items-center justify-between border-b border-[#1E293B] pb-4">
+              <div className="flex items-center gap-2 text-white font-bold font-cairo text-lg">
+                <UserPlus className="w-5 h-5 text-[#E84A0C]" />
+                <h3>إضافة حاضر يدوياً (تسجيل إداري)</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsManualModalOpen(false)}
+                className="text-stone-400 hover:text-white text-sm font-mono p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {manualMsg?.error && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+                {manualMsg.error}
+              </div>
+            )}
+
+            {manualMsg?.success && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs">
+                {manualMsg.success}
+              </div>
+            )}
+
+            <div className="space-y-4 text-xs font-sans">
+              <div className="space-y-1.5">
+                <label className="text-stone-300 font-semibold">اختيار الجلسة *</label>
+                <select
+                  value={manualSessionId}
+                  onChange={(e) => setManualSessionId(e.target.value)}
+                  className="w-full h-10 px-3 bg-[#080C16] border border-[#1E293B] rounded-xl text-white text-xs focus:border-[#E84A0C] focus:outline-none"
+                  required
+                >
+                  <option value="">-- اختر الجلسة --</option>
+                  {project?.sessions?.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      جلسة #{s.sessionNumber}: {s.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-stone-300 font-semibold">الاسم الكامل للمشارك *</label>
+                <input
+                  type="text"
+                  value={manualFullName}
+                  onChange={(e) => setManualFullName(e.target.value)}
+                  placeholder="مثال: د. محمد عبدالله العتيبي"
+                  className="w-full h-10 px-3 bg-[#080C16] border border-[#1E293B] rounded-xl text-white text-xs focus:border-[#E84A0C] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-stone-300 font-semibold">البريد الإلكتروني *</label>
+                <input
+                  type="email"
+                  value={manualEmail}
+                  onChange={(e) => setManualEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  className="w-full h-10 px-3 bg-[#080C16] border border-[#1E293B] rounded-xl text-white text-xs font-mono focus:border-[#E84A0C] focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-stone-300 font-semibold">ملاحظات إدارية (اختياري)</label>
+                <textarea
+                  rows={2}
+                  value={manualNotes}
+                  onChange={(e) => setManualNotes(e.target.value)}
+                  placeholder="مثال: تم تسجيل الحضور يدوياً نظراً للوصول المتأخر بطلب من المحاضر..."
+                  className="w-full p-3 bg-[#080C16] border border-[#1E293B] rounded-xl text-white text-xs focus:border-[#E84A0C] focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsManualModalOpen(false)}
+                  className="border-stone-700 text-stone-300 text-xs rounded-xl"
+                >
+                  إلغاء
+                </Button>
+                <Button
+                  type="button"
+                  disabled={manualSubmitting}
+                  onClick={async () => {
+                    if (!manualSessionId) {
+                      setManualMsg({ error: "يرجى اختيار الجلسة." });
+                      return;
+                    }
+                    if (!manualFullName.trim() || !manualEmail.trim()) {
+                      setManualMsg({ error: "يرجى ملء الاسم والبريد الإلكتروني." });
+                      return;
+                    }
+                    setManualSubmitting(true);
+                    setManualMsg(null);
+                    try {
+                      const res = await addManualAttendeeAction(
+                        manualSessionId,
+                        manualFullName,
+                        manualEmail,
+                        manualNotes
+                      );
+                      if (res.error) {
+                        setManualMsg({ error: res.error });
+                      } else {
+                        setManualMsg({ success: res.message });
+                        setTimeout(() => {
+                          setIsManualModalOpen(false);
+                          window.location.reload();
+                        }, 1200);
+                      }
+                    } catch (err: any) {
+                      setManualMsg({ error: err.message || "فشلت العملية." });
+                    } finally {
+                      setManualSubmitting(false);
+                    }
+                  }}
+                  className="bg-[#E84A0C] hover:bg-[#D03E06] text-white font-bold text-xs rounded-xl px-5"
+                >
+                  {manualSubmitting ? "جاري الإضافة..." : "تأكيد إضافة الحاضر"}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </form>

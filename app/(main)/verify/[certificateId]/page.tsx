@@ -31,11 +31,7 @@ export default async function UnifiedVerificationPage({ params }: VerifyPageProp
   const cert = !participantData ? await verifyCertificateCode(certificateId) : null;
 
   return (
-    <div className="min-h-screen py-16 px-4 bg-[#080C16] text-foreground font-sans flex flex-col items-center justify-center relative overflow-hidden">
-      
-      {/* Background Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-30 pointer-events-none" />
-
+    <div className="min-h-screen py-16 px-4 bg-[#070b14] text-foreground font-sans flex flex-col items-center justify-center relative overflow-hidden">
       <div className="w-full max-w-2xl relative z-10 space-y-8 animate-fade-in">
         
         {/* Top Header */}

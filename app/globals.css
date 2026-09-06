@@ -112,12 +112,9 @@ h1, h2, h3, h4, h5, h6 {
   animation: slideUp 0.4s ease-out forwards;
 }
 
-/* ── Oxford Slate Grid Pattern ── */
+/* ── Oxford Slate Grid Pattern (Neutralized) ── */
 .bg-grid-pattern {
-  background-size: 48px 48px;
-  background-image: 
-    linear-gradient(to right, rgba(148, 163, 184, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(148, 163, 184, 0.04) 1px, transparent 1px);
+  /* Grid lines removed per design spec */
 }
 
 /* ── Promethean Amber Subtle Glow ── */

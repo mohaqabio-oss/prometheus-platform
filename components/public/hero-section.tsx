@@ -20,7 +20,7 @@ export function HeroSection({
   heroSubtitle,
 }: HeroSectionProps) {
   return (
-    <section className="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden bg-grid-pattern border-b border-[#1E293B]">
+    <section className="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden bg-[#070b14] border-b border-[#1E293B]">
       
       {/* Huge Glowing Ambient Radial Orbs behind container */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] bg-[#E84A0C]/15 rounded-full blur-[140px] pointer-events-none" />

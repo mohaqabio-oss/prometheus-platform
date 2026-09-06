@@ -23,7 +23,9 @@ export interface MemberCardProps {
 }
 
 export function MemberCard({ member }: MemberCardProps) {
-  const photo = member.avatarUrl ?? member.photoUrl;
+  const photo = (member.avatarUrl && member.avatarUrl.trim().length > 0)
+    ? member.avatarUrl
+    : ((member.photoUrl && member.photoUrl.trim().length > 0) ? member.photoUrl : null);
 
   const renderTierBadge = () => {
     const tier = member.leadershipTier || "Regular";
@@ -64,6 +66,7 @@ export function MemberCard({ member }: MemberCardProps) {
           {/* Avatar Container */}
           <div className="flex justify-center">
             <Avatar
+              key={`member-avatar-${member.id}`}
               src={photo}
               name={member.name}
               size="lg"

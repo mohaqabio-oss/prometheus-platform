@@ -15,18 +15,11 @@ const SUPABASE_HOSTNAME = process.env.NEXT_PUBLIC_SUPABASE_URL
   : "lzqpkpsofoqpvxcngauf.supabase.co";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  turbopack: {},
   typescript: {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: [
-      SUPABASE_HOSTNAME,
-      "lzqpkpsofoqpvxcngauf.supabase.co",
-      "images.unsplash.com",
-    ],
     remotePatterns: [
       {
         protocol: "https",

@@ -20,6 +20,7 @@ export interface ProjectRecord {
   endDate: string | null;
   totalSessions: number;
   guestAuthors: string[];
+  articleSlug: string | null;
   membersCount: number;
   articlesCount: number;
   sessionsCount: number;
@@ -129,6 +130,7 @@ export async function getProjectsAction(type?: ProjectType): Promise<ProjectReco
         endDate: p.endDate?.toISOString() || null,
         totalSessions: p.totalSessions,
         guestAuthors: p.guestAuthors || [],
+        articleSlug: p.articleSlug || null,
         membersCount: p._count.members,
         articlesCount: p._count.articles,
         sessionsCount: p.sessions.length,
@@ -244,6 +246,7 @@ export async function getProjectBySlugAction(slug: string): Promise<ProjectDetai
       endDate: p.endDate?.toISOString() || null,
       totalSessions: p.totalSessions,
       guestAuthors: p.guestAuthors || [],
+      articleSlug: p.articleSlug || null,
       membersCount: p._count.members,
       articlesCount: p._count.articles,
       sessionsCount: p.sessions.length,
@@ -378,6 +381,7 @@ export async function getAdminProjectById(id: string): Promise<ProjectDetail | n
       endDate: p.endDate?.toISOString() || null,
       totalSessions: p.totalSessions,
       guestAuthors: p.guestAuthors || [],
+      articleSlug: p.articleSlug || null,
       membersCount: p._count.members,
       articlesCount: p._count.articles,
       sessionsCount: p.sessions.length,
@@ -520,6 +524,7 @@ export async function createProjectAction(prevState: any, formData: FormData) {
   const rawPartnerRoles = formData.get("partnerRoles")?.toString() || formData.get("partnerIds")?.toString() || "[]";
   const rawMembers = formData.get("members")?.toString() || "[]";
   const rawGuestAuthors = formData.get("guestAuthors")?.toString() || "[]";
+  const articleSlug = formData.get("articleSlug")?.toString().trim() || null;
 
   let articleIds: string[] = [];
   let partnerRoles: { partnerId: string; roleName?: string }[] = [];
@@ -529,7 +534,7 @@ export async function createProjectAction(prevState: any, formData: FormData) {
   try { articleIds = JSON.parse(rawArticleIds); } catch { articleIds = []; }
   try {
     const parsed = JSON.parse(rawPartnerRoles);
-    partnerRoles = parsed.map((item: any) => typeof item === "string" ? { partnerId: item, roleName: "شريك استراتيجي" } : item);
+    partnerRoles = parsed.map((item: string | { partnerId: string; roleName?: string }) => typeof item === "string" ? { partnerId: item, roleName: "شريك استراتيجي" } : item);
   } catch { partnerRoles = []; }
   try { memberRoles = JSON.parse(rawMembers); } catch { memberRoles = []; }
   try { guestAuthors = JSON.parse(rawGuestAuthors).filter((g: string) => g.trim() !== ""); } catch { guestAuthors = []; }
@@ -559,6 +564,7 @@ export async function createProjectAction(prevState: any, formData: FormData) {
         endDate,
         totalSessions,
         guestAuthors,
+        articleSlug,
         articles: articleIds.length > 0
           ? { create: articleIds.map((aid) => ({ articleId: aid })) }
           : undefined,
@@ -612,6 +618,7 @@ export async function updateProjectAction(prevState: any, formData: FormData) {
   const rawPartnerRoles = formData.get("partnerRoles")?.toString() || formData.get("partnerIds")?.toString() || "[]";
   const rawMembers = formData.get("members")?.toString() || "[]";
   const rawGuestAuthors = formData.get("guestAuthors")?.toString() || "[]";
+  const articleSlug = formData.get("articleSlug")?.toString().trim() || null;
 
   let articleIds: string[] = [];
   let partnerRoles: { partnerId: string; roleName?: string }[] = [];
@@ -621,7 +628,7 @@ export async function updateProjectAction(prevState: any, formData: FormData) {
   try { articleIds = JSON.parse(rawArticleIds); } catch { articleIds = []; }
   try {
     const parsed = JSON.parse(rawPartnerRoles);
-    partnerRoles = parsed.map((item: any) => typeof item === "string" ? { partnerId: item, roleName: "شريك استراتيجي" } : item);
+    partnerRoles = parsed.map((item: string | { partnerId: string; roleName?: string }) => typeof item === "string" ? { partnerId: item, roleName: "شريك استراتيجي" } : item);
   } catch { partnerRoles = []; }
   try { memberRoles = JSON.parse(rawMembers); } catch { memberRoles = []; }
   try { guestAuthors = JSON.parse(rawGuestAuthors).filter((g: string) => g.trim() !== ""); } catch { guestAuthors = []; }
@@ -651,7 +658,7 @@ export async function updateProjectAction(prevState: any, formData: FormData) {
     await prisma.$transaction([
       prisma.project.update({
         where: { id },
-        data: { title, slug, description, coverImage, status, type, location, startDate, endDate, totalSessions, guestAuthors },
+        data: { title, slug, description, coverImage, status, type, location, startDate, endDate, totalSessions, guestAuthors, articleSlug },
       }),
       prisma.projectArticle.deleteMany({ where: { projectId: id } }),
       ...(articleIds.length > 0
@@ -846,6 +853,98 @@ export async function submitAttendanceAction(prevState: any, formData: FormData)
     };
   } catch (err: any) {
     return { error: err.message || "حدث خطأ أثناء تسجيل الحضور." };
+  }
+}
+
+// Security & Admin Workflow: Add attendee manually bypassing public form restrictions
+export async function addManualAttendeeAction(
+  sessionId: string,
+  fullName: string,
+  email: string,
+  notes?: string
+) {
+  await requireAuth(["ADMIN", "HR_EDITOR"]);
+
+  const cleanName = fullName.trim();
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanNotes = notes?.trim() || "";
+
+  if (!sessionId || !cleanName || !cleanEmail) {
+    return { error: "يرجى تقديم اسم المشارك والبريد الإلكتروني واختيار الجلسة." };
+  }
+
+  try {
+    const session = await prisma.projectSession.findUnique({
+      where: { id: sessionId },
+      include: { project: true },
+    });
+
+    if (!session) {
+      return { error: "رمز الجلسة غير صحيح." };
+    }
+
+    let participant = await prisma.participant.findUnique({ where: { email: cleanEmail } });
+
+    if (!participant) {
+      let uniqueCode = generateUniqueCode();
+      let attempts = 0;
+      while (attempts < 5) {
+        const exist = await prisma.participant.findUnique({ where: { uniqueCode } });
+        if (!exist) break;
+        uniqueCode = generateUniqueCode();
+        attempts++;
+      }
+      participant = await prisma.participant.create({
+        data: {
+          nameAr: cleanName,
+          nameEn: cleanName,
+          email: cleanEmail,
+          uniqueCode,
+        },
+      });
+    }
+
+    const existingAttendance = await prisma.attendanceRecord.findUnique({
+      where: {
+        participantId_sessionId: {
+          participantId: participant.id,
+          sessionId: session.id,
+        },
+      },
+    });
+
+    if (existingAttendance) {
+      if (cleanNotes) {
+        await prisma.attendanceRecord.update({
+          where: { id: existingAttendance.id },
+          data: { feedback: cleanNotes },
+        });
+      }
+      revalidatePath(`/admin/projects/${session.projectId}/edit`);
+      return {
+        success: true,
+        alreadySubmitted: true,
+        message: `المشارك (${participant.nameAr}) مسجل في هذه الجلسة مسبقاً. تم تحديث البيانات.`,
+      };
+    }
+
+    await prisma.attendanceRecord.create({
+      data: {
+        participantId: participant.id,
+        sessionId: session.id,
+        feedback: cleanNotes || null,
+      },
+    });
+
+    revalidatePath(`/admin/projects/${session.projectId}/edit`);
+    revalidatePath(`/attendance/${sessionId}`);
+
+    return {
+      success: true,
+      message: `تم إضافة المشارك (${participant.nameAr}) كحاضر في الجلسة بنجاح.`,
+    };
+  } catch (err: any) {
+    return { error: err.message || "حدث خطأ أثناء إضافة الحاضر يدوياً." };
   }
 }
 

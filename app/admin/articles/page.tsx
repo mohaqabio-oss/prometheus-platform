@@ -26,7 +26,7 @@ export default async function AdminArticlesPage() {
     !session?.roles.includes("ADMIN");
 
   const getStatusBadge = (status: ArticleStatus) => {
-    switch (status) {
+    switch (status as string) {
       case "DRAFT":
         return <Badge variant="dark" className="bg-[#1A2B4A] text-[#6B7280] border-[#6B7280]/30">مسودة</Badge>;
       case "SUBMITTED":
@@ -110,7 +110,7 @@ export default async function AdminArticlesPage() {
                           {art.excerpt}
                         </p>
                       )}
-                      {art.editorNotes && art.status === "CHANGES_REQUESTED" && (
+                      {art.editorNotes && (art.status as string) === "CHANGES_REQUESTED" && (
                         <p className="text-amber-400 text-[10px] font-mono mt-1 flex items-center gap-1">
                           <AlertTriangle className="w-3 h-3" />
                           ملاحظة المحرر: {art.editorNotes}

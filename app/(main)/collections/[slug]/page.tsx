@@ -24,7 +24,7 @@ export default async function SingleCollectionPage({ params }: CollectionPagePro
   let collection: any = null;
 
   try {
-    collection = await prisma.collection.findUnique({
+    collection = await (prisma as any).collection.findUnique({
       where: { slug: decodedSlug },
       include: {
         articles: {

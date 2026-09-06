@@ -221,8 +221,22 @@ export default function AttendanceFormPage({ params }: AttendancePageProps) {
             </div>
           </div>
 
-          <div className="pt-2">
-            <Link href="/" className="inline-flex items-center gap-2 text-xs text-stone-400 hover:text-[#E84A0C] font-mono transition-colors">
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button
+              type="button"
+              onClick={() => {
+                setNameAr("");
+                setNameEn("");
+                setEmail("");
+                setFeedback("");
+                setErrorMessage(null);
+                setSubmissionResult(null);
+              }}
+              className="bg-[#E84A0C] hover:bg-[#D03E06] text-white text-xs font-bold rounded-xl px-5 py-2.5 shadow-lg w-full sm:w-auto"
+            >
+              تسجيل شخص آخر
+            </Button>
+            <Link href="/" className="inline-flex items-center gap-2 text-xs text-stone-400 hover:text-[#E84A0C] font-mono transition-colors py-2">
               <span>العودة للصفحة الرئيسية</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>

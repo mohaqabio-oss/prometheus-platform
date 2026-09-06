@@ -69,7 +69,6 @@ export default async function PartnerProfilePage({ params }: Props) {
       {/* Hero / Partner Header */}
       <section className="relative py-20 px-4 overflow-hidden border-b border-[#1E293B]">
         <div className="absolute inset-0 radial-glow-amber pointer-events-none opacity-50" />
-        <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
 
         <div className="relative max-w-5xl mx-auto">
           <Link href="/partners"

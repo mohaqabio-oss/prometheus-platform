@@ -36,7 +36,6 @@ export default async function ProjectsPublicPage() {
       {/* Hero */}
       <section className="relative py-24 px-4 text-center overflow-hidden">
         <div className="absolute inset-0 radial-glow-amber pointer-events-none" />
-        <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none" />
         <div className="relative max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 text-xs font-fira text-[#D49B4B] bg-[#D49B4B]/10 border border-[#D49B4B]/20 px-4 py-2 rounded-full mb-6">
             <FolderGit2 className="w-4 h-4" />

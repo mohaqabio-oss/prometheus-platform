@@ -7,11 +7,7 @@ import { Home, FileText, Users } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#1A2B4A] text-white font-sans flex flex-col items-center justify-center p-4 relative overflow-hidden transition-all duration-300">
-      
-      {/* Background Subtle Grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(107,114,128,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(107,114,128,0.1)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
-
+    <div className="min-h-screen bg-[#070b14] text-white font-sans flex flex-col items-center justify-center p-4 relative overflow-hidden transition-all duration-300">
       <div className="w-full max-w-lg text-center space-y-6 relative z-10">
         
         {/* Brand Logo Symbol */}

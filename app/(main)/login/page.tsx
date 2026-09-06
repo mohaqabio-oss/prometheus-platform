@@ -145,7 +145,7 @@ function LoginLoadingFallback() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-16 px-4 sm:px-6 bg-grid-pattern radial-glow-orange transition-all duration-300">
+    <div className="min-h-[85vh] flex items-center justify-center py-16 px-4 sm:px-6 bg-[#070b14] radial-glow-orange transition-all duration-300">
       <Suspense fallback={<LoginLoadingFallback />}>
         <LoginForm />
       </Suspense>

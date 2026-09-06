@@ -15,7 +15,6 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { getSiteSettings } from "@/app/actions/website-actions";
-import ShaderBackground from "@/components/ui/shader-background";
 
 // ── Arabic Fonts ──────────────────────────────────────────
 const tajawal = Tajawal({
@@ -203,9 +202,23 @@ export default async function RootLayout({
           }
         ` }} />
       </head>
-      <body className="min-h-full flex flex-col bg-[#0A0F1D] text-[#F8FAFC] font-sans selection:bg-[#D49B4B] selection:text-[#0A0F1D]">
-        <ShaderBackground />
-        {children}
+      <body className="min-h-full flex flex-col bg-[#070b14] text-slate-100 font-sans selection:bg-amber-500/20 overflow-x-hidden">
+        {/* Elegant, subtle CSS ambient glow (Static, lightweight, zero JS) */}
+        <div 
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-0 -z-50 overflow-hidden"
+        >
+          {/* Top subtle blue/indigo ambient haze */}
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[65rem] h-[30rem] rounded-full bg-gradient-to-tr from-blue-900/15 via-indigo-800/10 to-transparent blur-3xl opacity-60" />
+          
+          {/* Very gentle accent glow near top right */}
+          <div className="absolute top-20 right-[-10%] w-[35rem] h-[25rem] rounded-full bg-amber-500/5 blur-[120px] opacity-40" />
+        </div>
+
+        {/* Page Content Container */}
+        <div className="relative z-10 flex flex-col min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );

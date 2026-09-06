@@ -216,8 +216,8 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
       FontFamily,
       FontSize,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      CalloutNode,
-    ],
+      CalloutNode as any,
+    ] as any[],
     content: article?.content || "<p>اكتب هنا نص المقالة أو البحث الأكاديمي التخصصي...</p>",
     onUpdate: ({ editor }) => {
       setEditorContent(editor.getHTML());
@@ -391,10 +391,10 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
 
               <div className="flex items-center gap-1">
                 {[
-                  { action: () => editor?.chain().focus().toggleBold().run(), active: editor?.isActive("bold"), icon: <Bold className="w-4 h-4" /> },
-                  { action: () => editor?.chain().focus().toggleItalic().run(), active: editor?.isActive("italic"), icon: <Italic className="w-4 h-4" /> },
-                  { action: () => editor?.chain().focus().toggleUnderline().run(), active: editor?.isActive("underline"), icon: <UnderlineIcon className="w-4 h-4" /> },
-                  { action: () => editor?.chain().focus().toggleStrike().run(), active: editor?.isActive("strike"), icon: <Strikethrough className="w-4 h-4" /> },
+                  { action: () => (editor as any)?.chain().focus().toggleBold().run(), active: editor?.isActive("bold"), icon: <Bold className="w-4 h-4" /> },
+                  { action: () => (editor as any)?.chain().focus().toggleItalic().run(), active: editor?.isActive("italic"), icon: <Italic className="w-4 h-4" /> },
+                  { action: () => (editor as any)?.chain().focus().toggleUnderline().run(), active: editor?.isActive("underline"), icon: <UnderlineIcon className="w-4 h-4" /> },
+                  { action: () => (editor as any)?.chain().focus().toggleStrike().run(), active: editor?.isActive("strike"), icon: <Strikethrough className="w-4 h-4" /> },
                 ].map((btn, i) => (
                   <button key={i} type="button" onClick={btn.action}
                     className={`p-1.5 rounded-lg transition-colors ${btn.active ? "bg-[#E84A0C] text-white" : "hover:bg-[#0D0D0D] text-[#6B7280]"}`}>

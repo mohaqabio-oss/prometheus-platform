@@ -6,6 +6,8 @@ import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/prisma";
 import { ArticleStatus, ArticleType, RoleType } from "@prisma/client";
 
+export type AnalyticsData = any;
+
 export interface ArticleAuthor {
   id: string;
   name: string;

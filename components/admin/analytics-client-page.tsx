@@ -25,7 +25,7 @@ interface AnalyticsClientPageProps {
 }
 
 export function AnalyticsClientPage({ analytics, userRole }: AnalyticsClientPageProps) {
-  const maxViews = Math.max(...analytics.topArticles.map((a) => a.viewCount), 1);
+  const maxViews = Math.max(...(analytics?.topArticles || []).map((a: any) => a.viewCount), 1);
 
   const statsCards = [
     {
@@ -178,7 +178,7 @@ export function AnalyticsClientPage({ analytics, userRole }: AnalyticsClientPage
                   لا توجد إحصائيات قراءة مسجلة بعد. قم بزيارة صفحات المقالات لزيادة العداد!
                 </div>
               ) : (
-                analytics.topArticles.map((article, index) => {
+                (analytics?.topArticles || []).map((article: any, index: number) => {
                   const percentage = Math.round((article.viewCount / maxViews) * 100);
                   return (
                     <div key={article.id} className="space-y-2 group">
