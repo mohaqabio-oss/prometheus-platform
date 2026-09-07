@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AnalyticsData } from "@/app/actions/article-actions";
+import { getArticlePublicUrl } from "@/lib/routes";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -189,7 +190,7 @@ export function AnalyticsClientPage({ analytics, userRole }: AnalyticsClientPage
                             #{index + 1}
                           </span>
                           <Link
-                            href={`/articles/${article.slug}`}
+                            href={getArticlePublicUrl(article.slug, article.type)}
                             target="_blank"
                             className="font-bold text-white group-hover:text-[#E84A0C] transition-colors flex items-center gap-1.5"
                           >

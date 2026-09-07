@@ -48,6 +48,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
 
   const articleForEditor = {
     id: article.id,
+    slug: article.slug,
     title: article.title,
     excerpt: article.excerpt || "",
     content: article.content,

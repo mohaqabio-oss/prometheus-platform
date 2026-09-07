@@ -15,6 +15,8 @@ import { FontSize } from "@/lib/tiptap/font-size";
 import { Button } from "@/components/ui/button";
 import { getMembersForSelectAction, getPartnersForSelectAction, ArticleAuthor } from "@/app/actions/article-actions";
 import { PartnerMultiSelect } from "@/components/admin/partner-multi-select";
+import Link from "next/link";
+import { getArticlePublicUrl } from "@/lib/routes";
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   Heading1, Heading2, Heading3, Heading4, Pilcrow,
@@ -22,7 +24,7 @@ import {
   List, ListOrdered, Quote, ImageIcon, Save, AlertCircle,
   Loader2, Upload, Maximize2, Minimize2, Palette, Highlighter,
   Type, Users, Check, FileText, BookOpen, Info, AlertTriangle,
-  Lightbulb, Plus, Trash2, BookMarked, Building2, UserPlus,
+  Lightbulb, Plus, Trash2, BookMarked, Building2, UserPlus, Eye,
 } from "lucide-react";
 
 const CalloutNode = Node.create({
@@ -63,6 +65,7 @@ export interface PartnerRole {
 export interface ArticleEditorProps {
   article?: {
     id: string;
+    slug?: string;
     title: string;
     excerpt?: string;
     content: string;
@@ -294,7 +297,7 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
 
       {/* Sticky Header Controls Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#6B7280]/20 bg-[#0D0D0D]/90 p-4 rounded-2xl border backdrop-blur-md shadow-xl">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button" variant="outline" size="sm"
             onClick={() => setFocusMode(!focusMode)}
@@ -303,6 +306,18 @@ export function ArticleEditor({ article, availableMembers = [], availablePartner
             {focusMode ? <Minimize2 className="w-4 h-4 text-[#E84A0C]" /> : <Maximize2 className="w-4 h-4 text-[#E84A0C]" />}
             <span>{focusMode ? "إنهاء التركيز" : "وضع معالج المستندات (Word Mode)"}</span>
           </Button>
+
+          {article?.slug && (
+            <Link href={getArticlePublicUrl(article.slug, articleType || article.type)} target="_blank">
+              <Button
+                type="button" variant="outline" size="sm"
+                className="gap-1.5 text-xs rounded-xl border-[#6B7280]/30 text-stone-300 hover:text-white"
+              >
+                <Eye className="w-4 h-4 text-emerald-400" />
+                <span>معاينة المقالة</span>
+              </Button>
+            </Link>
+          )}
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">

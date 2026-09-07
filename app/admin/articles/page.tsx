@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AdminDeleteArticleButton } from "@/components/admin/admin-delete-article-button";
+import { getArticlePublicUrl } from "@/lib/routes";
 import { ArticleStatus } from "@prisma/client";
 import {
   PlusCircle,
@@ -157,7 +158,7 @@ export default async function AdminArticlesPage() {
                     <td className="p-4 text-left">
                       <div className="flex items-center justify-end gap-2">
                         {art.status === "PUBLISHED" && (
-                          <Link href={`/articles/${art.slug}`} target="_blank">
+                          <Link href={getArticlePublicUrl(art.slug, art.type)} target="_blank">
                             <Button variant="outline" size="sm" className="h-8 px-2 text-xs rounded-xl border-[#6B7280]/30 text-white">
                               <Eye className="w-3.5 h-3.5" />
                             </Button>
