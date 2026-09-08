@@ -1,16 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 
-export const getInitials = (name?: string | null): string => {
-  const trimmed = name?.trim() || "";
-  if (!trimmed) return "P";
-  const parts = trimmed.split(/\s+/);
-  return parts.length === 1 
-    ? parts[0].slice(0, 2).toUpperCase() 
-    : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-};
+export { getInitials };
 
 export interface AvatarProps {
   src?: string | null;

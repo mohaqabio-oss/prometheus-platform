@@ -12,6 +12,7 @@ import {
   Award,
   GraduationCap,
 } from "lucide-react";
+import { getInitials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 

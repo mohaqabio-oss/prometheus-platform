@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { prisma } from "@/lib/db/prisma";
 import { ShieldCheck, BookOpen, UserCheck, Award, GraduationCap, Globe, ExternalLink } from "lucide-react";
+import { getInitials } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { prisma } from "@/lib/db/prisma";
-import { getInitials } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/utils";
 import {
   Users, FileText, Building2, ArrowLeft,
   CheckCircle2, Clock, Circle, Calendar, BookOpen, UserPlus,
