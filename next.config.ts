@@ -19,6 +19,20 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/post/:path*",
+        destination: "/PtPost/:path*",
+        permanent: true,
+      },
+      {
+        source: "/post",
+        destination: "/PtPost",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

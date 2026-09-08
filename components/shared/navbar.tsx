@@ -14,6 +14,7 @@ export function Navbar() {
   const navLinks = [
     { name: "الرئيسية", href: "/" },
     { name: "المشاريع والأنشطة", href: "/projects" },
+    { name: "Prometheus Post", href: "/PtPost" },
     { name: "المدونة", href: "/blog" },
     { name: "فريقنا", href: "/members" },
     { name: "عن الفريق", href: "/#about" },

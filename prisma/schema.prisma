@@ -90,21 +90,29 @@ model Certificate {
 }
 
 // ==========================================
-// EDITORIAL BOARD MODELS
+// EDITORIAL BOARD & JOURNAL SETTINGS MODELS
 // ==========================================
 
+model JournalSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique // e.g. "publication_ethics", "about_journal"
+  title     String
+  content   String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@map("journal_settings")
+}
+
 model EditorialMember {
-  id           String   @id @default(uuid())
-  fullName     String
-  academicRank String?
-  university   String?
-  specialty    String?
-  bio          String?
-  avatarUrl    String?
-  orcidUrl     String?
-  order        Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt @default(now())
+  id          String   @id @default(cuid())
+  name        String
+  role        String   // e.g. "رئيس التحرير", "محرر علمي"
+  institution String?  // Affiliation / University
+  bio         String?  @db.Text
+  avatarUrl   String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("editorial_members")
 }

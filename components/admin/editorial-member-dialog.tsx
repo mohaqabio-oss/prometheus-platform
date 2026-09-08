@@ -17,13 +17,14 @@ export interface EditorialMemberDialogProps {
   mode: "create" | "edit";
   member?: {
     id: string;
-    fullName: string;
+    name?: string;
+    fullName?: string;
+    role?: string;
     academicRank?: string | null;
+    institution?: string | null;
     university?: string | null;
-    specialty?: string | null;
     bio?: string | null;
     avatarUrl?: string | null;
-    orcidUrl?: string | null;
     order?: number;
   } | null;
 }
@@ -72,6 +73,10 @@ export function EditorialMemberDialog({ mode, member }: EditorialMemberDialogPro
     }
   };
 
+  const displayName = member?.name || member?.fullName || "";
+  const displayRole = member?.role || member?.academicRank || "";
+  const displayInstitution = member?.institution || member?.university || "";
+
   return (
     <>
       {mode === "create" ? (
@@ -102,7 +107,7 @@ export function EditorialMemberDialog({ mode, member }: EditorialMemberDialogPro
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#6B7280]/20 pb-4">
               <h3 className="font-display font-bold text-white text-lg">
-                {mode === "edit" ? `تعديل المحكم الأكاديمي: ${member?.fullName}` : "إضافة عضو جديد لهيئة التحرير الأكاديمية"}
+                {mode === "edit" ? `تعديل المحكم الأكاديمي: ${displayName}` : "إضافة عضو جديد لهيئة التحرير الأكاديمية"}
               </h3>
               <button
                 onClick={() => setOpen(false)}
@@ -168,66 +173,44 @@ export function EditorialMemberDialog({ mode, member }: EditorialMemberDialogPro
                 </div>
               </div>
 
-              {/* Full Name */}
+              {/* Name */}
               <div className="space-y-1.5">
                 <label className="block text-[#6B7280] font-medium">
-                  الاسم الثلاثي والألقاب الأكاديمية <span className="text-rose-500">*</span>
+                  الاسم الكامل واللقب الأكاديمي <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
-                  name="fullName"
-                  defaultValue={member?.fullName || ""}
+                  name="name"
+                  defaultValue={displayName}
                   required
                   placeholder="مثال: أ.د. عبد الله الشمري"
                   className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                 />
               </div>
 
-              {/* Academic Rank & University Grid */}
+              {/* Role & Institution Grid */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="block text-[#6B7280] font-medium">الرتبة الأكاديمية</label>
+                  <label className="block text-[#6B7280] font-medium">
+                    الصفة التحريرية / الرتبة <span className="text-rose-500">*</span>
+                  </label>
                   <input
                     type="text"
-                    name="academicRank"
-                    defaultValue={member?.academicRank || ""}
-                    placeholder="مثال: أستاذ دكتور / رئيس تحرير"
+                    name="role"
+                    defaultValue={displayRole}
+                    required
+                    placeholder="مثال: رئيس التحرير / محرر علمي"
                     className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-[#6B7280] font-medium">الجامعة / المؤسسة</label>
+                  <label className="block text-[#6B7280] font-medium">الجامعة / جهة الانتساب (Affiliation)</label>
                   <input
                     type="text"
-                    name="university"
-                    defaultValue={member?.university || ""}
-                    placeholder="مثال: جامعة الملك سعود / Oxford"
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
-              </div>
-
-              {/* Specialty & ORCID Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="block text-[#6B7280] font-medium">التخصص الدقيق</label>
-                  <input
-                    type="text"
-                    name="specialty"
-                    defaultValue={member?.specialty || ""}
-                    placeholder="مثال: الذكاء الاصطناعي والأمن السيبراني"
-                    className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-[#6B7280] font-medium">رابط الملف الأكاديمي (ORCID)</label>
-                  <input
-                    type="url"
-                    name="orcidUrl"
-                    defaultValue={member?.orcidUrl || ""}
-                    placeholder="https://orcid.org/0000-0002-1825-0097"
+                    name="institution"
+                    defaultValue={displayInstitution}
+                    placeholder="مثال: جامعة الملك سعود / Oxford University"
                     className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                   />
                 </div>
@@ -239,19 +222,19 @@ export function EditorialMemberDialog({ mode, member }: EditorialMemberDialogPro
                 <input
                   type="number"
                   name="order"
-                  defaultValue={member?.order || 0}
+                  defaultValue={member?.order ?? 0}
                   className="w-full h-10 px-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                 />
               </div>
 
               {/* Bio */}
               <div className="space-y-1.5">
-                <label className="block text-[#6B7280] font-medium">النبذة التعريفية والتسلسل الأكاديمي</label>
+                <label className="block text-[#6B7280] font-medium">النبذة التعريفية والتسلسل العلمي (Bio)</label>
                 <textarea
                   name="bio"
                   rows={3}
                   defaultValue={member?.bio || ""}
-                  placeholder="موجز عن المسيرة الأكاديمية والاهتمامات البحثية..."
+                  placeholder="موجز عن المسيرة العلمية، التحكيم، والاهتمامات البحثية..."
                   className="w-full p-3 bg-[#1A2B4A] border border-[#6B7280]/30 rounded-xl text-white focus:outline-none focus:border-[#E84A0C]"
                 />
               </div>

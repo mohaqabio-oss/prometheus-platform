@@ -7,6 +7,7 @@ import {
   Globe, ArrowLeft, Building2, BookOpen, FolderGit2,
   Calendar, Users, ExternalLink,
 } from "lucide-react";
+import { getArticlePublicUrl } from "@/lib/routes";
 
 interface Props { params: Promise<{ slug: string }> }
 
@@ -138,7 +139,7 @@ export default async function PartnerProfilePage({ params }: Props) {
             </h2>
             <div className="grid gap-4">
               {relatedArticles.map((article: any) => (
-                <Link key={article.id} href={`/post/articles/${article.slug}`}
+                <Link key={article.id} href={getArticlePublicUrl(article.slug, article.type)}
                   className="group archival-card rounded-xl p-5 hover:shadow-lg transition-all duration-200">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">

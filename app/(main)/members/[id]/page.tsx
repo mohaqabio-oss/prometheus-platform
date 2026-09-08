@@ -10,6 +10,7 @@ import {
   ArrowLeft, Clock, BookOpen, FolderGit2, Microscope, Calendar,
   FileText, Users, Award, ChevronLeft,
 } from "lucide-react";
+import { getArticlePublicUrl } from "@/lib/routes";
 
 interface MemberProfilePageProps {
   params: Promise<{ id: string }>;
@@ -287,7 +288,7 @@ function ArticleCard({ article, memberId, type }: { article: any; memberId: stri
   const memberRole = article.memberRoles?.find((mr: any) => mr.memberId === memberId)?.roleName || "مؤلف مشارك";
 
   return (
-    <Link href={`/post/articles/${article.slug}`}
+    <Link href={getArticlePublicUrl(article.slug, type)}
       className="group archival-card rounded-xl p-5 flex items-start gap-4 hover:shadow-lg transition-all duration-200">
       {article.coverImage && (
         <div className="w-20 h-16 rounded-lg overflow-hidden shrink-0">

@@ -1,3 +1,3 @@
-import AcademicArticlesCatalogPage from "@/app/post/articles/page";
+import AcademicArticlesCatalogPage from "@/app/PtPost/articles/page";
 
 export default AcademicArticlesCatalogPage;

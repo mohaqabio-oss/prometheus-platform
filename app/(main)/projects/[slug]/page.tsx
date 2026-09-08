@@ -9,6 +9,7 @@ import {
   CheckCircle2, Clock, Circle, Calendar, BookOpen, UserPlus,
   MapPin, ExternalLink, Sparkles, Check, Globe
 } from "lucide-react";
+import { getArticlePublicUrl } from "@/lib/routes";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -492,7 +493,7 @@ function ArticleList({ articles }: { articles: any[] }) {
       {articles.map((article) => (
         <Link
           key={article.id}
-          href={`/post/articles/${article.slug}`}
+          href={getArticlePublicUrl(article.slug, article.type)}
           className="group archival-card rounded-xl p-5 hover:shadow-lg transition-all duration-200"
         >
           <div className="flex items-start gap-4">

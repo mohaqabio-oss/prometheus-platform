@@ -75,7 +75,7 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
       ],
     },
     {
-      groupLabel: "منشورات بروميثيوس",
+      groupLabel: "Prometheus Post والمقالات",
       items: [
         {
           title: "المقالات والمنشورات",
@@ -91,8 +91,14 @@ export function DashboardSidebar({ userRoles }: DashboardSidebarProps) {
         },
         {
           title: "هيئة التحرير الأكاديمية",
-          href: "/admin/editorial-members",
+          href: "/admin/post/editorial",
           icon: <BookOpen className="w-4 h-4" />,
+          rolesAllowed: ["ADMIN", "HR_EDITOR"],
+        },
+        {
+          title: "سياسات وأخلاقيات النشر",
+          href: "/admin/post/ethics",
+          icon: <Award className="w-4 h-4 text-[#E84A0C]" />,
           rolesAllowed: ["ADMIN", "HR_EDITOR"],
         },
       ],
